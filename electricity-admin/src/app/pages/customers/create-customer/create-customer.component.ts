@@ -3,6 +3,7 @@ import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { HttpClient } from "@angular/common/http";
 import { Router } from "@angular/router";
+import { ApiService } from "../../../shared/services/api.service";
 
 const API_BASE = "http://192.168.0.155:8080";
 
@@ -38,6 +39,7 @@ export class CreateCustomerComponent {
   constructor(
     private http: HttpClient,
     private router: Router,
+    private api: ApiService,
   ) {}
 
   createCustomer() {
@@ -67,7 +69,7 @@ export class CreateCustomerComponent {
 
     this.isLoading = true;
 
-    this.http.post<any>(`${API_BASE}/admin/add-customer`, payload).subscribe({
+    this.api.post(`/admin/add-customer`, payload).subscribe({
       next: (res) => {
         this.isLoading = false;
 

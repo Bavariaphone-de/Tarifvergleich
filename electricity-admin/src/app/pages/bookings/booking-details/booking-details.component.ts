@@ -499,7 +499,7 @@ export class BookingDetailComponent implements OnInit {
    * Once successful the booking is refreshed and the PDF appears in the
    * documents section below for viewing / downloading.
    */
-  
+
   generateDocument(): void {
     if (!this.booking?.order?.orderId) return;
     this.isGeneratingDoc = true;
@@ -650,8 +650,8 @@ export class BookingDetailComponent implements OnInit {
       meterNumber: this.meterNumberInput.trim(),
     };
 
-    this.http
-      .post("http://localhost:8080/admin/update-meter-number", payload)
+    this.api
+      .post("admin/update-meter-number", payload)
       .subscribe({
         next: (res: any) => {
           this.isUpdatingMeter = false;

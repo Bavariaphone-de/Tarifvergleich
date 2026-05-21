@@ -1,41 +1,286 @@
-  /* ── Card-header in style.css ── */
-.nav-icon-strom{width: 13px; height: 20px;}
-.card-body {padding: 12px 10px; margin-bottom: 4px;}
+/* ── Card-header in style.css ── */
+.nav-icon-strom {
+  width: 13px;
+  height: 20px;
+}
+.card-body {
+  padding: 12px 10px;
+  margin-bottom: 4px;
+}
 
-  /* Price card */
-  .price-amount {
-    text-align: right;
-    font-size: 28px;
-    font-weight: 700;
-    color: #1a1a1a;
-    margin-bottom: 0.5rem;
+/* ── Accordion card ── */
+.accordion-card {
+  overflow: hidden;
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+
+.accordion-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  user-select: none;
+}
+
+.accordion-header:hover {
+  filter: brightness(0.96);
+}
+
+.accordion-header-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Chevron arrow */
+.accordion-chevron {
+  font-size: 20px;
+  line-height: 1;
+  color: inherit;
+  display: inline-block;
+  transform: rotate(0deg);
+  transition: transform 0.25s ease;
+}
+.accordion-chevron.rotated {
+  transform: rotate(90deg);
+}
+
+/* Collapsible body */
+.accordion-body-wrap {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+.accordion-body-wrap.accordion-body-open {
+  max-height: 600px;
+}
+
+/* ─────────────────────────────────────────
+   Preis card
+───────────────────────────────────────── */
+
+/* Desktop: stack everything, right-aligned (original behaviour) */
+.price-layout {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+.price-labels {
+  display: none;
+} /* hidden on desktop — labels live beside values */
+
+.price-amount {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 0.25rem;
+  text-align: right;
+}
+.price-values {
+  text-align: right;
+}
+
+.price-save-value {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-top: 2px;
+}
+
+.price-sub,
+.price-save {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-top: 2px;
+}
+.price-save-label {
+  justify-content: flex-start; /* label column aligns left on mobile */
+}
+.pro-monat {
+  padding-right: 6px;
+}
+.price-save .hl {
+  color: #00a651;
+  font-weight: 700;
+  padding-right: 6px;
+}
+.price-save-value .hl {
+  color: #00a651;
+  font-weight: 700;
+}
+
+/* ─────────────────────────────────────────
+   Tarifdetails
+───────────────────────────────────────── */
+.octopus-name {
+  font-size: 10px;
+  color: #e91e8c;
+  font-weight: 700;
+}
+
+.d-logo-row {
+  margin-bottom: 8px;
+}
+
+.d-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #1a1a1a;
+}
+.d-value {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+.d-row {
+  margin-bottom: 9px;
+}
+.d-row-inline {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 9px;
+}
+
+/* ─────────────────────────────────────────
+   Tarifübersicht
+───────────────────────────────────────── */
+.ov-label {
+  font-size: 14px;
+  font-weight: 500;
+}
+.ov-value {
+  font-size: 14px;
+  font-weight: 700;
+}
+.ov-row {
+  margin-bottom: 8px;
+}
+.line-blue {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+.link-blue {
+  color: #3a9bd5;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+/* ═════════════════════════════════════════
+   MOBILE  ≤ 480 px — compact side-by-side
+═════════════════════════════════════════ */
+@media (max-width: 480px) {
+  .card-body {
+    padding: 8px;
+    margin-bottom: 2px;
   }
 
-  .price-sub, .price-save {
-    display: flex;
+  /* ── Preis: two-column layout ── */
+  .price-layout {
+    flex-direction: row;
     align-items: center;
-    justify-content: flex-end;
-    gap: 4px;
-    font-size: 14px;
-    font-weight: 600;
-    color: #1a1a1a;
-    margin-top: 2px;
+    justify-content: space-between;
+    gap: 8px;
   }
 
-.pro-monat {padding-right: 6px;}
-.price-save .hl {color: #00a651; font-weight: 700; padding-right: 6px;}
+  /* Show label column on mobile */
+  .price-labels {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    flex: 1;
+  }
 
+  /* Values flush right */
+  .price-values {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+    flex-shrink: 0;
+  }
 
-  /* Tarif details */
-  .octopus-name { font-size: 10px; color: #e91e8c; font-weight: 700; }
-  .d-label { font-size: 14px; font-weight: 500; color: #1a1a1a;  }
-  .d-value { font-size: 14px; font-weight: 700; color: #1a1a1a; }
-  .d-row { margin-bottom: 9px; }
-  .d-row-inline { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 9px; }
+  .price-amount {
+    font-size: 22px;
+    margin-bottom: 0;
+  }
 
-  /* Tarifübersicht */
-  .ov-label { font-size: 14px; font-weight: 500;  }
-  .ov-value { font-size: 14px; font-weight: 700; }
-  .ov-row { margin-bottom: 8px; }
-  .line-blue {display: flex; justify-content: space-between; align-items: flex-start; }
-  .link-blue { color: #3a9bd5; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center;  }
+  .price-sub,
+  .price-save {
+    font-size: 12px;
+    margin-top: 0;
+  }
+
+  .price-save-value {
+    font-size: 13px;
+    margin-top: 0;
+  }
+
+  /* ── Tarifdetails: label | value inline ── */
+  .d-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 7px;
+  }
+
+  .d-label {
+    font-size: 12px;
+    flex-shrink: 0;
+    max-width: 55%;
+  }
+
+  .d-value {
+    font-size: 12px;
+    text-align: right;
+  }
+
+  .d-row-inline {
+    margin-bottom: 7px;
+  }
+
+  .d-logo-row {
+    margin-bottom: 6px;
+  }
+
+  /* ── Tarifübersicht: label | value inline ── */
+  .ov-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+
+  .ov-label {
+    font-size: 12px;
+    flex-shrink: 0;
+    max-width: 55%;
+  }
+
+  .ov-value {
+    font-size: 12px;
+    text-align: right;
+  }
+
+  .link-blue {
+    font-size: 12px;
+  }
+
+  /* Tighter accordion spacing */
+  .accordion-card {
+    margin-bottom: 6px;
+  }
+}

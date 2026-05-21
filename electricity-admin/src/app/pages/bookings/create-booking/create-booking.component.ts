@@ -10,8 +10,7 @@ import {
 import { ActivatedRoute, Router } from "@angular/router";
 import { HttpClient } from "@angular/common/http";
 import { AuthService } from "../../../shared/services/auth.service";
-
-const API_BASE = "http://192.168.0.155:8080";
+import { ApiService } from "../../../shared/services/api.service";
 
 /**
  * Converts a Unix timestamp (seconds) to an HTML date-input string (YYYY-MM-DD).
@@ -69,6 +68,7 @@ export class CreateBookingComponent implements OnInit {
     private router: Router,
     private route: ActivatedRoute,
     private authService: AuthService,
+    private api: ApiService,
   ) {}
 
   searchForm = {
@@ -183,31 +183,29 @@ export class CreateBookingComponent implements OnInit {
       isVerified: "",
     };
 
-    this.http
-      .post<any>(`${API_BASE}/admin/fetch-customer-details`, payload)
-      .subscribe({
-        next: (res) => {
-          const customerList = Array.isArray(res?.data) ? res.data : [];
-          this.customers = customerList.map((customer: any) => ({
-            id: customer.id,
-            firstName: customer.firstName ?? "",
-            lastName: customer.lastName ?? "",
-            email: customer.email ?? "",
-            mobileNumber: customer.mobileNumber ?? "",
-            userType: customer.userType ?? "",
-            address: customer.address ?? null,
-          }));
+    this.api.post("admin/fetch-customer-details", payload).subscribe({
+      next: (res) => {
+        const customerList = Array.isArray(res?.data) ? res.data : [];
+        this.customers = customerList.map((customer: any) => ({
+          id: customer.id,
+          firstName: customer.firstName ?? "",
+          lastName: customer.lastName ?? "",
+          email: customer.email ?? "",
+          mobileNumber: customer.mobileNumber ?? "",
+          userType: customer.userType ?? "",
+          address: customer.address ?? null,
+        }));
 
-          // ── Prefill after customers are loaded so we can match the customer ──
-          if (this.prefillDeliveryId) {
-            this.loadDeliveryAndPrefill(this.prefillDeliveryId);
-          }
-        },
-        error: (err) => {
-          console.error("Failed to load customers", err);
-          this.errorMessage = err?.error?.message || "Failed to load customers";
-        },
-      });
+        // ── Prefill after customers are loaded so we can match the customer ──
+        if (this.prefillDeliveryId) {
+          this.loadDeliveryAndPrefill(this.prefillDeliveryId);
+        }
+      },
+      error: (err) => {
+        console.error("Failed to load customers", err);
+        this.errorMessage = err?.error?.message || "Failed to load customers";
+      },
+    });
   }
 
   // ── Prefill logic ─────────────────────────────────────────────────────────
@@ -225,23 +223,21 @@ export class CreateBookingComponent implements OnInit {
       deliveryId,
     };
 
-    this.http
-      .post<any>(`${API_BASE}/admin/fetch-deliveries`, payload)
-      .subscribe({
-        next: (res) => {
-          this.isLoadingPrefill = false;
-          if (!res?.res || !res?.data) {
-            this.errorMessage = "Could not load delivery for prefill.";
-            return;
-          }
-          this.applyPrefill(res.data);
-        },
-        error: (err) => {
-          this.isLoadingPrefill = false;
-          this.errorMessage =
-            err?.error?.message || "Failed to load delivery data for prefill.";
-        },
-      });
+    this.api.post("admin/fetch-deliveries", payload).subscribe({
+      next: (res) => {
+        this.isLoadingPrefill = false;
+        if (!res?.res || !res?.data) {
+          this.errorMessage = "Could not load delivery for prefill.";
+          return;
+        }
+        this.applyPrefill(res.data);
+      },
+      error: (err) => {
+        this.isLoadingPrefill = false;
+        this.errorMessage =
+          err?.error?.message || "Failed to load delivery data for prefill.";
+      },
+    });
   }
 
   /**
@@ -383,7 +379,7 @@ export class CreateBookingComponent implements OnInit {
       adminId: this.authService.getUserId(),
     };
 
-    this.http.post<any>(`${API_BASE}/api/get-rates`, payload).subscribe({
+    this.api.post("admin/get-rates", payload).subscribe({
       next: (res) => {
         this.isLoadingRates = false;
         this.rates = res?.rates?.result ?? [];
@@ -529,7 +525,7 @@ export class CreateBookingComponent implements OnInit {
       adminId: this.authService.getUserId(),
     };
 
-    this.http.post<any>(`${API_BASE}/api/get-rates`, payload).subscribe({
+    this.api.post("admin/get-rates", payload).subscribe({
       next: (res) => {
         this.isLoadingRates = false;
         this.rates = res?.rates?.result ?? [];
@@ -657,25 +653,23 @@ export class CreateBookingComponent implements OnInit {
     }
 
     console.log("Submitting booking with payload:", payload);
-    this.http
-      .post<any>(`${API_BASE}/admin/add-new-delivery`, payload)
-      .subscribe({
-        next: (res) => {
-          this.isLoading = false;
-          if (res?.res === false) {
-            this.errorMessage = res?.message || "Failed to create booking";
-            return;
-          }
-          this.successMessage = this.isEditMode
-            ? "Booking updated successfully! Redirecting…"
-            : "Booking created successfully! Redirecting…";
-          setTimeout(() => this.router.navigate(["/admin/bookings"]), 1500);
-        },
-        error: (err) => {
-          this.isLoading = false;
-          this.errorMessage = err?.error?.message || "Failed to create booking";
-        },
-      });
+    this.api.post("admin/add-new-delivery", payload).subscribe({
+      next: (res) => {
+        this.isLoading = false;
+        if (res?.res === false) {
+          this.errorMessage = res?.message || "Failed to create booking";
+          return;
+        }
+        this.successMessage = this.isEditMode
+          ? "Booking updated successfully! Redirecting…"
+          : "Booking created successfully! Redirecting…";
+        setTimeout(() => this.router.navigate(["/admin/bookings"]), 1500);
+      },
+      error: (err) => {
+        this.isLoading = false;
+        this.errorMessage = err?.error?.message || "Failed to create booking";
+      },
+    });
   }
 
   formatDate(date: string): string | null {

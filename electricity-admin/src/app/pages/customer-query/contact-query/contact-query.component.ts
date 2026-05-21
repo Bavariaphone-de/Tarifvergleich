@@ -152,8 +152,8 @@ export class ContactQueryComponent implements OnInit, OnDestroy {
     this.errorMessage = "";
     this.closeSidebar();
 
-    this.http
-      .post("http://192.168.0.234:8080/fetch-customer-queries", payload)
+    this.api
+      .post("fetch-customer-queries", payload)
       .subscribe({
         next: (res: any) => {
           this.isLoading = false;
@@ -162,7 +162,7 @@ export class ContactQueryComponent implements OnInit, OnDestroy {
           this.hasMoreData = newData.length === this.PAGE_LIMIT;
 
           const total = res?.total ?? res?.data?.total ?? res?.totalElements ?? res?.data?.totalElements ?? res?.totalRecords ?? res?.data?.totalRecords ?? res?.count ?? res?.data?.count;
-          
+
           if (typeof total === "number") {
             this.totalCount = total;
           } else {
@@ -208,8 +208,8 @@ export class ContactQueryComponent implements OnInit, OnDestroy {
     this.customerSearchTerm = "";
     this.customerSearchResults = [];
     setTimeout(() => this.searchInputRef?.nativeElement.blur(), 50);
-    
-    
+
+
   }
   // ── Sidebar ───────────────────────────────────────────────────
 
@@ -336,8 +336,8 @@ export class ContactQueryComponent implements OnInit, OnDestroy {
       limit: 10,
     };
 
-    this.http
-      .post("http://192.168.0.234:8080/admin/fetch-customer-details", payload)
+    this.api
+      .post("admin/fetch-customer-details", payload)
       .subscribe({
         next: (res: any) => {
           this.isSearchingCustomers = false;
@@ -365,8 +365,8 @@ export class ContactQueryComponent implements OnInit, OnDestroy {
       customerIds: this.selectedCustomers.map((c) => c.id),
     };
 
-    this.http
-      .post("http://192.168.0.234:8080/link-customer-query", payload)
+    this.api
+      .post("link-customer-query", payload)
       .subscribe({
         next: () => {
           this.isLinking = false;
