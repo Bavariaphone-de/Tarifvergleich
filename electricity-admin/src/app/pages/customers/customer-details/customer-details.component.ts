@@ -25,10 +25,13 @@ export class CustomerDetailsComponent implements OnInit {
   noteText = '';
   isSavingNote = false;
 
+
   isContactHistoryModalOpen = false;
   contactHistoryText = '';
-  currentContactHistory: any[] = [];
+  // currentContactHistory: any[] = [];
   isSavingContactHistory = false;
+  contactHistoryCustomer: any = null;
+  customerContactHistory: { [key: number]: any[] } = {};
 
   constructor(
     private route: ActivatedRoute,
@@ -67,7 +70,6 @@ export class CustomerDetailsComponent implements OnInit {
       error: () => {
 
         this.errorMessage = 'Fehler beim Laden der Kundendetails';
-
         this.isLoading = false;
       }
     });
@@ -86,7 +88,7 @@ export class CustomerDetailsComponent implements OnInit {
   }
 
   saveCustomerNote() : void {
-    if (this.noteText.trim()) return;
+    if (!this.noteText.trim()) return;
     const newNote = {
       note: this.noteText,
       addedOn: new Date().toLocaleString()
@@ -97,30 +99,55 @@ export class CustomerDetailsComponent implements OnInit {
   }
 
   // CONTACT-HISTORY
-  openContactHistoryModal(): void {
+
+  openContactHistoryModal(customer: any): void {
+    this.contactHistoryCustomer = customer;
+    if (!this.customerContactHistory[customer.id]) {
+      this.customerContactHistory[customer.id] = [];
+    }
+    this.contactHistoryText = "";
     this.isContactHistoryModalOpen = true;
-    this.getContactHistory();
   }
 
   closeContactHistoryModal(): void {
     this.isContactHistoryModalOpen = false;
-    this.contactHistoryText = '';
+    this.contactHistoryCustomer = null;
+    this.contactHistoryText = "";
+    this.isSavingContactHistory = false;
+  }
+
+  get currentContactHistory() {
+    if (!this.contactHistoryCustomer) {
+      return [];
+    }
+    return this.customerContactHistory[this.contactHistoryCustomer.id] || [];
   }
 
   saveContactHistory(): void {
-    if (!this.contactHistoryText.trim()) return;
+    if (!this.contactHistoryCustomer || this.isSavingContactHistory) return;
+    const trimmedHistory = this.contactHistoryText.trim();
+    if (!trimmedHistory) return;
+    this.isSavingContactHistory = true;
 
-    const newContactHistory = {
-      note: this.contactHistoryText,
-      addedOn: new Date().toLocaleString()
+    const payload = {
+      adminId: this.authService.getUserId(),
+      customerId: this.contactHistoryCustomer.id,
+      note: trimmedHistory
     };
-    
-    this.currentContactHistory.unshift(newContactHistory);
-    this.contactHistoryText = '';
-  }
 
-  getContactHistory(): void {
-    this.currentContactHistory = [];
+    this.api.post("admin/add-contact-history", payload).subscribe({
+      next: () => {
+        this.customerContactHistory[this.contactHistoryCustomer!.id].push({
+            note: this.contactHistoryText,
+            addedOn: new Date().toLocaleString()
+        });
+        this.contactHistoryText = "";
+        this.isSavingContactHistory = false;
+      },
+      error: () => {
+        this.isSavingContactHistory = false;
+      }
+    });
   }
 
   formatDate(value?: number | string | null): string {

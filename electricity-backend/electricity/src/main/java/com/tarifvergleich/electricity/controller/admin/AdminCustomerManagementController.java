@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.tarifvergleich.electricity.dto.CustomerDetailsContactHistoryDto;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tarifvergleich.electricity.dto.CustomerDeliveryRequestWrapper.AdminEditCustomerDeliveryRelated;
@@ -126,6 +127,11 @@ public class AdminCustomerManagementController {
     @PostMapping("/add-note")
     public ResponseEntity<?> addNote(@RequestBody CustomerNoteDto noteDto) {
         return ResponseEntity.ok(adminCustomerManagementService.addCustomerNoteByAdmin(noteDto));
+    }
+    
+    @PostMapping("/add-contact-history")
+    public ResponseEntity<?> addContactHistory(@RequestBody CustomerDetailsContactHistoryDto historyDto) {
+        return ResponseEntity.ok(adminCustomerManagementService.addCustomerContactHistoryByAdmin(historyDto));
     }
 
     @PostMapping("/add-new-delivery")
