@@ -21,6 +21,7 @@ import com.tarifvergleich.electricity.dto.CustomerContactScheduleRequestDto;
 import com.tarifvergleich.electricity.dto.CustomerDeliveryDto;
 import com.tarifvergleich.electricity.dto.CustomerDeliveryRequestWrapper;
 import com.tarifvergleich.electricity.dto.CustomerDto;
+import com.tarifvergleich.electricity.dto.CustomerInvoiceRequestDto;
 import com.tarifvergleich.electricity.dto.CustomerPaymentRequestDto;
 import com.tarifvergleich.electricity.dto.CustomerServiceRequestDto;
 import com.tarifvergleich.electricity.dto.CustomerServicesDto;
@@ -213,6 +214,16 @@ public class CustomerController {
 	    	        meterDesignation
 	    	    )
 	    	);
+	}
+	
+	@PostMapping("/submit-invoice-request")
+	public ResponseEntity<?> submitInvoiceRequest(
+	        @RequestBody CustomerInvoiceRequestDto dto
+	) {
+
+	    return ResponseEntity.ok(
+	            customerDetailService.submitInvoiceRequest(dto)
+	    );
 	}
 
 }
