@@ -39,7 +39,7 @@
         </div>
       </div>
       <div class="feature-header1">Haben Sie einen separaten Stromzähler für Heizstrom?
-        <span class="info-base info-green" (click)="openNightStorage(infoDialog)">i</span>
+        <span class="info-base info-green" (click)="openInfo(infoDialog, getrenntMessungHtml)">i</span>
       </div>
       <div class="container-button">
         <div class="container-option">
@@ -53,7 +53,7 @@
       <!-- Show when JA -->
       <div class="container-ja" *ngIf="selectedOption === 'ja'">
         <div class="feature-header1">Haben Sie einen Eintarif - oder Doppeltarifzähler?
-          <span class="info-base info-green" (click)="openSingleDoubleMeter(infoDialog)">i</span>
+          <span class="info-base info-green" (click)="openInfo(infoDialog, eintarif)">i</span>
         </div>
         <div class="container-button">
           <div class="sub-container-option">

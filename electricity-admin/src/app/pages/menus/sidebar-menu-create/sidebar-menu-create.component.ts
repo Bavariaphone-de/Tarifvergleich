@@ -26,6 +26,8 @@ export class SidebarMenuCreateComponent implements OnInit {
   imagePreview: string | null = null;
   savings = "";
   popupContent = "";
+  popupContent2 = "";
+  popupContent3 = "";
 
   isLoading = false;
   errorMessage = "";
@@ -61,6 +63,9 @@ export class SidebarMenuCreateComponent implements OnInit {
           this.savings = res.data.saving || "";
           this.popupContent =
             res.data.savingPriceDetail || res.data.savingDetail || "";
+          this.popupContent2 = res.data.popupContent2 || "";
+          this.popupContent3 = res.data.popupContent3 || "";
+
           if (res.data.contentUrl) {
             this.imagePreview = environment.imageBaseUrl + res.data.contentUrl;
           }
@@ -118,6 +123,8 @@ export class SidebarMenuCreateComponent implements OnInit {
       heading: this.title, // Ensure the backend expects 'heading' or 'title'
       saving: this.savings,
       savingDetail: this.popupContent,
+      popupContent2: this.popupContent2,
+      popupContent3: this.popupContent3,
       type: 2,
     };
 

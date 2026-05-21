@@ -22,6 +22,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { NgSelectModule } from '@ng-select/ng-select';
+import { ContentService } from '../../services/content.service';
 
 @Component({
   selector: 'app-electricity',
@@ -56,15 +57,10 @@ export class Electricity implements OnInit {
     private cdr: ChangeDetectorRef,
     private router: Router,
     private authService: AuthService,
+    private contentService: ContentService,
   ) {}
 
-  discountinfo = `<p> <strong>So haben wir gerechnet </strong> </p>
-      <p> Wohnort: <i> Dortmund, 44141 </i>
-       Jahresverbrauch: <i> 4.000 kWh </i> </p>
-      <p> Günstigster Tarif: immergrün! Spar Smart FairMax, Kosten im ersten Jahr: 920,84 Euro </p>
-      <p> Grundversorgungstarif: Dortmunder Energie- und Wasserversorgung GmbH Unser Strom.standard, Kosten: 1.828,72 Euro </p>
-      <p><strong>Einsparung: 907,88 Euro</strong> <p>
-      <p>(Stand: 16.02.2026) </p> `;
+  discountinfo: string | null = null;
 
   activeInfo: 'discountinfo' | null = null;
 
@@ -90,6 +86,13 @@ export class Electricity implements OnInit {
   showCityDropdown = false;
 
   ngOnInit(): void {
+    this.contentService.getSidebar().subscribe((sidebar: any[]) => {
+      const item = sidebar.find(s => s.originalFileName === 'Hausstrom.png');
+      if (item && item.savingPriceDetail) {
+        this.discountinfo = item.savingPriceDetail;
+      }
+    });
+
     this.addressForm = this.fb.group({
       postalCode: ['', [Validators.required, Validators.pattern(/^\d{5}$/)]],
 

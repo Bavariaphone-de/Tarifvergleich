@@ -390,6 +390,14 @@ public class AdminCustomerManagementService {
 		return Map.of("res", true, "message", "Customer service request closed successfully");
 	}
 
+	public Map<String, Object> countOpenServiceRequests(CustomerServiceRequestDto serviceRequestDto) {
+		if (serviceRequestDto.getAdminId() == null || serviceRequestDto.getAdminId() <= 0)
+			throw new InternalServerException("Admin id missing", HttpStatus.OK);
+
+		Long count = customerServiceRequestRepo.countByIsOpenAndAdminAdminId(true, serviceRequestDto.getAdminId());
+		return Map.of("res", true, "count", count);
+	}
+
 	@Transactional
 	public Map<String, Object> updateAttornyStatus(CustomerAttornyDto attornyDto) {
 

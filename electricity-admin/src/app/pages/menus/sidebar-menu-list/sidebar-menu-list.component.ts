@@ -4,6 +4,7 @@ import { RouterModule } from "@angular/router";
 import { ApiService } from "../../../shared/services/api.service";
 import { AuthService } from "../../../shared/services/auth.service";
 import { environment } from "../../../../environments/environment.development";
+import { HttpClient } from "@angular/common/http";
 
 @Component({
   selector: "app-sidebar-menu-list",
@@ -28,6 +29,7 @@ export class SidebarMenuListComponent implements OnInit {
   constructor(
     private api: ApiService,
     private authService: AuthService,
+    private http: HttpClient
   ) {}
 
   ngOnInit(): void {
@@ -41,15 +43,17 @@ export class SidebarMenuListComponent implements OnInit {
 
     const payload = { adminId, type: 2 };
 
-    this.api.post("admin/get-all-menu", payload).subscribe({
+    this.http.post("http://192.168.0.234:8080/admin/get-all-menu", payload).subscribe({
       next: (res: any) => {
         this.isLoading = false;
         if (res?.res && res.data) {
           // Preserve server-side position if available, else fall back to array index
-          this.menus = res.data.map((m: any, i: number) => ({
-            ...m,
-            position: m.position ?? i,
-          }));
+          this.menus = res.data
+            .map((m: any, i: number) => ({
+              ...m,
+              position: m.order ?? i,
+            }))
+            .sort((a: any, b: any) => a.position - b.position);
         } else {
           this.menus = [];
         }
@@ -129,22 +133,25 @@ export class SidebarMenuListComponent implements OnInit {
       })),
     };
 
-    this.api.post("admin/order-menu", payload).subscribe({
-      next: (res: any) => {
-        this.isSaving = false;
-        if (res?.res) {
-          this.orderChanged = false;
-        } else {
-          alert(
-            res?.errorMessage || "Reihenfolge konnte nicht gespeichert werden",
-          );
-        }
-      },
-      error: () => {
-        this.isSaving = false;
-        alert("Ein Fehler ist aufgetreten beim Speichern der Reihenfolge");
-      },
-    });
+    this.http
+      .post("http://192.168.0.234:8080/admin/order-menu", payload)
+      .subscribe({
+        next: (res: any) => {
+          this.isSaving = false;
+          if (res?.res) {
+            this.orderChanged = false;
+          } else {
+            alert(
+              res?.errorMessage ||
+                "Reihenfolge konnte nicht gespeichert werden",
+            );
+          }
+        },
+        error: () => {
+          this.isSaving = false;
+          alert("Ein Fehler ist aufgetreten beim Speichern der Reihenfolge");
+        },
+      });
   }
 
   // ─── Delete ────────────────────────────────────────────────────────────────
@@ -156,7 +163,7 @@ export class SidebarMenuListComponent implements OnInit {
         id,
       };
 
-      this.api.post("admin/delete-menu", payload).subscribe({
+      this.http.post("http://192.168.0.234:8080/admin/delete-menu", payload).subscribe({
         next: (res: any) => {
           if (res?.res) {
             this.menus = this.menus
