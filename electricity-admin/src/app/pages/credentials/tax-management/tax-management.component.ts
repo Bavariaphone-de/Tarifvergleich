@@ -2,6 +2,7 @@ import { Component } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { FormsModule } from "@angular/forms";
 import { OnInit } from "@angular/core";
+import { ApiService } from "../../../shared/services/api.service";
 @Component({
   selector: "app-tax-management",
   imports: [FormsModule],
@@ -14,12 +15,15 @@ export class TaxManagementComponent implements OnInit {
   successMessage: string = "";
   isError: boolean = false;
   taxId: number = 1;
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private api: ApiService,
+  ) {}
 
   ngOnInit(): void {
-    this.http
-      .post<any>(
-        "http://192.168.0.155:8080/tax-management/latest",
+    this.api
+      .post(
+        "tax-management/latest",
         {}, // request body
       )
       .subscribe({
@@ -60,8 +64,8 @@ export class TaxManagementComponent implements OnInit {
       adminId: 1,
       taxId: this.taxId,
     };
-    this.http
-      .post("http://192.168.0.155:8080/tax-management/save", body)
+    this.api
+      .post("tax-management/save", body)
       .subscribe({
         next: (res) => {
           console.log(res);

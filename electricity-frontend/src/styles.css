@@ -822,6 +822,10 @@ button[mat-icon-button] {
   z-index: 1;
 }
 
+.sidebar {
+  gap: 0.5rem;
+}
+
 /* remove line after last step */
 .step:last-child::after {
   display: none;

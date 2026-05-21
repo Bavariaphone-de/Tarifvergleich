@@ -103,8 +103,8 @@ export class StaticContentComponent implements OnInit {
       return;
     }
     if (confirm("Möchten Sie diesen Inhalt wirklich löschen?")) {
-      this.http
-        .post(`http://localhost:8080/admin/static-delete/${doc.id}`, null)
+      this.api
+        .post(`admin/static-delete/${doc.id}`, null)
         .subscribe({
           next: () => this.fetchDocuments(),
           error: (err: any) => console.error("Delete Failed", err),
@@ -191,22 +191,20 @@ export class StaticContentComponent implements OnInit {
       size: this.PAGE_LIMIT,
     };
 
-    this.http
-      .post("http://localhost:8080/admin/static-all", payload)
-      .subscribe({
-        next: (res: any) => {
-          this.customers = res || [];
+    this.api.post("admin/static-all", payload).subscribe({
+      next: (res: any) => {
+        this.customers = res || [];
 
-          this.isLoading = false;
-        },
-        error: (err: any) => {
-          this.customers = [];
-          this.totalPage = 1;
-          this.hasMoreData = false;
-          this.errorMessage = "Etwas ist schiefgelaufen.";
-          this.isLoading = false;
-        },
-      });
+        this.isLoading = false;
+      },
+      error: (err: any) => {
+        this.customers = [];
+        this.totalPage = 1;
+        this.hasMoreData = false;
+        this.errorMessage = "Etwas ist schiefgelaufen.";
+        this.isLoading = false;
+      },
+    });
   }
 
   /* ---------------- PAGINATION ---------------- */
@@ -256,7 +254,7 @@ export class StaticContentComponent implements OnInit {
 
     this.isUploading = true;
 
-    this.http.post("admin/add-doc", formData).subscribe({
+    this.api.post("admin/add-doc", formData).subscribe({
       next: (res: any) => {
         this.isUploading = false;
         this.closeModal();
@@ -284,9 +282,9 @@ export class StaticContentComponent implements OnInit {
 
     if (this.editingDocId) {
       // Update Existing Content (POST)
-      this.http
+      this.api
         .post(
-          `http://localhost:8080/admin/static-update/${this.editingDocId}`,
+          `admin/static-update/${this.editingDocId}`,
           formData,
         )
         .subscribe({
@@ -302,8 +300,8 @@ export class StaticContentComponent implements OnInit {
         });
     } else {
       // Add New Content (POST)
-      this.http
-        .post("http://localhost:8080/admin/static-add", formData)
+      this.api
+        .post("admin/static-add", formData)
         .subscribe({
           next: (res: any) => {
             this.isUploading = false;
@@ -327,27 +325,25 @@ export class StaticContentComponent implements OnInit {
   /* ---------------- FETCH ALL CONTENT FROM BACKEND ---------------- */
   fetchCustomContents() {
     this.isLoading = true;
-    this.http
-      .post<any[]>("http://localhost:8080/admin/static-all", {})
-      .subscribe({
-        next: (res: any) => {
-          this.isLoading = false;
+    this.api.post("admin/static-all", {}).subscribe({
+      next: (res: any) => {
+        this.isLoading = false;
 
-          // Map the backend names to our frontend variables
-          const list = Array.isArray(res) ? res : res.data || [];
-          this.customContents = list.map((item: any) => ({
-            adminDocId: item.id,
-            documentCategory: item.title,
-            description: item.description,
-            logoUrl: item.logoUrl || item.logo,
-            // expireTime: item.uploadTime,
-            isCustom: true, // keeps the preview modal 'eye' button working
-          }));
-        },
-        error: (err: any) => {
-          this.isLoading = false;
-          console.error("Failed to load backend data", err);
-        },
-      });
+        // Map the backend names to our frontend variables
+        const list = Array.isArray(res) ? res : res.data || [];
+        this.customContents = list.map((item: any) => ({
+          adminDocId: item.id,
+          documentCategory: item.title,
+          description: item.description,
+          logoUrl: item.logoUrl || item.logo,
+          // expireTime: item.uploadTime,
+          isCustom: true, // keeps the preview modal 'eye' button working
+        }));
+      },
+      error: (err: any) => {
+        this.isLoading = false;
+        console.error("Failed to load backend data", err);
+      },
+    });
   }
 }

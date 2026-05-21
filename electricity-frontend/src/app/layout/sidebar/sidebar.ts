@@ -23,6 +23,18 @@ export class Sidebar implements OnChanges {
   /** Full provider/rate object from the parent (e.g. DeliveryAddress). */
   @Input() providerDetails: any = null;
 
+  // ── Accordion state ─────────────────────────────────────────────────────
+  /** Tracks open/closed state for each accordion panel. All open by default. */
+  open: Record<string, boolean> = {
+    preis: true,
+    tarifdetails: true,
+    tarifuebersicht: true,
+  };
+
+  toggle(panel: string): void {
+    this.open[panel] = !this.open[panel];
+  }
+
   // ── Derived display values ──────────────────────────────────────────────
 
   /** Average monthly cost, e.g. "149,59 €" */
@@ -82,7 +94,6 @@ export class Sidebar implements OnChanges {
 
     // Tariff overview — the API doesn't return kWh usage directly;
     // we back-calculate it from totalPrice and per-unit prices if needed.
-    // Most comparison APIs include a "consumption" or "usage" field; fall back gracefully.
     const usage: number | undefined = p.consumption ?? p.annualUsage ?? p.kWh ?? undefined;
     this.annualUsage = usage != null ? `${this.formatNumber(usage)} kWh` : '2.500 kWh';
 

@@ -4,6 +4,7 @@ import { FormsModule } from "@angular/forms";
 import { CommonModule } from "@angular/common";
 import { CKEditorModule } from "@ckeditor/ckeditor5-angular";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
+import { ApiService } from "../../../shared/services/api.service";
 
 @Component({
   selector: "app-email-requests",
@@ -27,11 +28,14 @@ export class EmailRequestsComponent {
 
   categories: any[] = [];
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private api: ApiService,
+  ) {}
 
   ngOnInit(): void {
-    this.http
-      .post("http://192.168.0.155:8080/email-category/all", { adminId: 1 })
+    this.api
+      .post("email-category/all", { adminId: 1 })
       .subscribe((res: any) => {
         console.log(res);
         this.categories = res;
@@ -46,8 +50,8 @@ export class EmailRequestsComponent {
       page: 0,
       size: 100,
     };
-    this.http
-      .post<any>("http://192.168.155:8080/admin/fetch-admin-documents", payload)
+    this.api
+      .post("admin/fetch-admin-documents", payload)
       .subscribe({
         next: (res) => {
           console.log(res);
