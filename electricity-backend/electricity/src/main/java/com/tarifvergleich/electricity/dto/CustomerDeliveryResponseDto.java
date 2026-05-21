@@ -164,6 +164,14 @@ public class CustomerDeliveryResponseDto {
 						.isDifferent(delivery.getBillingAddress().getIsDifferent()).build())
 				.orderPlaced(delivery.getOrderPlaced()).orderPlacedOn(delivery.getOrderPlacedOn())
 				.notificationEnabled(delivery.getNotificationEnabled())
+//				.admin(
+//					    admin.getAdminSignature() != null
+//					        ? AdminSignatureDto.builder()
+//					            .adminSignatureId(admin.getAdminSignature().getId())
+//					            .filePath(admin.getAdminSignature().getFilePath())
+//					            .build()
+//					        : null
+//					)
 				.provider(EnergyRateDto.getProviderResponse(delivery.getCustomerProvider()))
 				.connection(CustomerConnectionRequestDto.getConnectionResponse(delivery.getCustomerConnection()))
 				.payment(CustomerPaymentRequestDto.getCustomerPaymentResponse(delivery.getCustomerPayment()))

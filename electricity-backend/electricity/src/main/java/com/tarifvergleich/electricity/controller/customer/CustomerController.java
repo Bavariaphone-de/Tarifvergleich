@@ -27,7 +27,7 @@ import com.tarifvergleich.electricity.dto.CustomerServicesDto;
 import com.tarifvergleich.electricity.service.customer.CustomerBookingService;
 import com.tarifvergleich.electricity.service.customer.CustomerDetailService;
 import com.tarifvergleich.electricity.service.customer.CustomerUpdateService;
-
+import com.tarifvergleich.electricity.service.customer.CustomerMeterService;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -40,6 +40,7 @@ public class CustomerController {
 	private final CustomerDetailService customerDetailService;
 	private final CustomerUpdateService customerUpdateService;
 	private final ObjectMapper objectMapper;
+	private final CustomerMeterService customerMeterService;
 
 	@PostMapping("/fetch-customer-detail")
 	public ResponseEntity<?> fetchCustomer(@RequestBody CustomerDto customerDto) {
@@ -187,6 +188,31 @@ public class CustomerController {
 	@PostMapping("/update-customer-detail")
 	public ResponseEntity<?> updateCustomerDetail(@RequestBody CustomerDto customerDto) {
 		return ResponseEntity.ok(customerUpdateService.updateCustomerDetail(customerDto));
+	}
+	
+	@PostMapping("/update-meter-designation")
+	public ResponseEntity<?> updateMeterDesignation(
+	        @RequestBody Map<String, Object> payload
+	) {
+
+	    Long connectionId = Long.valueOf(
+	            payload.get("connectionId").toString()
+	    );
+
+	    String meterDesignation =
+	            payload.get("meterDesignation").toString();
+
+	    customerMeterService.updateMeterDesignation(
+	            connectionId,
+	            meterDesignation
+	    );
+
+	    return ResponseEntity.ok(
+	    	    customerMeterService.updateMeterDesignation(
+	    	        connectionId,
+	    	        meterDesignation
+	    	    )
+	    	);
 	}
 
 }

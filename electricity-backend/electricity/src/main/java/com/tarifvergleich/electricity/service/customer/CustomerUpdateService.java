@@ -56,6 +56,9 @@ public class CustomerUpdateService {
 		
 		if (customerDto.getMobileNumber() != null && !customerDto.getMobileNumber().isEmpty())
 			customer.setMobileNumber(customerDto.getMobileNumber());
+		
+		if (customerDto.getTelephone() != null && !customerDto.getTelephone().isEmpty())
+			customer.setTelephone(customerDto.getTelephone());
 
 		if (customerDto.getZip() != null && customerDto.getCity() != null && customerDto.getStreet() != null
 				&& !customerDto.getZip().isEmpty() && !customerDto.getCity().isEmpty()

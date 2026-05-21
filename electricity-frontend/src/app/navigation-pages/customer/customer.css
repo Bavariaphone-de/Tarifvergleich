@@ -1670,6 +1670,53 @@
   font-size: 12px;
 }
 
+.meter-edit-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 80%;
+  margin-top: 10px;
+}
+
+.meter-input {
+  flex: 1;
+  min-width: 0;
+  height: 38px;
+  padding: 0 12px;
+  border: 1px solid #d7d7d7;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.icon-action {
+  border: none;
+  background: transparent;
+  padding: 0;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.save-icon {
+  color: #16a34a;
+}
+
+.cancel-icon {
+  color: #dc2626;
+}
+
+/* MOBILE */
+@media (max-width: 768px) {
+  .meter-input {
+    height: 36px;
+    font-size: 13px;
+  }
+
+  .icon-action {
+    font-size: 18px;
+  }
+}
 /* =========================
    BUTTONS
 ========================= */
@@ -2277,6 +2324,7 @@
 .upload-btn {
   background: #0085e0;
   color: #fff;
+  height: 40px;
 }
 
 .submit-btn {
@@ -2361,7 +2409,9 @@
   font-weight: 600;
   cursor: pointer;
 }
-
+.full-width {
+  width: 100%;
+}
 @media (max-width: 768px) {
   .upload-photo-wrapper {
     flex-direction: column;

@@ -38,6 +38,7 @@ public class CustomerDto {
 	private String salutation;
 	private String companyName;
 	private String mobileNumber;
+	private String telephone;
 	private Boolean isVerified;
 	private BigInteger joinedOn;
 	private BigInteger verifiedOn;
@@ -84,6 +85,8 @@ public class CustomerDto {
 		private String companyName;
 		@Schema(description = "International format mobile number", example = "+49123456789")
 		private String mobileNumber;
+		@Schema(description = "International format telephone number", example = "+49123456789")
+		private String telephone;
 		@Schema(description = "Flag indicating if the email/account is verified", example = "true")
 		private Boolean isVerified;
 		@Schema(description = "Unix timestamp of when the account was verified", example = "1714300000")
@@ -124,6 +127,7 @@ public class CustomerDto {
 		private String salutation;
 		private String companyName;
 		private String mobileNumber;
+		private String telephone;
 		private Boolean isVerified;
 		private BigInteger verifiedOn;
 		private BigInteger joinedOn;
@@ -149,6 +153,7 @@ public class CustomerDto {
 		private String salutation;
 		private String companyName;
 		private String mobileNumber;
+		private String telephone;
 		private Boolean isVerified;
 		private BigInteger verifiedOn;
 		private BigInteger joinedOn;
@@ -175,6 +180,7 @@ public class CustomerDto {
 		private String salutation;
 		private String companyName;
 		private String mobileNumber;
+		private String telephone;
 		private Boolean isVerified;
 		private BigInteger verifiedOn;
 		private BigInteger joinedOn;
@@ -227,6 +233,7 @@ public class CustomerDto {
 		private String salutation;
 		private String companyName;
 		private String mobileNumber;
+		private String telephone;
 		private BigInteger joinedOn;
 		private List<CustomerDeliveryProfileDetail> deliveryDetails;
 		private List<CustomerAddressDto> address;
@@ -246,7 +253,7 @@ public class CustomerDto {
 				.firstName(customer.getFirstName()).lastName(customer.getLastName())
 				.salutation(customer.getSalutation()).title(customer.getTitle()).userType(customer.getUserType())
 				.isNotificationEnabled(customer.getIsNotificationEnabled()).companyName(customer.getCompanyName())
-				.mobileNumber(customer.getMobileNumber()).status(customer.getStatus())
+				.mobileNumber(customer.getMobileNumber()).telephone(customer.getTelephone()).status(customer.getStatus())
 				.isVerified(customer.getIsVerified()).joinedOn(customer.getJoinedOn())
 				.isAcknowledged(customer.getIsAcknowledged())
 				.address(CustomerAddressRes.builder().zip(customer.getZip()).city(customer.getCity())
@@ -261,7 +268,7 @@ public class CustomerDto {
 				.firstName(customer.getFirstName()).lastName(customer.getLastName())
 				.salutation(customer.getSalutation()).title(customer.getTitle()).userType(customer.getUserType())
 				.isNotificationEnabled(customer.getIsNotificationEnabled()).companyName(customer.getCompanyName())
-				.mobileNumber(customer.getMobileNumber()).status(customer.getStatus())
+				.mobileNumber(customer.getMobileNumber()).telephone(customer.getTelephone()).status(customer.getStatus())
 				.isVerified(customer.getIsVerified()).joinedOn(customer.getJoinedOn())
 				.isAcknowledged(customer.getIsAcknowledged())
 				.address(CustomerAddressRes.builder().zip(customer.getZip()).city(customer.getCity())
@@ -274,7 +281,7 @@ public class CustomerDto {
 				.firstName(customer.getFirstName()).lastName(customer.getLastName())
 				.salutation(customer.getSalutation()).title(customer.getTitle()).userType(customer.getUserType())
 				.isNotificationEnabled(customer.getIsNotificationEnabled()).companyName(customer.getCompanyName())
-				.mobileNumber(customer.getMobileNumber()).status(customer.getStatus())
+				.mobileNumber(customer.getMobileNumber()).telephone(customer.getTelephone()).status(customer.getStatus())
 				.isVerified(customer.getIsVerified()).joinedOn(customer.getJoinedOn())
 				.isAcknowledged(customer.getIsAcknowledged())
 				.address(CustomerAddressRes.builder().zip(customer.getZip()).city(customer.getCity())
@@ -290,7 +297,7 @@ public class CustomerDto {
 		return AdminCustomerResponse.builder().id(customer.getCustomerId()).email(customer.getEmail())
 				.firstName(customer.getFirstName()).lastName(customer.getLastName())
 				.salutation(customer.getSalutation()).title(customer.getTitle()).userType(customer.getUserType())
-				.companyName(customer.getCompanyName()).mobileNumber(customer.getMobileNumber())
+				.companyName(customer.getCompanyName()).mobileNumber(customer.getMobileNumber()).telephone(customer.getTelephone())
 				.lexofficeNumber(customer.getLexofficeNumber()).status(customer.getStatus())
 				.isVerified(customer.getIsVerified()).verifiedOn(customer.getVerifiedOn())
 				.joinedOn(customer.getJoinedOn()).isAcknowledged(customer.getIsAcknowledged())

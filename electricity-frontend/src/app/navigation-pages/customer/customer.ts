@@ -22,7 +22,7 @@ import { ActivatedRoute } from '@angular/router';
 import { Router } from '@angular/router';
 import { NeedSupport } from '../../layout/need-support/need-support';
 
-const API_BASE = 'http://192.168.0.155:8080';
+const API_BASE = 'http://localhost:8080';
 interface Card {
   logo: string;
   title: string;
@@ -186,6 +186,15 @@ export class Customer {
     }
     this.cdr.detectChanges();
   }
+
+  rerquestInvoice(item?: any) {
+    this.nextStep(4);
+    if (item) {
+      this.selectedMeter = item;
+    }
+    this.cdr.detectChanges();
+  }
+
   showLogoutModal: boolean = false;
 
   openLogoutModal() {
@@ -276,6 +285,7 @@ export class Customer {
           email: data.email || '',
           phone: data.mobileNumber || '',
           phoneNumber: data.mobileNumber || '', // ← add
+          telephone: data.telephone || '',
           dateOfBirth: data.dateOfBirth || '', // ← add (adjust field name to match your API)
           emailVerified: data.isVerified || false, // ← add (map from whatever API field)
           salutation: data.salutation || '',
@@ -433,83 +443,7 @@ export class Customer {
     },
   ];
 
-  electricityList = [
-    {
-      type: 'electricity',
-      status: 'Vertrag aktiv',
-
-      meterIcon: 'assets/icons/Icons_energyprovider/eon.png',
-
-      providerIcon: 'assets/icons/65bd2fa8-bd0e-497e-a781-a3c434fe6176_Stromvergleich.png',
-
-      providerType: 'Strom | Hausstrom',
-
-      tariff: 'E.ON ÖkoStrom Extra 12',
-
-      contractNumber: '0215/123456789',
-      customerNumber: '2026-1234567890',
-
-      minimumTerm: '12 Monate',
-      orderDate: '05.04.2025',
-
-      contractStart: '28.12.2025',
-      noticePeriod: '27.12.2026',
-      contractEnd: '27.12.2026',
-
-      workPrice: '26,80 Ct./kWh',
-      basePrice: '14,90 €/Monat',
-      monthlyPrice: '68,40 €',
-
-      meterNumber: 'MHD-OZR-1325-79-45943268',
-      marketLocation: 'MILD-054321-98674',
-
-      meterName: 'MHD-OZR-1325-79-45943268',
-
-      address: {
-        name: 'Marie Mustermann',
-        street: 'Mustermannstraße 29',
-        city: '12345 Musterhausen',
-      },
-    },
-
-    {
-      type: 'gas',
-      status: 'In Belieferung',
-
-      meterIcon: 'assets/icons/Icons_energyprovider/vattenfall.png',
-
-      providerIcon: 'assets/icons/1a9ebeaf-78b8-48a3-9514-94f57aa1de2c_Gasvergleich.png',
-
-      providerType: 'Gas',
-
-      tariff: 'Easy12 Gas',
-
-      contractNumber: '012455-64564564',
-      customerNumber: '546321456987',
-
-      minimumTerm: '12 Monate',
-      orderDate: '10.03.2025',
-
-      contractStart: '28.03.2025',
-      noticePeriod: '28.03.2026',
-      contractEnd: '28.03.2026',
-
-      workPrice: '11,72 Ct./kWh',
-      basePrice: '21,90 €/Monat',
-      monthlyPrice: '151,40 €',
-
-      meterNumber: 'ZKH-31259147-122',
-      marketLocation: 'MILD-054321-9874563',
-
-      meterName: 'Mustermänstraße 29',
-
-      address: {
-        name: 'Marie Mustermann',
-        street: 'Mustermänstraße 29',
-        city: '12345 Musterhausen',
-      },
-    },
-  ];
+  electricityList: any[] = [];
 
   inactiveMeterList2 = [
     {
@@ -636,7 +570,174 @@ export class Customer {
       },
     },
   ];
+  // =============================
+  // SELECTED METER EDIT
+  // =============================
+  isEditingSelectedMeterName = false;
+  originalSelectedMeterName = '';
 
+  editSelectedMeterName() {
+    this.originalSelectedMeterName = this.selectedMeter?.meterDesignation || '';
+
+    this.isEditingSelectedMeterName = true;
+  }
+
+  saveSelectedMeterName() {
+    this.isEditingSelectedMeterName = false;
+
+    const payload = {
+      connectionId: this.selectedMeter?.id,
+      meterDesignation: this.selectedMeter?.meterDesignation,
+    };
+
+    this.http.post<any>(`${API_BASE}/customer/update-meter-designation`, payload).subscribe({
+      next: (res) => {
+        if (res?.res) {
+          this.isEditingSelectedMeterName = false;
+
+          console.log(res.message);
+          this.cdr.detectChanges();
+        }
+      },
+      error: (err) => {
+        console.error(err);
+      },
+    });
+  }
+
+  cancelSelectedMeterEdit() {
+    this.selectedMeter.meterName = this.originalSelectedMeterName;
+
+    this.isEditingSelectedMeterName = false;
+  }
+
+  // =============================
+  // LIST ITEM METER EDIT
+  // =============================
+
+  editListMeterName(item: any) {
+    item.originalMeterName = item.meterDesignation;
+    item.isEditingMeterName = true;
+  }
+  saveListMeterName(item: any) {
+    const payload = {
+      connectionId: item.id,
+      meterDesignation: item.meterDesignation,
+    };
+
+    this.http.post<any>(`${API_BASE}/customer/update-meter-designation`, payload).subscribe({
+      next: (res) => {
+        if (res?.res) {
+          item.isEditingMeterName = false;
+
+          console.log(res.message);
+          this.cdr.detectChanges();
+        }
+      },
+      error: (err) => {
+        console.error(err);
+      },
+    });
+  }
+  $itemAny(item: any): any {
+    return item;
+  }
+  cancelListMeterEdit(item: any) {
+    item.meterName = item.originalMeterName;
+    item.isEditingMeterName = false;
+  }
+
+  // Report meter reading
+
+  // component.ts
+
+  meterReadingCategory: string = '';
+  meterReadingDate: string = '';
+  meterReadingValue: string = '';
+
+  rredirectPhotoUpload() {
+    this.redirect = 4;
+  }
+
+  selectedFiles: File[] = [];
+  onFileSelected(event: any) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    this.selectedFiles.push(file);
+
+    // ✅ MOVE TO STEP 3 AFTER FIRST FILE SELECT
+    if (this.currentStep !== 3) {
+      this.currentStep = 3;
+    }
+    this.cdr.detectChanges();
+  }
+  getPreview(file: File): string {
+    return URL.createObjectURL(file);
+  }
+  removeImage(index: number) {
+    this.selectedFiles.splice(index, 1);
+  }
+  submitMeterReading() {
+    const formData = new FormData();
+
+    // meter details
+    formData.append('category', this.meterReadingCategory);
+    formData.append('readingDate', this.meterReadingDate);
+    formData.append('meterReading', this.meterReadingValue);
+
+    formData.append('contractNumber', this.selectedMeter?.contractNumber || '');
+    formData.append('meterNumber', this.selectedMeter?.meterNumber || '');
+
+    // ✅ ALL IMAGES IN ONE REQUEST
+    this.selectedFiles.forEach((file, index) => {
+      formData.append('files', file); // backend should support multiple "files"
+    });
+
+    this.http.post('YOUR_FINAL_API_URL_HERE', formData).subscribe({
+      next: (res: any) => {
+        console.log('Final submit success', res);
+
+        // redirect after success
+        this.redirect = 4;
+      },
+
+      error: (err) => {
+        console.error('Final submit error', err);
+
+        // TEST MODE → still redirect
+        this.redirect = 4;
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  // Request Invoice
+  invoiceCategory: string = '';
+  invoiceMessage: string = '';
+
+  submitInvoiceRequest() {
+    const payload = {
+      customerId: Number(this.authService.getUserId()),
+      connectionId: this.selectedMeter?.id,
+      invoiceCategory: this.invoiceCategory,
+      orderId: this.selectedMeter?.order.orderId,
+      message: this.invoiceMessage,
+    };
+
+    this.http.post<any>(`${API_BASE}/customer/submit-invoice-request`, payload).subscribe({
+      next: (res) => {
+        if (res?.res) {
+          this.invoiceCategory = '';
+          this.invoiceMessage = '';
+        }
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.log(err);
+      },
+    });
+  }
   /*── Meter Section end ──*/
   /* ════════════════════════════════════════════════════════════════════════════════════════════════*/
   /*── Reminder Section Start ──*/
@@ -713,43 +814,6 @@ export class Customer {
       },
     });
   }
-
-  // contracts = [
-  //   {
-  //     logo: 'assets/icons/Icons_energyprovider/eon.png',
-  //     title: 'E.ON ÖkoStrom Extra 12',
-  //     icon: 'assets/icons/65bd2fa8-bd0e-497e-a781-a3c434fe6176_Stromvergleich.png',
-  //     type: 'Strom | Hausstrom',
-  //     meter: 'ZKH-31259147-122',
-  //     name: 'Marie Mustermann',
-  //     address: 'Musterstraße 29, 12345 Musterhausen',
-  //     contractNumber: '0215/123456789',
-  //     duration: '12 Monate',
-  //     startDate: '19.04.2025',
-  //     renewal: '19.04.2026',
-  //     price: '26,80 Ct./kWh',
-  //     basePrice: '14,90 €/Monat',
-  //     monthly: '68,40 €',
-  //     cancelDate: '18.04.2026',
-  //   },
-  //   {
-  //     logo: 'assets/icons/Icons_energyprovider/vattenfall.png',
-  //     title: 'Easy12 Gas',
-  //     icon: 'assets/icons/1a9ebeaf-78b8-48a3-9514-94f57aa1de2c_Gasvergleich.png',
-  //     type: 'Gas',
-  //     meter: 'ZKH-31259147-122',
-  //     name: 'Marie Mustermann',
-  //     address: 'Musterstraße 29, 12345 Musterhausen',
-  //     contractNumber: '012455-64564564k1245',
-  //     duration: '12 Monate',
-  //     startDate: '28.03.2025',
-  //     renewal: '28.03.2026',
-  //     price: '11,72 Ct./kWh',
-  //     basePrice: '21,90 €/Monat',
-  //     monthly: '151,40 €',
-  //     cancelDate: '27.04.2026',
-  //   },
-  // ];
 
   groupedContracts: any[] = [];
   private fetchDeliveryByAddress(): void {
@@ -1507,7 +1571,7 @@ export class Customer {
         // dynamic electricity list
         this.electricityList = res.delivery
           .filter((item: any) => item?.order?.orderId)
-          .map((item: any) => {
+          .map((item: any): any => {
             const address = item?.customerAddress;
             const provider = item?.provider;
             const connection = item?.connection;
@@ -1518,6 +1582,8 @@ export class Customer {
               type: provider?.branch === 'gas' ? 'gas' : 'electricity',
 
               status: order?.orderId ? 'Vertrag aktiv' : 'In Bearbeitung',
+
+              order: order,
 
               meterIcon: provider?.providerSVG || 'assets/default.png',
 
@@ -1555,10 +1621,20 @@ export class Customer {
 
               meterNumber: connection?.meterNumber || '-',
 
+              meterDesignation: connection?.meterDesignation || connection?.meterNumber || '-',
+
               marketLocation: connection?.marketLocationId || '-',
 
               // Meter designation same as meter number
               meterName: connection?.meterNumber || '-',
+              id: connection?.id || '',
+              isEditingMeterName: false,
+              originalMeterName: '',
+
+              street: address?.street || '',
+              houseNumber: address?.houseNumber || '',
+              zip: address?.zip || '',
+              city: address?.city || '',
 
               address: {
                 name: `${customer?.firstName || ''} ${customer?.lastName || ''}`.trim(),
@@ -2327,21 +2403,30 @@ export class Customer {
   validateContactForm(): boolean {
     this.contactFieldErrors = {};
 
+    const errors: any = {};
     if (!this.customerData.salutation?.trim()) {
-      this.contactFieldErrors['salutation'] = 'Bitte Anrede auswählen';
+      errors['salutation'] = 'Bitte Anrede auswählen';
     }
 
     if (!this.customerData.firstName?.trim()) {
-      this.contactFieldErrors['firstName'] = 'Vorname ist erforderlich';
+      errors['firstName'] = 'Vorname ist erforderlich';
     }
 
     if (!this.customerData.lastName?.trim()) {
-      this.contactFieldErrors['lastName'] = 'Nachname ist erforderlich';
+      errors['lastName'] = 'Nachname ist erforderlich';
     }
 
     if (this.customerType === 'BUSINESS' && !this.customerData.companyName?.trim()) {
-      this.contactFieldErrors['companyName'] = 'Firmenname ist erforderlich';
+      errors['companyName'] = 'Firmenname ist erforderlich';
     }
+
+    const mobile = (this.customerData.phoneNumber || '').replace(/\s/g, '');
+
+    if (!mobile) {
+      errors['mobileNumber'] = 'Handynummer ist erforderlich.';
+    }
+
+    this.contactFieldErrors = errors;
 
     return Object.keys(this.contactFieldErrors).length === 0;
   }
@@ -2357,6 +2442,7 @@ export class Customer {
       lastName: this.customerData.lastName,
       companyName: this.customerData.companyName,
       mobileNumber: this.customerData.phoneNumber,
+      telephone: this.customerData.telephone,
       adminId: 1,
     };
 
