@@ -1,6 +1,7 @@
 package com.tarifvergleich.electricity.service.customer;
 
 import java.math.BigInteger;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -20,6 +21,7 @@ import com.tarifvergleich.electricity.dto.CustomerDeliveryResponseDto.CustomerDe
 import com.tarifvergleich.electricity.dto.CustomerDto;
 import com.tarifvergleich.electricity.dto.CustomerDto.CustomerInfoForProfile;
 import com.tarifvergleich.electricity.dto.CustomerDto.CustomerShortDetail;
+import com.tarifvergleich.electricity.dto.CustomerInvoiceRequestDto;
 import com.tarifvergleich.electricity.dto.CustomerServiceRequestDto;
 import com.tarifvergleich.electricity.dto.CustomerServiceRequestDto.CustomerServiceRequestResDtoForListing;
 import com.tarifvergleich.electricity.dto.CustomerServiceRequestDto.CustomerServiceRequestResDtoForMessages;
@@ -35,6 +37,7 @@ import com.tarifvergleich.electricity.model.CustomerAddress;
 import com.tarifvergleich.electricity.model.CustomerAttorny;
 import com.tarifvergleich.electricity.model.CustomerContractSignature;
 import com.tarifvergleich.electricity.model.CustomerDelivery;
+import com.tarifvergleich.electricity.model.CustomerInvoiceRequest;
 import com.tarifvergleich.electricity.model.CustomerOrder;
 import com.tarifvergleich.electricity.model.CustomerServiceRequest;
 import com.tarifvergleich.electricity.model.CustomerServiceRequestMessages;
@@ -52,7 +55,7 @@ import com.tarifvergleich.electricity.service.AesEncryptionService;
 import com.tarifvergleich.electricity.util.EmailTemplate;
 import com.tarifvergleich.electricity.util.FileServiceCustomer;
 import com.tarifvergleich.electricity.util.Helper;
-
+import com.tarifvergleich.electricity.repository.CustomerInvoiceRequestRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
@@ -73,6 +76,8 @@ public class CustomerDetailService {
 	private final CustomerOrderRepository customerOrderRepo;
 	private final AesEncryptionService aesEncryptionService;
 	private final TokenManagementRespository contractTokenRespo;
+	private final CustomerInvoiceRequestRepository invoiceRepo;
+
 
 	public Map<String, Object> getCustomerDetails(Integer customerId) {
 
@@ -705,4 +710,25 @@ public class CustomerDetailService {
 		return Map.of("res", true, "data", resp);
 	}
 
+	public Map<String, Object> submitInvoiceRequest(
+	        CustomerInvoiceRequestDto dto
+	) {
+
+	    CustomerInvoiceRequest request =
+	            CustomerInvoiceRequest.builder()
+	            .customerId(dto.getCustomerId())
+	            .connectionId(dto.getConnectionId())
+	            .invoiceCategory(dto.getInvoiceCategory())
+	            .orderId(dto.getOrderId())
+	            .message(dto.getMessage())
+	            .createdAt(LocalDateTime.now())
+	            .build();
+
+	    invoiceRepo.save(request);
+
+	    return Map.of(
+	            "res", true,
+	            "message", "Invoice request submitted successfully"
+	    );
+	}
 }

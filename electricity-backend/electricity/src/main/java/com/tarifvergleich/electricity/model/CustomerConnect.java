@@ -43,6 +43,9 @@ public class CustomerConnect {
 	
 	@Column(name = "meter_number")
 	private String meterNumber;
+
+	@Column(name = "meter_designation")
+	private String meterDesignation;
 	
 	@Column(name = "current_provider")
 	private String currentProvider;

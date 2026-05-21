@@ -68,6 +68,9 @@ public class Customer {
 
 	@Column(name = "mobile_number")
 	private String mobileNumber;
+	
+	@Column(name = "telephone_number")
+	private String telephone;
 
 	private String zip;
 

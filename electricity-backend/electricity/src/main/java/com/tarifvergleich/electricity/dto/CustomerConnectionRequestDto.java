@@ -31,6 +31,8 @@ public class CustomerConnectionRequestDto {
 
     private String meterNumber;
 
+    private String meterDesignation;
+
     private Integer adminId;
 
     private Integer deliveryId;
@@ -80,6 +82,7 @@ public class CustomerConnectionRequestDto {
         private BigInteger moveInDate;
         private Boolean submitLater;
         private String meterNumber;
+        private String meterDesignation; 
         private String marketLocationId;
         private String currentProvider;
         private Boolean autoCancellation;
@@ -97,7 +100,7 @@ public class CustomerConnectionRequestDto {
 
         return CustomerConnectionResponse.builder().id(connect.getId()).isMovingIn(connect.getIsMovingIn())
                 .moveInDate(connect.getMoveInDate()).submitLater(connect.getSubmitLater())
-                .meterNumber(connect.getMeterNumber()).marketLocationId(connect.getMarketLocationId())
+                .meterNumber(connect.getMeterNumber()).meterDesignation(connect.getMeterDesignation()).marketLocationId(connect.getMarketLocationId())
                 .currentProvider(connect.getCurrentProvider()).autoCancellation(connect.getAutoCancellation())
                 .alreadyCancelled(connect.getAlreadyCancelled()).selfCancellation(connect.getSelfCancellation())
                 .customerNumber(connect.getCustomerNumber())
