@@ -3,6 +3,8 @@ import { CommonModule, DatePipe, UpperCasePipe } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { ApiService } from "../../../shared/services/api.service";
 import { AuthService } from "../../../shared/services/auth.service";
+import { ActivatedRoute } from "@angular/router";
+import { HttpClient } from "@angular/common/http";
 
 export interface ChatMessage {
   message: string;
@@ -122,10 +124,17 @@ export class CustomerQueriesComponent implements OnInit {
   constructor(
     private api: ApiService,
     private authService: AuthService,
+    private route: ActivatedRoute,
+    private http: HttpClient
   ) {}
 
   ngOnInit(): void {
-    this.fetchRequests(1);
+    this.route.queryParams.subscribe(params => {
+      if (params['status'] === 'open') {
+        this.selectedTab = 'open';
+      }
+      this.fetchRequests(1);
+    });
   }
 
   // ── Dropdown filter ───────────────────────────────────────────────────────
@@ -159,7 +168,7 @@ export class CustomerQueriesComponent implements OnInit {
       size: this.PAGE_SIZE,
     };
 
-    this.api.post("admin/fetch-service-requests", payload).subscribe({
+    this.http.post("http://localhost:8080/admin/fetch-service-requests", payload).subscribe({
       next: (res: any) => {
         this.isLoading = false;
         const data = res?.data;
@@ -225,7 +234,7 @@ export class CustomerQueriesComponent implements OnInit {
       serviceRequestId: request.serviceRequestId,
     };
 
-    this.api.post("admin/close-service-request", payload).subscribe({
+    this.http.post("http://localhost:8080/admin/close-service-request", payload).subscribe({
       // next: () => {
       //   this.closingId = null;
       //   request.isClosed = true;
@@ -254,6 +263,7 @@ export class CustomerQueriesComponent implements OnInit {
         }
 
         this.fetchRequests(this.currentPage);
+        this.api.refreshPendingQueriesCount$.next();
       },
       error: () => {
         this.closingId = null;
@@ -325,7 +335,7 @@ export class CustomerQueriesComponent implements OnInit {
       message: text.trim(),
     };
 
-    this.api.post("admin/add-service-request-response", payload).subscribe({
+    this.http.post("http://localhost:8080/admin/add-service-request-response", payload).subscribe({
       next: () => {
         const newMsg: ChatMessage = {
           message: text.trim(),
@@ -335,6 +345,7 @@ export class CustomerQueriesComponent implements OnInit {
         this.chatMessages = [...this.chatMessages, newMsg];
         this.replyMessage = "";
         this.isSendingReply = false;
+        this.api.refreshPendingQueriesCount$.next();
       },
       error: () => {
         this.isSendingReply = false;

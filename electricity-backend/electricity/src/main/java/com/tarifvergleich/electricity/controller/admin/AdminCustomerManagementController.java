@@ -96,6 +96,11 @@ public class AdminCustomerManagementController {
                 .closeCustomerServiceRequest(serviceRequestDto.getAdminId(), serviceRequestDto.getServiceRequestId()));
     }
 
+    @PostMapping("/count-open-service-requests")
+    public ResponseEntity<?> countOpenServiceRequests(@RequestBody CustomerServiceRequestDto serviceRequestDto) {
+        return ResponseEntity.ok(adminCustomerManagementService.countOpenServiceRequests(serviceRequestDto));
+    }
+
     @PostMapping("/update-attorny-status")
     public ResponseEntity<?> updateAttornyStatus(@RequestBody CustomerAttornyDto attornyDto) {
         return ResponseEntity.ok(adminCustomerManagementService.updateAttornyStatus(attornyDto));

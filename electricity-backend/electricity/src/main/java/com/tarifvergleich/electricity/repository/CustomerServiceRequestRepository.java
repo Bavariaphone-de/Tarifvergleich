@@ -15,6 +15,8 @@ public interface CustomerServiceRequestRepository extends JpaRepository<Customer
 
 	Long countByIsOpenAndCustomerCustomerId(Boolean isOpen, Integer customerId);
 
+	Long countByIsOpenAndAdminAdminId(Boolean isOpen, Integer adminId);
+
 	Long countByInProgressAndCustomerCustomerId(Boolean inProgress, Integer customerId);
 
 	Long countByIsClosedAndCustomerCustomerId(Boolean isClosed, Integer customerId);

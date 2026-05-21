@@ -1,8 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { Registration } from "../../layout/registration/registration";
+import { ContentService } from '../../services/content.service';
 
 @Component({
   selector: 'app-car-electricity',
@@ -11,9 +12,19 @@ import { Registration } from "../../layout/registration/registration";
   templateUrl: './car-electricity.html',
   styleUrl: './car-electricity.css',
 })
-export class CarElectricity {
+export class CarElectricity implements OnInit {
 
-  constructor(public dialog: MatDialog) {}
+  constructor(public dialog: MatDialog, private contentService: ContentService) {}
+
+  ngOnInit() {
+    this.contentService.getSidebar().subscribe((sidebar: any[]) => {
+      const item = sidebar.find(s => s.originalFileName === 'Ladestrom.png');
+      if (item) {
+        if (item.savingPriceDetail) this.discountinfo = item.savingPriceDetail;
+        if (item.popupContent2) this.ladestrom = item.popupContent2;
+      }
+    });
+  }
 
   selectedOption: 'ja' | 'nein' = 'ja';
   activeInfo: 'ladestrom' | 'discountinfo' | null = null;

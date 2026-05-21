@@ -53,5 +53,4 @@ public class CustomerPublicController {
 	public ResponseEntity<?> getListOfWorkingDays(@RequestBody ListOfHolidaysDto listOfHolidaysDto) {
 		return ResponseEntity.ok(customerGeneralService.fetchWorkingDays(listOfHolidaysDto.getAdminId()));
 	}
-
 }

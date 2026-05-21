@@ -1,9 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { RouterModule } from '@angular/router';
 import { Registration } from "../../layout/registration/registration";
+import { ContentService } from '../../services/content.service';
 
 
 export interface SingelDoubleMeter {
@@ -37,7 +38,17 @@ export class HeatingElectricity {
 
   currentDialogData: InfoDialogData[] = [];
 
-  constructor(public dialog: MatDialog) {}
+  constructor(public dialog: MatDialog, private contentService: ContentService) {}
+
+  ngOnInit() {
+    this.contentService.getSidebar().subscribe((sidebar: any[]) => {
+      const item = sidebar.find(s => s.originalFileName === 'Warmepumpe.png');
+      if (item) {
+        if (item.savingPriceDetail) this.discountinfo = item.savingPriceDetail;
+        if (item.popupContent2) this.doubletariff = item.popupContent2;
+      }
+    });
+  }
 
   doubletariff = `Ihr Heizstromzähler ist entweder mit einem Zählwerk ausgestattet (Eintarifzähler) oder er besitzt zwei Zählwerke (Doppeltarifzähler).
   Während der Eintarifzähler nur einen Verbrauchswert anzeigt, erfasst der Doppeltarifzähler zwei Verbrauchswerte (HT = Hochtarif, NT = Niedertarif).

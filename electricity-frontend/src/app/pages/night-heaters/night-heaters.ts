@@ -1,8 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { Registration } from "../../layout/registration/registration";
+import { ContentService } from '../../services/content.service';
 
 
 export interface SingelDoubleMeter {
@@ -44,8 +45,23 @@ export class NightHeaters {
   activeInfo: 'eintarif' | 'heizstrom' | null = null;
 
   currentDialogData: InfoDialogData[] = [];
+  getrenntMessungHtml: string = `<p>Der Stromverbrauch von Nachtspeicherheizungen wird in der Regel mit einem eigenen separaten Stromzähler gemessen. Ist dies auch bei Ihnen der Fall,
+  finden Sie in Ihrem Keller zwei Zähler vor: einen für Heizstrom und einen weiteren für den üblichen Haushaltsstrom.</p>
+  <br/>
+  <p>Bei einigen älteren Nachtspeicherheizungen wird Haushaltsstrom und Heizstrom noch gemeinsam gemessen, es gibt also nur einen Stromzähler für beide Arten von Verbräuchen.</p>`;
 
-  constructor(public dialog: MatDialog) {}
+  constructor(public dialog: MatDialog, private contentService: ContentService) {}
+
+  ngOnInit() {
+    this.contentService.getSidebar().subscribe((sidebar: any[]) => {
+      const item = sidebar.find(s => s.originalFileName === 'Nachtspeicherofen.png');
+      if (item) {
+        if (item.savingPriceDetail) this.discountInfo.description = item.savingPriceDetail;
+        if (item.popupContent2) this.getrenntMessungHtml = item.popupContent2;
+        if (item.popupContent3) this.eintarif = item.popupContent3;
+      }
+    });
+  }
 
 
   eintarif = `Ihr Heizstromzähler ist entweder mit einem Zählwerk ausgestattet (Eintarifzähler) oder er besitzt zwei Zählwerke (Doppeltarifzähler).
@@ -135,6 +151,17 @@ export class NightHeaters {
     this.currentDialogData = [
       {
         description: this.discountInfo.description,
+      }
+    ];
+    this.dialog.open(template, { width: '200px', maxWidth: '80vw' });
+  }
+
+  currentDialogText = '';
+
+  openInfo(template: any, text: string) {
+    this.currentDialogData = [
+      {
+        description: text,
       }
     ];
     this.dialog.open(template, { width: '200px', maxWidth: '80vw' });

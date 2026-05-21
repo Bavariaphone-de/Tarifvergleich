@@ -4,6 +4,7 @@ import { ApiService } from "../../../shared/services/api.service";
 import { RouterModule } from "@angular/router";
 import { AuthService } from "../../../shared/services/auth.service";
 import { environment } from "../../../../environments/environment";
+import { HttpClient } from "@angular/common/http";
 
 @Component({
   selector: "app-navigation-menu-list",
@@ -27,6 +28,7 @@ export class NavigationMenuListComponent implements OnInit {
   constructor(
     private api: ApiService,
     private authService: AuthService,
+    private http: HttpClient
   ) {}
 
   ngOnInit() {
@@ -45,10 +47,12 @@ export class NavigationMenuListComponent implements OnInit {
         this.isLoading = false;
         if (res?.res) {
           // Preserve server-side position if available, else use array index
-          this.menus = (res.data || []).map((m: any, i: number) => ({
-            ...m,
-            position: m.position ?? i,
-          }));
+          this.menus = (res.data || [])
+            .map((m: any, i: number) => ({
+              ...m,
+              position: m.order ?? i,
+            }))
+            .sort((a: any, b: any) => a.position - b.position);
         } else {
           this.errorMessage = res?.errorMessage || "Failed to load menus";
         }

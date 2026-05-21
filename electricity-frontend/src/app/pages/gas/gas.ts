@@ -9,6 +9,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { Registration } from '../../layout/registration/registration';
+import { ContentService } from '../../services/content.service';
 import { MatFormFieldModule } from '@angular/material/form-field';
 
 @Component({
@@ -38,15 +39,10 @@ export class Gas implements OnInit {
     private addressService: AddressService,
     private ngZone: NgZone,
     private cdr: ChangeDetectorRef,
+    private contentService: ContentService
   ) {}
 
-  discountinfo = `<p> <strong> So haben wir gerechnet </strong> </p>
-      <p> Wohnort: <i> Dortmund, 44141 </i>
-       Jahresverbrauch: <i> 4.000 kWh </i> </p>
-      <p> Günstigster Tarif: immergrün! Spar Smart FairMax, Kosten im ersten Jahr: 920,84 Euro </p>
-      <p> Grundversorgungstarif: Dortmunder Energie- und Wasserversorgung GmbH Unser Strom.standard, Kosten: 1.828,72 Euro </p>
-      <p><strong>Einsparung: 907,88 Euro</strong> <p>
-      <p>(Stand: 16.02.2026) </p> `;
+  discountinfo: string | null = null;
 
   selectedPersons = 3;
   consumption = 20500;
@@ -55,6 +51,13 @@ export class Gas implements OnInit {
   isStreetLoading = false;
 
   ngOnInit(): void {
+    this.contentService.getSidebar().subscribe((sidebar: any[]) => {
+      const item = sidebar.find(s => s.originalFileName === 'Gasvergleich.png');
+      if (item && item.savingPriceDetail) {
+        this.discountinfo = item.savingPriceDetail;
+      }
+    });
+
     this.addressForm = this.fb.group({
       postalCode: ['', [Validators.required, Validators.pattern(/^\d{5}$/)]],
 

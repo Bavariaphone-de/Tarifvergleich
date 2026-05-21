@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule, ActivatedRoute, NavigationEnd } from '@angular/router';
 import { Sidebar } from '../../layout/sidebar/sidebar';
-import { MatIcon } from '@angular/material/icon';
+
 import { MatNativeDateModule } from '@angular/material/core';
 import { ContactPerson } from '../../layout/contact-person/contact-person';
 import { NeedSupport } from '../../layout/need-support/need-support';
@@ -25,7 +25,7 @@ const API_BASE = 'http://192.168.0.155:8080';
     MatDatepickerModule,
     MatNativeDateModule,
     CommonModule,
-    MatIcon,
+
     FormsModule,
     RouterModule,
   ],
