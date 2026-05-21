@@ -40,6 +40,13 @@ public class AdminStaticContentService {
     public List<AdminStaticContent> getAllContent() {
         return adminStaticContentRepository.findAll(Sort.by(Sort.Direction.DESC, "uploadTime"));
     }
+    
+//    public AdminStaticContent getContentById(Long id) {
+//
+//        return adminStaticContentRepository.findById(id)
+//                .orElseThrow(() ->
+//                        new RuntimeException("Content not found with id: " + id));
+//    }
 
     public AdminStaticContent updateContent(Long id, AdminStaticContent updatedContent, MultipartFile file) throws IOException {
         AdminStaticContent existingContent = adminStaticContentRepository.findById(id)

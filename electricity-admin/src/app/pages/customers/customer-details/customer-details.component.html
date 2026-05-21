@@ -108,8 +108,125 @@
     </div>
     }
 
-    @if (!isLoading && !errorMessage && customer) {
+    @if (isContactHistoryModalOpen && contactHistoryCustomer) {
 
+        <div class="fixed inset-0 z-99999 flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/50" (click)="closeContactHistoryModal()"></div>
+        <div
+            class="relative w-full max-w-lg rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-2xl overflow-hidden">
+
+            <!-- HEADER -->
+            <div
+            class="flex items-start justify-between px-5 py-4 border-b border-gray-200 dark:border-gray-700">
+            <div>
+                <h3 class="text-base font-semibold text-gray-900 dark:text-white">Kontaktverlauf</h3>
+                
+                <p class="text-xs text-gray-500 mt-0.5">
+                    {{ contactHistoryCustomer.firstName || '—' }}
+                    {{ contactHistoryCustomer.lastName || '—' }}
+                    · #{{ contactHistoryCustomer.uniqueCustomerId ?? contactHistoryCustomer.id }}
+                </p>
+            </div>
+
+            <button
+                (click)="closeContactHistoryModal()"
+                class="ml-3 p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition">
+
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+
+                <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+            </div>
+
+            <!-- BODY -->
+            <div class="px-5 py-4">
+            <label
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Geben Sie eine zusätzliche Notiz ein
+            </label>
+
+            <!-- CHAT SECTION -->
+            <div
+                class="h-52 overflow-y-auto border border-gray-200 
+                dark:border-gray-700 rounded-xl p-3 bg-gray-50 dark:bg-gray-800 space-y-3">
+                @if(currentContactHistory.length === 0) {
+                <p class="text-sm text-gray-400 text-center mt-20">
+                    Keine zusätzlichen Notizen verfügbar
+                </p>
+                }
+
+                @for(history of currentContactHistory; track $index) {
+                <div class="flex justify-end">
+                    <div
+                    class="w-full border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-600 px-4 py-3 shadow-sm">
+
+                    <p class="text-sm text-gray-800 dark:text-white break-words">
+                        {{ history.note }}
+                    </p>
+
+                    <p class="text-[10px] text-gray/70 mt-1 text-right">
+                        {{ formatDate(history.addedOn) }}
+                    </p>
+                    </div>
+                </div>
+                }
+
+            </div>
+
+            <!-- INPUT -->
+            <input
+                type="text"
+                [(ngModel)]="contactHistoryText"
+                placeholder="Geben Sie zusätzliche Notizen für diese Kunden ein..."
+                class="w-full mt-4 rounded-xl border border-gray-300 dark:border-gray-600 
+                bg-white dark:bg-gray-800 text-sm text-gray-800 dark:text-gray-100 px-3 py-2.5 
+                outline-none focus:ring-2 focus:ring-brand-500"
+            />
+
+            <p class="text-[11px] text-gray-400 mt-2">
+                Diese zusätzliche Notiz wird dem ausgewählten Kundenprofil zugeordnet.
+            </p>
+
+            </div>
+
+            <!-- FOOTER -->
+            <div class="flex items-center justify-end gap-2 px-5 py-4 
+            bg-gray-50 dark:bg-gray-800/60 border-t border-gray-200 dark:border-gray-700">
+
+            <button
+                (click)="closeContactHistoryModal()"
+                class="px-3.5 py-2 rounded-lg text-sm font-medium border 
+                border-gray-300 dark:border-gray-600 text-gray-600 dark:
+                text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition">
+                Abbrechen </button>
+
+            <button
+                (click)="saveContactHistory()"
+                [disabled]="isSavingContactHistory || !contactHistoryText.trim()"
+                class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-medium bg-brand-500 hover:bg-brand-600 text-white disabled:opacity-60 disabled:cursor-not-allowed transition">
+
+                @if (isSavingContactHistory) {
+                <div
+                    class="animate-spin rounded-full h-3.5 w-3.5 border-b-2 border-white">
+                </div>
+
+                <span>Speichert...</span>
+                } @else {
+                <span>Zusätzliche Notizen speichern</span>
+
+                }
+            </button>
+            </div>
+        </div>
+        </div>
+        }
+
+    @if (!isLoading && !errorMessage && customer) {
     <div class="max-w-6xl mx-auto space-y-6">
 
         <!-- Top Header -->
@@ -147,7 +264,7 @@
 
                 <!-- CONTACT NOTIZ BUTTON -->
                 <button
-                    (click)="openNoteModal(customer)"
+                    (click)="openContactHistoryModal(customer)"
                     class="px-5 py-2 rounded-lg border border-blue-350
                     bg-blue-200 text-blue-800 text-sm font-medium hover:bg-blue-300 transition">
                     Kontaktverlauf
@@ -445,7 +562,7 @@
             </div>
 
             <!-- Password History -->
-            <div class="bg-white dark:bg-gray-900 rounded-2xl shadow p-6 space-y-4">
+            <div class="bg-white h-92 dark:bg-gray-900 rounded-2xl shadow p-6 space-y-4">
 
                 <h2
                     class="text-sm font-semibold uppercase tracking-wider text-gray-400">
@@ -479,6 +596,46 @@
 
                 <div class="rounded-xl bg-gray-50 px-4 py-3 text-xs text-gray-400 italic">
                     Keine Passwort Historie vorhanden.
+                </div>
+
+                }
+
+            </div>
+
+            <!-- Contact-History -->
+            <div
+
+                class="bg-white h-92 dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 p-6">
+                <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-200 uppercase mb-5">
+                KONTAKTVERLAUF
+                </h3>
+
+                @if (currentContactHistory.length > 0) {
+
+                <div class="space-y-3 max-h-96 overflow-y-auto pr-2">
+
+                    @for ( history of currentContactHistory; track $index) {
+
+                    <div
+                        class="border border-gray-200 dark:border-gray-700 rounded-xl p-3 bg-gray-50 dark:bg-gray-800">
+
+                        <p class="text-sm text-gray-700 dark:text-gray-200">
+                        {{ history.note }}
+                        </p>
+
+                        <p class="text-xs text-gray-400 mt-2">
+                        {{ formatDate(history.addedOn) }}
+                        </p>
+
+                    </div>
+                    }
+
+                </div>
+
+                } @else {
+
+                <div class="text-sm text-gray-400 italic">
+                    Keine Kontakthistorie vorhanden
                 </div>
 
                 }

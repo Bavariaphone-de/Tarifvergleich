@@ -21,6 +21,7 @@ import com.tarifvergleich.electricity.dto.CustomerComparingEnergyDto;
 import com.tarifvergleich.electricity.dto.CustomerDeliveryDto;
 import com.tarifvergleich.electricity.dto.CustomerDeliveryResponseDto;
 import com.tarifvergleich.electricity.dto.CustomerDeliveryResponseDto.CustomerDeliveryResponseAll;
+import com.tarifvergleich.electricity.dto.CustomerDetailsContactHistoryDto;
 import com.tarifvergleich.electricity.dto.CustomerDto;
 import com.tarifvergleich.electricity.dto.CustomerDto.AdminCustomerResponse;
 import com.tarifvergleich.electricity.dto.CustomerDto.SingleCustomerResponseDeliveryForAdmin;
@@ -35,12 +36,14 @@ import com.tarifvergleich.electricity.model.Customer;
 import com.tarifvergleich.electricity.model.CustomerAttorny;
 import com.tarifvergleich.electricity.model.CustomerComparingEnergy;
 import com.tarifvergleich.electricity.model.CustomerDelivery;
+import com.tarifvergleich.electricity.model.CustomerDetailsContactHistory;
 import com.tarifvergleich.electricity.model.CustomerNote;
 import com.tarifvergleich.electricity.model.CustomerServiceRequest;
 import com.tarifvergleich.electricity.model.CustomerServiceRequestMessages;
 import com.tarifvergleich.electricity.repository.CustomerAttornyRepository;
 import com.tarifvergleich.electricity.repository.CustomerComparingEnergyRepository;
 import com.tarifvergleich.electricity.repository.CustomerDeliveryRepository;
+import com.tarifvergleich.electricity.repository.CustomerDetailsContactHistoryRepository;
 import com.tarifvergleich.electricity.repository.CustomerRepository;
 import com.tarifvergleich.electricity.repository.CustomerServiceRequestRepository;
 import com.tarifvergleich.electricity.service.customer.CustomerAuthService;
@@ -63,6 +66,7 @@ public class AdminCustomerManagementService {
 	private final EmailTemplate emailTemplate;
 	private final CustomerAuthService customerAuthService;
 	private final ObjectMapper objectMapper;
+	private final CustomerDetailsContactHistoryRepository customerDetailsContactHistoryRepo;
 
 	public Map<String, Object> getCustomers(CustomerDto customerReq) {
 
@@ -500,6 +504,27 @@ public class AdminCustomerManagementService {
 		customer.addCustomerNote(note);
 		customerRepo.save(customer);
 		return Map.of("res", true, "message", "Note added successfully");
+	}
+	
+	@Transactional
+	public Map<String, Object> addCustomerContactHistoryByAdmin(CustomerDetailsContactHistoryDto historyDto) {
+	    if (historyDto == null)
+	        throw new InternalServerException("All required data missing", HttpStatus.OK);
+	    if (historyDto.getAdminId() == null || historyDto.getAdminId() <= 0)
+	        throw new InternalServerException("Admin id missing", HttpStatus.OK);
+	    if (historyDto.getCustomerId() == null || historyDto.getCustomerId() <= 0)
+	        throw new InternalServerException("Customer id missing", HttpStatus.OK);
+
+	    Customer customer = customerRepo.findByCustomerIdAndAdminAdminId(historyDto.getCustomerId(), historyDto.getAdminId())
+	            .orElseThrow(
+	            		() -> new InternalServerException("Customer not found with this credential", HttpStatus.OK));
+
+	    CustomerDetailsContactHistory history = CustomerDetailsContactHistory.builder().note(historyDto.getNote())
+	    		.customer(customer).build();
+	    
+	    history.setCustomer(customer);
+	    customerDetailsContactHistoryRepo.save(history);
+	    return Map.of("res", true,"message", "Contact history added successfully");
 	}
 
 	@Transactional

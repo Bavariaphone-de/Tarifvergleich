@@ -68,4 +68,5 @@ public class AdminStaticContentController {
         response.put("message", "Content successfully deleted");
         return ResponseEntity.ok(response);
     }
+    
 }
