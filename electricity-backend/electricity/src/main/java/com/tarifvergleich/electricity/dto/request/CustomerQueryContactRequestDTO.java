@@ -20,4 +20,5 @@ public class CustomerQueryContactRequestDTO {
     private String inquiry;
     private Integer customerId;
     public Integer adminId;
+    private String recaptchaToken;
 }

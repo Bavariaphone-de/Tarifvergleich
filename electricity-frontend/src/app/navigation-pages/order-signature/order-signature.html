@@ -171,12 +171,7 @@
             <div class="step" [class.active]="isActiveStep(1)">
               <div class="step-circle" style="cursor: pointer" (click)="navigateToMainStep(1)">
                 <div class="inner-circle">
-                  <svg
-                    *ngIf="currentStep > 1"
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    class="icon-tick"
-                  >
+                  <svg *ngIf="currentStep > 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="icon-tick">
                     <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
                   </svg>
 
@@ -191,12 +186,7 @@
             <div class="step" [class.active]="isActiveStep(2)">
               <div class="step-circle" style="cursor: pointer" (click)="navigateToMainStep(2)">
                 <div class="inner-circle">
-                  <svg
-                    *ngIf="currentStep > 2"
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    class="icon-tick"
-                  >
+                  <svg *ngIf="currentStep > 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="icon-tick">
                     <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
                   </svg>
 
@@ -211,12 +201,7 @@
             <div class="step" [class.active]="isActiveStep(3)">
               <div class="step-circle" style="cursor: pointer" (click)="navigateToMainStep(3)">
                 <div class="inner-circle">
-                  <svg
-                    *ngIf="currentStep > 3"
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    class="icon-tick"
-                  >
+                  <svg *ngIf="currentStep > 3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="icon-tick">
                     <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
                   </svg>
 
@@ -231,12 +216,7 @@
             <div class="step" [class.active]="isActiveStep(4)">
               <div class="step-circle" style="cursor: pointer" (click)="navigateToMainStep(4)">
                 <div class="inner-circle">
-                  <svg
-                    *ngIf="currentStep > 4"
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    class="icon-tick"
-                  >
+                  <svg *ngIf="currentStep > 4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="icon-tick">
                     <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
                   </svg>
 
@@ -259,17 +239,15 @@
           <span class="value">
             {{ contractDetails?.customer?.salutation }}
             {{ contractDetails?.firstName }}
-            {{ contractDetails?.lastName }}</span
-          >
+            {{ contractDetails?.lastName }}</span>
         </div>
 
         <div class="detail-row no-border">
           <span class="label">Geburtstag</span>
           <span class="value">
             {{
-              contractDetails?.dob ? (contractDetails?.dob * 1000 | date: 'dd.MM.yyyy') : ''
-            }}</span
-          >
+            contractDetails?.dob ? (contractDetails?.dob * 1000 | date: 'dd.MM.yyyy') : ''
+            }}</span>
         </div>
 
         <div class="detail-row no-border">
@@ -309,7 +287,7 @@
 
           <span class="value">
             {{
-              contractDetails?.connection?.autoCancellation ? 'schnellstmöglich' : 'Keine Angabe'
+            contractDetails?.connection?.autoCancellation ? 'schnellstmöglich' : 'Keine Angabe'
             }}
           </span>
         </div>
@@ -414,12 +392,7 @@
             <p class="doc-section-heading">§ 1 Anwendungsbereich, Begriffsbestimmungen</p>
           </div>
           <div class="checkbox-row">
-            <input
-              type="checkbox"
-              id="accept-agb"
-              class="custom-checkbox"
-              [(ngModel)]="acceptAgb"
-            />
+            <input type="checkbox" id="accept-agb" class="custom-checkbox" [(ngModel)]="acceptAgb" />
             <label for="accept-agb" class="checkbox-label">
               Hiermit bestätige ich die AGBs gelesen und verstanden zu haben
             </label>
@@ -451,12 +424,7 @@
             <p class="doc-text-bold">Folgen des Widerrufs:</p>
           </div>
           <div class="checkbox-row">
-            <input
-              type="checkbox"
-              id="accept-widerruf"
-              class="custom-checkbox"
-              [(ngModel)]="acceptWiderruf"
-            />
+            <input type="checkbox" id="accept-widerruf" class="custom-checkbox" [(ngModel)]="acceptWiderruf" />
             <label for="accept-widerruf" class="checkbox-label">
               Hiermit bestätige ich die Widerrufsbelehrung gelesen und verstanden zu haben
             </label>
@@ -512,12 +480,7 @@
             <div class="step" [class.active]="isActiveStep(1)">
               <div class="step-circle" style="cursor: pointer" (click)="navigateToMainStep(1)">
                 <div class="inner-circle">
-                  <svg
-                    *ngIf="currentStep > 1"
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    class="icon-tick"
-                  >
+                  <svg *ngIf="currentStep > 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="icon-tick">
                     <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
                   </svg>
 
@@ -532,12 +495,7 @@
             <div class="step" [class.active]="isActiveStep(2)">
               <div class="step-circle" style="cursor: pointer" (click)="navigateToMainStep(2)">
                 <div class="inner-circle">
-                  <svg
-                    *ngIf="currentStep > 2"
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    class="icon-tick"
-                  >
+                  <svg *ngIf="currentStep > 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="icon-tick">
                     <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
                   </svg>
 
@@ -552,12 +510,7 @@
             <div class="step" [class.active]="isActiveStep(3)">
               <div class="step-circle" style="cursor: pointer" (click)="navigateToMainStep(3)">
                 <div class="inner-circle">
-                  <svg
-                    *ngIf="currentStep > 3"
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    class="icon-tick"
-                  >
+                  <svg *ngIf="currentStep > 3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="icon-tick">
                     <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
                   </svg>
 
@@ -572,12 +525,7 @@
             <div class="step" [class.active]="isActiveStep(4)">
               <div class="step-circle" style="cursor: pointer" (click)="navigateToMainStep(4)">
                 <div class="inner-circle">
-                  <svg
-                    *ngIf="currentStep > 4"
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    class="icon-tick"
-                  >
+                  <svg *ngIf="currentStep > 4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="icon-tick">
                     <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
                   </svg>
 
@@ -680,12 +628,7 @@
             <div class="step" [class.active]="isActiveStep(1)">
               <div class="step-circle" style="cursor: pointer" (click)="navigateToMainStep(1)">
                 <div class="inner-circle">
-                  <svg
-                    *ngIf="currentStep > 1"
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    class="icon-tick"
-                  >
+                  <svg *ngIf="currentStep > 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="icon-tick">
                     <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
                   </svg>
 
@@ -700,12 +643,7 @@
             <div class="step" [class.active]="isActiveStep(2)">
               <div class="step-circle" style="cursor: pointer" (click)="navigateToMainStep(2)">
                 <div class="inner-circle">
-                  <svg
-                    *ngIf="currentStep > 2"
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    class="icon-tick"
-                  >
+                  <svg *ngIf="currentStep > 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="icon-tick">
                     <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
                   </svg>
 
@@ -720,12 +658,7 @@
             <div class="step" [class.active]="isActiveStep(3)">
               <div class="step-circle" style="cursor: pointer" (click)="navigateToMainStep(3)">
                 <div class="inner-circle">
-                  <svg
-                    *ngIf="currentStep > 3"
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    class="icon-tick"
-                  >
+                  <svg *ngIf="currentStep > 3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="icon-tick">
                     <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
                   </svg>
 
@@ -740,12 +673,7 @@
             <div class="step" [class.active]="isActiveStep(4)">
               <div class="step-circle" style="cursor: pointer" (click)="navigateToMainStep(4)">
                 <div class="inner-circle">
-                  <svg
-                    *ngIf="currentStep > 4"
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    class="icon-tick"
-                  >
+                  <svg *ngIf="currentStep > 4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="icon-tick">
                     <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
                   </svg>
 
@@ -835,13 +763,20 @@
             </label>
 
             <div class="signature-container">
-              <canvas #canvas class="signature-canvas"></canvas>
 
-              <div class="signature-actions">
+              <!-- VIEW MODE (admin signature already exists) -->
+              <img *ngIf="adminSignaturePath" [src]="adminSignaturePath" class="signature-canvas"
+                alt="Admin Signature" />
+
+              <!-- EDIT MODE (only if no signature yet or user is allowed to sign) -->
+              <canvas *ngIf="!adminSignaturePath" #canvas class="signature-canvas"></canvas>
+
+              <div class="signature-actions" *ngIf="!adminSignaturePath">
                 <button type="button" class="btn-clear-signature" (click)="clearSignature(0)">
                   Unterschrift löschen
                 </button>
               </div>
+
             </div>
             <div class="error-text" *ngIf="fieldErrors['step3PartnerSignature']">
               {{ fieldErrors['step3PartnerSignature'] }}
@@ -891,12 +826,7 @@
             <div class="step" [class.active]="isActiveStep(1)">
               <div class="step-circle" style="cursor: pointer" (click)="navigateToMainStep(1)">
                 <div class="inner-circle">
-                  <svg
-                    *ngIf="currentStep > 1"
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    class="icon-tick"
-                  >
+                  <svg *ngIf="currentStep > 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="icon-tick">
                     <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
                   </svg>
 
@@ -911,12 +841,7 @@
             <div class="step" [class.active]="isActiveStep(2)">
               <div class="step-circle" style="cursor: pointer" (click)="navigateToMainStep(2)">
                 <div class="inner-circle">
-                  <svg
-                    *ngIf="currentStep > 2"
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    class="icon-tick"
-                  >
+                  <svg *ngIf="currentStep > 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="icon-tick">
                     <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
                   </svg>
 
@@ -931,12 +856,7 @@
             <div class="step" [class.active]="isActiveStep(3)">
               <div class="step-circle" style="cursor: pointer" (click)="navigateToMainStep(3)">
                 <div class="inner-circle">
-                  <svg
-                    *ngIf="currentStep > 3"
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    class="icon-tick"
-                  >
+                  <svg *ngIf="currentStep > 3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="icon-tick">
                     <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
                   </svg>
 
@@ -951,12 +871,7 @@
             <div class="step" [class.active]="isActiveStep(4)">
               <div class="step-circle" style="cursor: pointer" (click)="navigateToMainStep(4)">
                 <div class="inner-circle">
-                  <svg
-                    *ngIf="currentStep > 4"
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    class="icon-tick"
-                  >
+                  <svg *ngIf="currentStep > 4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="icon-tick">
                     <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
                   </svg>
 
@@ -982,48 +897,28 @@
 
         <div class="consent-options-group">
           <div class="checkbox-row alignment-top">
-            <input
-              type="checkbox"
-              id="consent-general"
-              class="custom-checkbox"
-              [(ngModel)]="consentGeneral"
-            />
+            <input type="checkbox" id="consent-general" class="custom-checkbox" [(ngModel)]="consentGeneral" />
             <label for="consent-general" class="checkbox-label">
               Vattenfall Europe Sales darf mich zu Werbezwecken kontaktieren.
             </label>
           </div>
 
           <div class="checkbox-row alignment-top">
-            <input
-              type="checkbox"
-              id="consent-phone"
-              class="custom-checkbox"
-              [(ngModel)]="consentPhone"
-            />
+            <input type="checkbox" id="consent-phone" class="custom-checkbox" [(ngModel)]="consentPhone" />
             <label for="consent-phone" class="checkbox-label">
               Vattenfall Europe Sales darf mich zu Werbezwecken telefonisch kontaktieren.
             </label>
           </div>
 
           <div class="checkbox-row alignment-top">
-            <input
-              type="checkbox"
-              id="consent-mobile"
-              class="custom-checkbox"
-              [(ngModel)]="consentMobile"
-            />
+            <input type="checkbox" id="consent-mobile" class="custom-checkbox" [(ngModel)]="consentMobile" />
             <label for="consent-mobile" class="checkbox-label">
               Vattenfall Europe Sales darf mich zu Werbezwecken Mobil kontaktieren.
             </label>
           </div>
 
           <div class="checkbox-row alignment-top">
-            <input
-              type="checkbox"
-              id="consent-email"
-              class="custom-checkbox"
-              [(ngModel)]="consentEmail"
-            />
+            <input type="checkbox" id="consent-email" class="custom-checkbox" [(ngModel)]="consentEmail" />
             <label for="consent-email" class="checkbox-label">
               Vattenfall Europe Sales darf mich zu Werbezwecken per E-Mail kontaktieren.
             </label>

@@ -25,6 +25,7 @@ import com.tarifvergleich.electricity.dto.CustomerInvoiceRequestDto;
 import com.tarifvergleich.electricity.dto.CustomerPaymentRequestDto;
 import com.tarifvergleich.electricity.dto.CustomerServiceRequestDto;
 import com.tarifvergleich.electricity.dto.CustomerServicesDto;
+import com.tarifvergleich.electricity.dto.ReportMeterReadingDto;
 import com.tarifvergleich.electricity.service.customer.CustomerBookingService;
 import com.tarifvergleich.electricity.service.customer.CustomerDetailService;
 import com.tarifvergleich.electricity.service.customer.CustomerUpdateService;
@@ -222,8 +223,36 @@ public class CustomerController {
 	) {
 
 	    return ResponseEntity.ok(
-	            customerDetailService.submitInvoiceRequest(dto)
+	    		customerMeterService.submitInvoiceRequest(dto)
 	    );
 	}
 
+	@PostMapping(value = "/report-meter-reading")
+	public ResponseEntity<?> reportMeterReading(
+	        @RequestPart("data") String jsonData,
+	        @RequestPart(value = "files", required = false)
+	        MultipartFile[] files) {
+
+	    try {
+
+	        ReportMeterReadingDto dto =
+	                objectMapper.readValue(
+	                        jsonData,
+	                        ReportMeterReadingDto.class);
+
+	        return ResponseEntity.ok(
+	                customerMeterService.reportMeterReading(
+	                        dto,
+	                        files));
+
+	    } catch (Exception e) {
+
+	        e.printStackTrace();
+
+	        return ResponseEntity.ok(
+	                Map.of(
+	                        "res", false,
+	                        "message", e.getMessage()));
+	    }
+	}
 }

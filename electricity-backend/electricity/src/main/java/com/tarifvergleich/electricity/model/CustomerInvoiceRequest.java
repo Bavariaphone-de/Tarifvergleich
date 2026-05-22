@@ -26,11 +26,15 @@ public class CustomerInvoiceRequest {
     private Integer connectionId;
     
     private Integer orderId;
+    
+    private Integer deliveryId;
 
     private String invoiceCategory;
 
     @Column(columnDefinition = "TEXT")
     private String message;
 
+    private Integer status;
+    
     private LocalDateTime createdAt;
 }

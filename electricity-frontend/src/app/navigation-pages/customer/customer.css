@@ -2412,6 +2412,17 @@
 .full-width {
   width: 100%;
 }
+
+.status-badge {
+  display: inline-block;
+  border: 1px solid #ff7a00;
+  color: #ff7a00;
+  padding: 3px 10px;
+  border-radius: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-top: 10px;
+}
 @media (max-width: 768px) {
   .upload-photo-wrapper {
     flex-direction: column;
