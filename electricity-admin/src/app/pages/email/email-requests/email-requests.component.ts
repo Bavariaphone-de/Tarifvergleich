@@ -5,6 +5,8 @@ import { CommonModule } from "@angular/common";
 import { CKEditorModule } from "@ckeditor/ckeditor5-angular";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import { ApiService } from "../../../shared/services/api.service";
+import { ActivatedRoute } from "@angular/router";
+import { Router } from "@angular/router";
 
 @Component({
   selector: "app-email-requests",
@@ -26,11 +28,16 @@ export class EmailRequestsComponent {
   message: string = "";
   isError: boolean = false;
 
+  isEditMode = false;
+  managementId: any;
+
   categories: any[] = [];
 
   constructor(
     private http: HttpClient,
     private api: ApiService,
+    private route: ActivatedRoute,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -42,6 +49,27 @@ export class EmailRequestsComponent {
       });
 
     this.loadPdfs();
+
+    this.managementId = this.route.snapshot.paramMap.get('id');
+
+      if (this.managementId) {
+
+        this.isEditMode = true;
+
+        this.http.get(
+          `http://192.168.0.155:8080/admin/email-management/${this.managementId}`
+        )
+        .subscribe((res: any) => {
+
+          console.log(res);
+
+          this.title = res.title;
+          this.subtitle = res.subtitle;
+          this.emailContent = res.emailContent;
+
+          this.selectedCategory = res.category?.cateId;
+        });
+      }
   }
 
   loadPdfs() {
@@ -105,6 +133,13 @@ export class EmailRequestsComponent {
   }
 
   submitForm() {
+
+    if (this.isEditMode) {
+      this.updateTemplate();
+
+      return;
+    }
+
     if (
       !this.selectedCategory ||
       !this.title.trim() ||
@@ -159,6 +194,48 @@ export class EmailRequestsComponent {
       });
   }
 
+  // FOR EDITING TEMPLATE
+
+  updateTemplate() {
+      const body = {
+        adminId: 1,
+        title: this.title,
+        subtitle: this.subtitle,
+        emailContent: this.emailContent,
+        cateId: this.selectedCategory,
+        pdfIds: Array.from(this.selectedPdfIds),
+      };
+
+      this.http.put(
+        `http://192.168.0.155:8080/admin/email-management/update/${this.managementId}`,
+        body
+      )
+      .subscribe({
+        next: () => {
+
+          this.message = "Successfully Updated";
+          this.isError = false;
+
+          setTimeout(() => {
+            this.message = "";
+          }, 3000);
+
+        },
+        error: (err) => {
+
+          console.log(err);
+
+          this.message = "Update Failed";
+          this.isError = true;
+
+          setTimeout(() => {
+            this.message = "";
+          }, 3000);
+
+        }
+      });
+    }
+
   cancelForm() {
     this.selectedCategory = "";
     this.title = "";
@@ -166,6 +243,8 @@ export class EmailRequestsComponent {
     this.emailContent = "";
     this.selectedPdfIds = new Set();
     this.message = "";
+
+    this.router.navigate(["/email-template-list"]);
   }
 
   copyToClipboard(text: string) {

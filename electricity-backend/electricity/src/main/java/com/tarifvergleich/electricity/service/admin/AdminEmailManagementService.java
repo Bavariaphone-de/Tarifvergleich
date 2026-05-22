@@ -89,7 +89,7 @@ public class AdminEmailManagementService {
 			throw new InternalServerException("Admin id missing", HttpStatus.OK);
 
 		List<AdminEmailManagement> emailManagements = repository.findAllByAdminAdminId(adminId);
-
+		
 		List<AdminEmailResponseDto> emailManagementResponse = emailManagements.stream()
 				.map(AdminEmailRequestDto::mapResponseForAdmin).toList();
 
@@ -99,5 +99,35 @@ public class AdminEmailManagementService {
 	public AdminEmailManagement getById(Long id) {
 
 		return repository.findById(id).orElse(null);
+	}
+	
+	@Transactional
+	public void deleteEmail(Long id) {
+
+	    AdminEmailManagement email = repository.findById(id).orElseThrow(() ->
+	            new InternalServerException( "Email template not found", HttpStatus.OK ));
+	    repository.delete(email);
+	}
+	
+	@Transactional
+	public AdminEmailManagement updateEmail( Long id, AdminEmailRequestDto request) {
+
+	    AdminEmailManagement email = repository.findById(id).orElseThrow(() ->
+	            new InternalServerException("Email template not found", HttpStatus.OK));
+
+	    AdminEmailRequestCategory category = categoryRepository
+	    		.findByCateIdAndAdminAdminId(request.getCateId(), request.getAdminId()).orElseThrow(() ->
+	                new InternalServerException("Category not found",HttpStatus.OK));
+
+	    email.setTitle(request.getTitle());
+	    email.setSubtitle(request.getSubtitle());
+	    email.setEmailContent(request.getEmailContent());
+	    email.setCategory(category);
+
+	    List<ManageAdminDocument> documents =  manageAdminDocumentRepository.findAllById(
+	            request.getPdfIds().stream().map(Long::intValue).toList());
+
+	    email.setDocuments(documents);
+	    return repository.save(email);
 	}
 }

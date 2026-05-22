@@ -1,87 +1,26 @@
 <div class="impressum-page">
   <!-- Banner Image -->
   <div class="banner">
-    <img src="assets/images/imprintBanner.png" alt="Banner" />
+    <img
+      *ngIf="content?.logoPath"
+      [src]="staticContentService.getImageUrl(content?.logoPath)"
+      alt="Banner"
+    />
   </div>
 
   <!-- Title -->
   <div class="page-title">
-    <span>Impressum</span>
+    <span>{{ content?.title }}</span>
   </div>
 
   <!-- Content Box -->
   <div class="impressum-card">
-    <table>
-      <tbody>
-        <tr>
-          <td class="label">Impressum</td>
-          <td class="right">
-            Anbieterkennzeichnung gem. §5 TMG<br /><br />
-
-            Bavariaiphone24 Vertrieb &amp; Service GmbH<br />
-            Bahnhofstraße 19<br />
-            87740 Buxheim
-          </td>
-        </tr>
-
-        <tr>
-          <td class="label">Geschäftsführer:</td>
-          <td class="right">Slobodan-Georg Markovic</td>
-        </tr>
-
-        <tr>
-          <td class="label">Telefon:</td>
-          <td class="right">08331 / 79 640 - 0</td>
-        </tr>
-
-        <tr>
-          <td class="label">E-Mail:</td>
-          <td class="right">info@bavariaiphone.de</td>
-        </tr>
-
-        <tr>
-          <td class="label">Handelsregister:</td>
-          <td class="right">HRB20358</td>
-        </tr>
-
-        <tr>
-          <td class="label">Registergericht:</td>
-          <td class="right">Amtsgericht Memmingen</td>
-        </tr>
-
-        <tr>
-          <td class="label">Umsatzsteuer-Identifikationsnummer (USt-IdNr.):</td>
-          <td class="right">DE338704703</td>
-        </tr>
-
-        <tr>
-          <td class="label">Redaktionell verantwortlich:</td>
-          <td class="right">
-            Slobodan-Georg Markovic, als gesetzlicher Vertreter der Bavariaiphone24 Vertrieb &amp;
-            Service GmbH<br />
-
-            Bahnhofstraße 19<br />
-            87740 Buxheim
-          </td>
-        </tr>
-
-        <tr>
-          <td class="label">Verbraucherschlichtung/Universalschlichtungsstelle:</td>
-          <td class="right">
-            Wir sind weder verpflichtet noch bereit, an einem Streitschlichtungsverfahren
-            teilzunehmen. Die Plattform der EU zur außergerichtlichen Online - Streitbeilegung
-            erreichen Sie unter: https://ec.europa.eu/consumers/odr/.
-          </td>
-        </tr>
-
-        <tr>
-          <td class="label">Bildnachweis:</td>
-          <td class="right">
-            Urheber der Bilder auf dieser Website sind Adobe Stock, Eigene Bilder sowie Bilder von
-            gewerblichen Partnern, welche uns das volle Nutzungsrecht übertragen haben.
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="content-wrapper">
+      <div
+        class="right"
+        [innerHTML]="content?.description">
+      </div>
+    </div>
   </div>
+  
 </div>
