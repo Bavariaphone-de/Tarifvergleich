@@ -11,4 +11,5 @@ import com.tarifvergleich.electricity.model.CustomerOrder;
 public interface CustomerOrderRepository extends JpaRepository<CustomerOrder, Integer> {
 
 	Optional<CustomerOrder> findByIdAndAdminAdminId(Integer id, Integer adminId);
+	Optional<CustomerOrder> findByDeliveryId(Integer deliveryId);
 }
