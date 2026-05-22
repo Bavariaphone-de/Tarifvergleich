@@ -24,7 +24,9 @@ public class AdminAssetDto {
 	private String saving;
 	
 	private String savingDetail;
-	
+	private String popupContent2;
+	private String popupContent3;
+
 	@Data
 	@NoArgsConstructor
 	@AllArgsConstructor

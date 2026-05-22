@@ -45,7 +45,12 @@ export class HeatingElectricity {
       const item = sidebar.find(s => s.originalFileName === 'Warmepumpe.png');
       if (item) {
         if (item.savingPriceDetail) this.discountinfo = item.savingPriceDetail;
-        if (item.popupContent2) this.doubletariff = item.popupContent2;
+        
+        // Connect Admin popupContent2 to the Single/Double Meter popup
+        if (item.popupContent2) {
+          this.singleDoubleMeter.singleDescription = item.popupContent2;
+          this.singleDoubleMeter.doubleDescription = ''; // Hide default second paragraph
+        }
       }
     });
   }

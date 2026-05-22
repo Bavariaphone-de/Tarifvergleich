@@ -42,7 +42,7 @@ export class Gas implements OnInit {
     private contentService: ContentService
   ) {}
 
-  discountinfo: string | null = null;
+  discountinfo: string | null = 'Die mögliche Ersparnis berechnet sich aus dem Vergleich zum örtlichen Grundversorger bei einem durchschnittlichen Verbrauch.';
 
   selectedPersons = 3;
   consumption = 20500;

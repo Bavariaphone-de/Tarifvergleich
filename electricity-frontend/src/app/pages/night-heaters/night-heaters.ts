@@ -57,8 +57,18 @@ export class NightHeaters {
       const item = sidebar.find(s => s.originalFileName === 'Nachtspeicherofen.png');
       if (item) {
         if (item.savingPriceDetail) this.discountInfo.description = item.savingPriceDetail;
-        if (item.popupContent2) this.getrenntMessungHtml = item.popupContent2;
-        if (item.popupContent3) this.eintarif = item.popupContent3;
+        
+        // Connect Admin popupContent2 to the Night Storage popup
+        if (item.popupContent2) {
+          this.nightStorageHeaters.description1 = item.popupContent2;
+          this.nightStorageHeaters.description2 = ''; // Hide default second paragraph
+        }
+        
+        // Connect Admin popupContent3 to the Single/Double Meter popup
+        if (item.popupContent3) {
+          this.singleDoubleMeter.singleDescription = item.popupContent3;
+          this.singleDoubleMeter.doubleDescription = ''; // Hide default second paragraph
+        }
       }
     });
   }

@@ -440,12 +440,12 @@ export class BookingDetailComponent implements OnInit {
           this.fetchBooking(this.booking!.deliveryId ?? 0);
         } else {
           this.createOrderError =
-            res?.message ?? "Unbekannter Fehler beim Erstellen des Auftrags.";
+            res?.errMessage ?? res?.message ?? "Unbekannter Fehler beim Erstellen des Auftrags.";
         }
       },
       error: (err) => {
         this.isCreatingOrder = false;
-        this.createOrderError = "Fehler beim Erstellen des Auftrags.";
+        this.createOrderError = err?.error?.errMessage || "Fehler beim Erstellen des Auftrags.";
         console.error("Create order error:", err);
       },
     });
