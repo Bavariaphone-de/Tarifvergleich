@@ -639,9 +639,9 @@ public class CustomerAuthService {
 		return Map.of("res", true, "message", "Password reset successfully");
 	}
 
-//	@Transactional
-//	public Map<String, Object> sendMail(Integer id) {
-//		Customer customer = customerRepo.findById(id).orElse(null);
+	@Transactional
+	public Map<String, Object> sendMail(Integer id) {
+		Customer customer = customerRepo.findById(id).orElse(null);
 //
 //		String encodedId = Base64.getEncoder().encodeToString(customer.getCustomerId().toString().getBytes());
 //
@@ -653,8 +653,14 @@ public class CustomerAuthService {
 //
 //		eventPublisher.publishEvent(mailRes);
 //		
-////		mailService.sendMail(customer.getEmail(), "Something", mailBody);
-//
-//		return Map.of("res", true);
-//	}
+//		mailService.sendMail(customer.getEmail(), "Something", mailBody);
+
+		AdminEmailManagement emailManagement = adminEmailManagementRepo.findByCategoryCateId(1l).orElse(null);
+		String emailBody = emailManagement.getEmailContent().replace("{OTP}", "123456");
+		ServiceResponseEmailEvent emailContent = new ServiceResponseEmailEvent(customer.getEmail(),
+				emailManagement.getTitle(), emailBody);
+		eventPublisher.publishEvent(emailContent);
+
+		return Map.of("res", true);
+	}
 }

@@ -3,14 +3,18 @@ package com.tarifvergleich.electricity.service;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import com.tarifvergleich.electricity.dto.ServiceRequestEmailEvent;
 import com.tarifvergleich.electricity.dto.ServiceRequestEmailEvent.ServiceAttachmentMailOfAcknowledgement;
 import com.tarifvergleich.electricity.dto.ServiceRequestEmailEvent.ServiceResponseEmailEvent;
+import com.tarifvergleich.electricity.dto.email.VerifyOtpEmail;
 import com.tarifvergleich.electricity.model.ManageAdminDocument;
 import com.tarifvergleich.electricity.repository.ManageAdminDocumentRepository;
 import com.tarifvergleich.electricity.util.CustomEmailTemplate;
@@ -37,7 +41,7 @@ public class ServiceRequestEmailListener {
 	@Async
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
 	public void handleServiceResponseEmail(ServiceResponseEmailEvent event) {
-		String emailContent = customEmailTemplate.generateEmailHtml(event.customerSub(),"", event.customerBody());
+		String emailContent = customEmailTemplate.generateEmailHtml(event.customerSub(), "", event.customerBody());
 		mailService.sendMail(event.customerMail(), event.customerSub(), emailContent);
 	}
 
@@ -51,9 +55,28 @@ public class ServiceRequestEmailListener {
 				.findAllByAdminAdminIdAndDocumentCategoryLike(event.adminId(), "%TERM%CONDITION%");
 
 		List<String> fileUrls = new ArrayList<>();
-		fileUrls.addAll(adminDocPrivacy.stream().map(e -> e.getFilePath()).map(fileServiceSuperAdmin::getAbsolutePath).toList());
-		fileUrls.addAll(adminDocsTerms.stream().map(e -> e.getFilePath()).map(fileServiceSuperAdmin::getAbsolutePath).toList());
-		
+		fileUrls.addAll(adminDocPrivacy.stream().map(e -> e.getFilePath()).map(fileServiceSuperAdmin::getAbsolutePath)
+				.toList());
+		fileUrls.addAll(
+				adminDocsTerms.stream().map(e -> e.getFilePath()).map(fileServiceSuperAdmin::getAbsolutePath).toList());
+
 		mailService.sendMailWithAttachment(event.customerMail(), event.customerSub(), event.custmerBody(), fileUrls);
+	}
+
+	@Async("taskExecutor")
+	@EventListener
+	public void sendverifyEmail(VerifyOtpEmail verifyEmail) {
+
+		if (TransactionSynchronizationManager.isActualTransactionActive()) {
+
+			TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+				@Override
+				public void afterCommit() {
+					mailService.sendMail("", "", "");
+				}
+			});
+		} else {
+			mailService.sendMail("", "", "");
+		}
 	}
 }
