@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.hibernate.internal.build.AllowPrintStacktrace;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
@@ -42,7 +43,7 @@ public class GlobalExceptionHandler {
 	public ResponseEntity<?> handleAllExceptions(Exception ex){
 		ex.printStackTrace(); // Log the exception for debugging
 		Map<String, Object> body = new LinkedHashMap<String, Object>();
-		
+		ex.printStackTrace();
 		body.put("res", false);
 		body.put("errMessage", "Etwas ist schiefgelaufen");
 		body.put("errorDetail", ex.getMessage() != null ? ex.getMessage() : ex.toString());
