@@ -43,7 +43,7 @@ export class SidebarMenuListComponent implements OnInit {
 
     const payload = { adminId, type: 2 };
 
-    this.http.post("http://192.168.0.234:8080/admin/get-all-menu", payload).subscribe({
+    this.api.post("admin/get-all-menu", payload).subscribe({
       next: (res: any) => {
         this.isLoading = false;
         if (res?.res && res.data) {
@@ -133,8 +133,8 @@ export class SidebarMenuListComponent implements OnInit {
       })),
     };
 
-    this.http
-      .post("http://192.168.0.234:8080/admin/order-menu", payload)
+    this.api
+      .post("admin/order-menu", payload)
       .subscribe({
         next: (res: any) => {
           this.isSaving = false;
@@ -163,7 +163,7 @@ export class SidebarMenuListComponent implements OnInit {
         id,
       };
 
-      this.http.post("http://192.168.0.234:8080/admin/delete-menu", payload).subscribe({
+      this.api.post("admin/delete-menu", payload).subscribe({
         next: (res: any) => {
           if (res?.res) {
             this.menus = this.menus

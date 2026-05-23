@@ -15,6 +15,7 @@
         <div class="row row-1">
           <input type="text" placeholder="Ihre Postleitzahl" class="box small" formControlName="postalCode"
             maxlength="5" />
+
           <!-- <div class="input-arrow"> -->
           <!-- <input type="text" placeholder="Ihre Ort" class="box large" formControlName="city"
               [attr.list]="'cityList'" />
@@ -28,6 +29,7 @@
                 {{ c.city }}
               </option>
             </select> -->
+
           <div class="dropdown-wrapper box large" #cityDropdown>
             <input type="text" class="box large" placeholder="Ihre Ort" [value]="citySearch"
               (input)="onCityInput($event)" (focus)="closeAllDropdowns(); showCityDropdown = true"
@@ -67,6 +69,7 @@
               {{ s.street }}
             </option>
           </select> -->
+          
           <div class="dropdown-wrapper box large" #streetDropdown>
             <input type="text" class="box large" placeholder="Ihre Straße" [value]="streetSearch"
               (input)="onStreetInput($event)" (focus)="closeAllDropdowns(); showDropdown = true"
@@ -175,8 +178,8 @@
       </div>
       <div class="item-discount-bottom">
         <span class="item-price">sparen
-          <mat-icon *ngIf="discountinfo" class="info-icon" (click)="openInfo(infoDialog, discountinfo)">
-            info_i
+          <mat-icon class="info-icon" (click)="openInfo(infoDialog, discountinfo || '')">
+            info
           </mat-icon>
         </span>
       </div>

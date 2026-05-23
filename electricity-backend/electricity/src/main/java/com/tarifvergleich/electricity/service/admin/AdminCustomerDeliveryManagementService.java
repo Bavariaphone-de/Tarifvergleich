@@ -294,12 +294,13 @@ public class AdminCustomerDeliveryManagementService {
     public Map<String, Object> placeNewOrderToEgon(CustomerOrderDto customerOrderDto) {
         if (customerOrderDto.getAdminId() == null || customerOrderDto.getAdminId() <= 0)
             throw new InternalServerException("Admin id missing", HttpStatus.OK);
+
         if (customerOrderDto.getCustomerOrderId() == null || customerOrderDto.getCustomerOrderId() <= 0)
             throw new InternalServerException("Customer order id missing", HttpStatus.OK);
 
         CustomerOrder order = customerOrderRepo
                 .findByIdAndAdminAdminId(customerOrderDto.getCustomerOrderId(), customerOrderDto.getAdminId())
-                .orElseThrow(() -> new InternalServerException("Order record not found with this credential",
+                .orElseThrow(() -> new InternalServerException("Customer didn't provide credential details",
                         HttpStatus.OK));
 
         CustomerDelivery delivery = order.getDelivery();
@@ -341,7 +342,6 @@ public class AdminCustomerDeliveryManagementService {
         AdminCreateOrderEgonDto placeOrderRequest = AdminCreateOrderEgonDto.mapToEgonRequest(delivery, "new");
 
         OrderListResponse placeOrderResponse = energyService.placeOrder(placeOrderRequest);
-
         Long orderNo = Long.parseLong(placeOrderResponse.orders().getFirst().orderNo());
 
         order.setAdminPlacedOrderOn(Helper.getCurrentTimeBerlin());
@@ -357,16 +357,12 @@ public class AdminCustomerDeliveryManagementService {
 //		delivery.setLastDateOfCancellation(cancelTime);
 
         order.setDelivery(delivery);
-
         customerOrderRepo.save(order);
-
         customerOrderDto.setOrderId(orderNo);
-
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
             @Override
             public void afterCommit() {
                 asyncServiceAdmin.sendMailToCustomerForSignatures(customerOrderDto.getCustomerOrderId());
-                ;
             }
         });
 
@@ -474,8 +470,9 @@ public class AdminCustomerDeliveryManagementService {
                 .findByIdAndAdminAdminId(deliveryDto.getDeliveryId(), deliveryDto.getAdminId()).orElseThrow(
                         () -> new InternalServerException("Delivery not found with this credential", HttpStatus.OK));
 
-        if (delivery.getCustomerOrder() != null)
-            return Map.of("res", true, "customerOrderId", delivery.getCustomerOrder().getId());
+        CustomerOrder existingOrder = customerOrderRepo.findByDeliveryId(delivery.getId()).orElse(null);
+        if (existingOrder != null)
+            return Map.of("res", true, "customerOrderId", existingOrder.getId());
 
         CustomerOrder newOrder = CustomerOrder.builder().delivery(delivery).customer(delivery.getCustomerId())
                 .admin(delivery.getAdmin()).build();

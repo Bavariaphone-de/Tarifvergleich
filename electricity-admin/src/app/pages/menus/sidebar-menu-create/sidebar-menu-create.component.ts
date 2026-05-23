@@ -104,8 +104,6 @@ export class SidebarMenuCreateComponent implements OnInit {
 
   /* ================= SUBMIT ================= */
 
-  /* ================= SUBMIT ================= */
-
   onSubmit() {
     const adminId = this.authService.getUserId();
 
@@ -141,6 +139,8 @@ export class SidebarMenuCreateComponent implements OnInit {
     }
 
     formData.append("data", JSON.stringify(payload));
+    
+    console.log("PAYLOAD BEING SENT TO BACKEND:", payload);
 
     this.api.post("admin/add-menu", formData).subscribe({
       next: (res: any) => {

@@ -70,9 +70,15 @@ public class AdminAsset {
 	
 	@Column(name = "asset_order")
 	private Integer order;
-	
+
+	@Column(name = "popup_content_2", columnDefinition = "TEXT")
+	private String popupContent2;
+
+	@Column(name = "popup_content_3", columnDefinition = "TEXT")
+	private String popupContent3;
+
 	@PrePersist
 	protected void onCreate() {
-		createdOn = Helper.getCurrentTimeBerlin();			
+		createdOn = Helper.getCurrentTimeBerlin();
 	}
 }
