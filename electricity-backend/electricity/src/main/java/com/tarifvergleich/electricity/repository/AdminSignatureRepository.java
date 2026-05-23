@@ -14,4 +14,6 @@ public interface AdminSignatureRepository extends JpaRepository<AdminSignature, 
 
 	Optional<AdminSignature> findByIdAndAdminAdminId(Integer id, Integer adminId);
 
+	Optional<AdminSignature> findByAdmin_AdminId(Integer adminId);
+
 }

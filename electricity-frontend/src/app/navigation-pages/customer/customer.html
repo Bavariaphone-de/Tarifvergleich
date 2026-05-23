@@ -784,7 +784,7 @@
     <div *ngIf="activeTab === 1 && currentStep === 1">
       <div class="login-berich">Übersicht Zähler & Verträge</div>
       <br />
-      <div class="meter-section" *ngIf="viewSection != 2">
+      <div class="meter-section" *ngIf="viewSection != 2 && meterList && meterList.length > 0">
         <div class="meter-section-header">Meine Zähler</div>
 
         <div class="meter-wrapper">
@@ -808,16 +808,39 @@
 
                   <span>{{ item.providerType }}</span>
                 </div>
+                <!-- METER LABEL -->
                 <div class="meter-info-row">
                   <p><strong>Zählerbezeichnung:</strong></p>
-                  <a class="anpassen">
+
+                  <a class="anpassen" *ngIf="!$itemAny(item).isEditingMeterName" (click)="editListMeterName(item)">
                     anpassen
+
                     <span class="item-image">
                       <img src="assets/icons/Bearbeiten_schwarz.png" class="icon-check" alt="check" />
                     </span>
                   </a>
                 </div>
-                <p>{{ item.meterName }}</p>
+
+                <!-- TEXT VIEW -->
+                <p *ngIf="!$itemAny(item).isEditingMeterName">
+                  {{ item.meterDesignation }}
+                </p>
+
+                <!-- EDIT VIEW -->
+                <div class="meter-edit-box" *ngIf="$itemAny(item).isEditingMeterName">
+                  <input type="text" [(ngModel)]="item.meterDesignation" class="meter-input"
+                    placeholder="Zählerbezeichnung" />
+
+                  <!-- SAVE -->
+                  <button type="button" class="icon-action save-icon" (click)="saveListMeterName(item)">
+                    ✓
+                  </button>
+
+                  <!-- CANCEL -->
+                  <button type="button" class="icon-action cancel-icon" (click)="cancelListMeterEdit(item)">
+                    ✕
+                  </button>
+                </div>
 
                 <p><strong>Adresse:</strong></p>
 
@@ -1044,17 +1067,32 @@
                   <p>{{ item.address.street }}</p>
                   <p>{{ item.address.city }}</p>
                 </div>
-                <button class="meter-blue-btn" (click)="reportMeterReading(3, item)">
+                <button *ngIf="!item.reportMeterReadings || item.reportMeterReadings.length === 0"
+                  class="meter-blue-btn" (click)="reportMeterReading(3, item)">
                   Zählerstand melden
                 </button>
+
+                <div *ngIf="item.reportMeterReadings && item.reportMeterReadings.length > 0" class="status-badge">
+                  Zählerstand melden {{ getMeterReadingStatus(item) }}
+                </div>
 
                 <button class="meter-blue-btn">Zähleraustausch melden</button>
 
                 <button class="meter-blue-btn">Vertragsdetails ändern</button>
 
-                <button class="meter-blue-btn">Abschlag ändern</button>
+                <button class="meter-blue-btn" >Abschlag ändern</button>
 
-                <button class="meter-blue-btn" (click)="rerquestInvoice(item)">Rechnungen anfordern</button>
+                <!-- <button class="meter-blue-btn" (click)="rerquestInvoice(item)">Rechnungen anfordern</button> -->
+
+                <span *ngIf="hasInvoice(item); else showButton" class="status-badge">
+                  Rechnungen anfordern {{ getInvoiceStatus(item) }}
+                </span>
+
+                <ng-template #showButton>
+                  <button class="meter-blue-btn" (click)="rerquestInvoice(item)">
+                    Rechnungen anfordern
+                  </button>
+                </ng-template>
 
                 <button class="meter-blue-btn full">Nachricht an Energielieferanten senden</button>
               </div>
@@ -1593,17 +1631,27 @@
                     </div>
                   </div>
                 </div>
+                <div class="field-error-msg" *ngIf="fieldErrors['meterReadingCategory']">
+                  {{ fieldErrors['meterReadingCategory'] }}
+                </div>
+
                 <div class="form-row">
                   <div class="form-group">
                     <div class="field-wrap">
                       <span class="field-label">Ablesedatum</span>
-                      <input type="text"   [(ngModel)]="meterReadingDate" placeholder="05.05.2026" />
+                      <input type="text" [(ngModel)]="meterReadingDate" placeholder="05.05.2026" />
+                    </div>
+                    <div class="field-error-msg" *ngIf="fieldErrors['meterReadingDate']">
+                      {{ fieldErrors['meterReadingDate'] }}
                     </div>
                   </div>
                   <div class="form-group">
                     <div class="field-wrap">
                       <span class="field-label">Zählerstand (ohne Nachkommastellen)</span>
-                      <input type="text" placeholder="37125"    [(ngModel)]="meterReadingValue" />
+                      <input type="text" placeholder="37125" [(ngModel)]="meterReadingValue" />
+                    </div>
+                    <div class="field-error-msg" *ngIf="fieldErrors['meterReadingValue']">
+                      {{ fieldErrors['meterReadingValue'] }}
                     </div>
                   </div>
                 </div>
@@ -1631,11 +1679,11 @@
 
             <!-- BUTTONS -->
             <div class="meter-btn-row">
-              <button class="upload-btn" (click)="rredirectPhotoUpload()">
+              <button type="button" class="upload-btn" (click)="redirectPhotoUpload()">
                 Zählerfoto mit aktuellem Zählerstand hochladen
               </button>
 
-              <button class="submit-btn">Zählerstand übermitteln</button>
+              <button type="button" class="submit-btn">Zählerstand übermitteln</button>
             </div>
           </div>
         </div>
@@ -1679,17 +1727,11 @@
             </span>
           </div>
           <div style="display: flex; flex-direction: row; justify-content: flex-end; margin-top: 10px">
-<input
-  type="file"
-  #fileInput
-  accept="image/*"
-  hidden
-  (change)="onFileSelected($event)"
-/>
+            <input type="file" #fileInput accept="image/*" hidden (change)="onFileSelected($event)" />
 
-<button class="btn-primary" (click)="fileInput.click()">
-  Zählerfoto hinzufügen
-</button>
+            <button class="btn-primary" (click)="fileInput.click()">
+              Bitte Zählerfotos mit Zählernummer und Zählerstand hochladen
+            </button>
           </div>
         </div>
       </div>
@@ -1698,7 +1740,7 @@
     <div *ngIf="activeTab === 1 && currentStep === 3">
       <div class="login-berich">Zählerstand melden</div>
 
-      <div class="customer-profile-box">
+      <div class="customer-profile-box" *ngIf="!submittedReportMeterReading">
         <div class="tab-row">
           <div class="success-box" style="width: auto">
             <div class="success-content">
@@ -1720,38 +1762,37 @@
             </div>
           </div>
 
-<div class="upload-photo-wrapper">
+          <div class="upload-photo-wrapper">
 
-  <div class="upload-photo-card"
-       *ngFor="let file of selectedFiles; let i = index">
+            <div class="upload-photo-card" *ngFor="let file of selectedFiles; let i = index">
 
-    <div class="upload-photo-content">
+              <div class="upload-photo-content">
 
-      <!-- IMAGE PREVIEW -->
-      <div class="upload-photo-img">
-        <img [src]="getPreview(file)" alt="meter" />
-      </div>
+                <!-- IMAGE PREVIEW -->
+                <div class="upload-photo-img">
+                  <img [src]="getPreview(file)" alt="meter" />
+                </div>
 
-      <!-- TEXT -->
-      <div class="upload-photo-info">
+                <!-- TEXT -->
+                <div class="upload-photo-info">
 
-        <h4>Upload Foto {{ i + 1 }}</h4>
+                  <h4>Upload Foto {{ i + 1 }}</h4>
 
-        <p>{{ file.name }}</p>
+                  <p>{{ file.name }}</p>
 
-        <span>Zum Vergrößern bitte anklicken.</span>
+                  <span>Zum Vergrößern bitte anklicken.</span>
 
-        <button class="delete-upload-btn"
-                (click)="removeImage(i)">
-          Zählerfoto löschen und erneut hochladen
-        </button>
+                  <input type="file" #replaceInput hidden accept="image/*" (change)="onReplaceFileSelected($event)" />
+                  <button type="button" class="delete-upload-btn" (click)="replaceImage(i, replaceInput)">
+                    Zählerfoto löschen und erneut hochladen
+                  </button>
 
-      </div>
+                </div>
 
-    </div>
-  </div>
+              </div>
+            </div>
 
-</div>
+          </div>
           <div style="display: flex; flex-direction: row; justify-content: flex-end; margin-top: 10px">
             <button class="btn-primary" (click)="submitMeterReading()">
               <span class="spinner"></span>
@@ -1760,13 +1801,40 @@
           </div>
         </div>
       </div>
+      <br />
+      <div class="success-box" style="width: auto" *ngIf="submittedReportMeterReading">
+        <div class="success-content">
+          <div class="success-row">
+            <img src="assets/icons/Kreis_Haken_gruen.png" alt="success" />
+
+            <div class="text-block">
+              <div class="tab-header">
+                Zählerstand erfolgreich übermittelt!
+              </div>
+
+              <div class="tab-text">
+                Ihr Zählerstand sowie die hochgeladenen Zählerfotos wurden erfolgreich übermittelt.
+              </div>
+
+              <div class="tab-text">
+                Unser Team prüft Ihre Angaben und leitet diese anschließend an den jeweiligen Anbieter weiter.
+              </div>
+
+              <div class="tab-text">
+                Sie erhalten eine Rückmeldung, sobald die Bearbeitung abgeschlossen ist.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
+
     <!--══════════ Request Invoice ══════════-->
     <div *ngIf="activeTab === 1 && currentStep === 4">
       <div class="login-berich">Rechnungen anfordern</div>
       <br />
 
-      <div class="selected-contract-wrapper">
+      <div class="selected-contract-wrapper" *ngIf="!submittedInvoice">
         <!-- HEADER -->
         <div class="selected-contract-header">Ausgewählter Vertrag</div>
 
@@ -1925,7 +1993,7 @@
 
               <!-- MESSAGE -->
               <div class="form-group full-width">
-                <div class="tab-heading">Nachricht</div>
+                <div class="tab-heading">Rechnungstext</div>
 
                 <textarea rows="5" [(ngModel)]="invoiceMessage" class="textarea"
                   placeholder="Bitte geben Sie genau an, welche Rechnung Sie anfordern möchten...."></textarea>
@@ -1953,6 +2021,27 @@
                   <span> Anfrage senden</span>
                 </ng-template>
               </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="success-box" style="width: auto" *ngIf="submittedInvoice">
+        <div class="success-content">
+          <div class="success-row">
+            <img src="assets/icons/Kreis_Haken_gruen.png" alt="success" />
+
+            <div class="text-block">
+              <div class="tab-header">Rechnungsanfrage erfolgreich gesendet!</div>
+
+              <div class="tab-text">
+                Ihre Anfrage zur Rechnung wurde erfolgreich übermittelt.
+                Unser Team prüft diese und bearbeitet sie so schnell wie möglich.
+              </div>
+
+              <div class="tab-text">
+                Sie erhalten eine Rückmeldung per E-Mail, sobald Ihre Anfrage bearbeitet wurde.
+              </div>
             </div>
           </div>
         </div>

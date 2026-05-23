@@ -12,7 +12,7 @@ import { ContactPerson } from '../../layout/contact-person/contact-person';
 import { NeedSupport } from '../../layout/need-support/need-support';
 import { ActivatedRoute } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-const API_BASE = 'http://192.168.0.155:8080';
+const API_BASE = 'http://localhost:8080';
 @Component({
   selector: 'app-order-signature',
   standalone: true,
@@ -74,6 +74,7 @@ export class OrderSignature {
     });
   }
 
+  adminSignaturePath: string = '';
   fetchContractDetails(): void {
     this.http
       .post<any>(`${API_BASE}/api/fetch-contract-details`, {
@@ -83,6 +84,7 @@ export class OrderSignature {
         next: (res) => {
           console.log('Contract Details:', res);
           this.contractDetails = res.data;
+          this.adminSignaturePath = res.adminSignaturePath;
           this.submitted = res.submitted;
           console.log('Contract Details:', this.contractDetails);
           this.cdr.detectChanges();
