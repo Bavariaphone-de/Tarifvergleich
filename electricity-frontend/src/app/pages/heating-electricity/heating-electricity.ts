@@ -38,6 +38,8 @@ export class HeatingElectricity {
 
   currentDialogData: InfoDialogData[] = [];
 
+  singleDoubleMeterHtml: string | null = null;
+
   constructor(public dialog: MatDialog, private contentService: ContentService) {}
 
   ngOnInit() {
@@ -46,10 +48,15 @@ export class HeatingElectricity {
       if (item) {
         if (item.savingPriceDetail) this.discountinfo = item.savingPriceDetail;
         
-        // Connect Admin popupContent2 to the Single/Double Meter popup
+        // Connect Admin popupContent2 to the Single/Double Meter popup (Legacy)
         if (item.popupContent2) {
           this.singleDoubleMeter.singleDescription = item.popupContent2;
           this.singleDoubleMeter.doubleDescription = ''; // Hide default second paragraph
+        }
+        
+        // If they provide a single HTML block via popupContent3, use it directly
+        if (item.popupContent3) {
+          this.singleDoubleMeterHtml = item.popupContent3;
         }
       }
     });
@@ -109,7 +116,10 @@ export class HeatingElectricity {
     this.selectedTariff = type;
   }
 
+  isSingleDoubleMeterPopup = false;
+
   openSingleDoubleMeter(template: any) {
+    this.isSingleDoubleMeterPopup = true;
     this.currentDialogData = [
       {
         title: this.singleDoubleMeter.singleTariff,
@@ -129,6 +139,7 @@ export class HeatingElectricity {
   currentDialogText = '';
 
 openInfo(template: any, text: string) {
+  this.isSingleDoubleMeterPopup = false;
   this.currentDialogText = text;
   this.dialog.open(template, { width: '200px', maxWidth: '80vw' });
 }

@@ -109,6 +109,7 @@ export class Header {
     this.contentService.getNav().subscribe({
       next: (data) => {
         this.navItems = data;
+        this.cdr.detectChanges();
       },
       error: () => {
         this.cdr.detectChanges();

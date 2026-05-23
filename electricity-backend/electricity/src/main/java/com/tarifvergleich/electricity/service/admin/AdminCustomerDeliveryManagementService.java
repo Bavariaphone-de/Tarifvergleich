@@ -246,8 +246,10 @@ public class AdminCustomerDeliveryManagementService {
 
         if (deliveryDetails == null)
             throw new InternalServerException("No details found for edit", HttpStatus.OK);
+
         if (deliveryDetails.getAdminId() == null || deliveryDetails.getAdminId() <= 0)
             throw new InternalServerException("Admin id missing", HttpStatus.OK);
+        
         if (deliveryDetails.getCustomerId() == null || deliveryDetails.getCustomerId() <= 0)
             throw new InternalServerException("Customer id missing", HttpStatus.OK);
 

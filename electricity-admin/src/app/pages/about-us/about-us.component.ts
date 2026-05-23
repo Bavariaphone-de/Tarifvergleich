@@ -16,7 +16,9 @@ export class AboutUsComponent implements OnInit {
   readonly imgBase = environment.imageBaseUrl;
 
   heading = "";
+  nameField = ""; // Mapped to popupContent2
   contactNumber = "";
+  emailField = ""; // Mapped to popupContent3
   description = ""; // Dieses Feld wird im Formular als Textarea genutzt
 
   imageFile: File | null = null;
@@ -46,7 +48,9 @@ export class AboutUsComponent implements OnInit {
           const aboutData = res.menu.about[0];
           
           this.heading = aboutData.heading || "";
+          this.nameField = aboutData.contactName || "";
           this.contactNumber = aboutData.contactNumber || "";
+          this.emailField = aboutData.contactEmail || "";
           // Wir mappen das "subHeading" aus der API in unsere "description" Variable
           this.description = aboutData.subHeading || ""; 
           
@@ -100,7 +104,9 @@ export class AboutUsComponent implements OnInit {
     const payload = {
       adminId: adminId,
       heading: this.heading,
+      contactName: this.nameField,
       contact: this.contactNumber,
+      contactEmail: this.emailField,
       // WICHTIG: Der Key heißt für die API "subHeading", der Wert kommt aus "description"
       subHeading: this.description, 
       type: 4 
