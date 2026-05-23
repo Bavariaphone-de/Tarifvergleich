@@ -12,9 +12,7 @@ export class ContentService {
   private data$: Observable<any>;
 
   constructor(private http: HttpClient) {
-    this.data$ = this.http.post<any>(this.API_URL, {}).pipe(
-      shareReplay(1)
-    );
+    this.data$ = this.http.post<any>(this.API_URL, {}).pipe(shareReplay(1));
   }
 
   // Full data (if needed)
@@ -25,36 +23,28 @@ export class ContentService {
   // NAV
   getNav(): Observable<any[]> {
     return this.data$.pipe(
-      map(res => res?.menu?.nav?.sort((a: any, b: any) => a.order - b.order) || [])
+      map((res) => res?.menu?.nav?.sort((a: any, b: any) => a.order - b.order) || []),
     );
   }
 
   // FREE SERVICE
   getFreeService(): Observable<any[]> {
-    return this.data$.pipe(
-      map(res => res?.service?.['free-service'] || [])
-    );
+    return this.data$.pipe(map((res) => res?.service?.['free-service'] || []));
   }
 
   // OTHER SERVICE
   getOtherService(): Observable<any[]> {
-    return this.data$.pipe(
-      map(res => res?.service?.['other-service'] || [])
-    );
+    return this.data$.pipe(map((res) => res?.service?.['other-service'] || []));
   }
 
   // SIDEBAR
   getSidebar(): Observable<any[]> {
-    return this.data$.pipe(
-      map(res => res?.menu?.sidebar || [])
-    );
+    return this.data$.pipe(map((res) => res?.menu?.sidebar || []));
   }
 
   // BANNER
   getBanner(): Observable<any[]> {
-    return this.data$.pipe(
-      map(res => res?.menu?.banner || [])
-    );
+    return this.data$.pipe(map((res) => res?.menu?.banner || []));
   }
 
   // IMAGE URL HELPER

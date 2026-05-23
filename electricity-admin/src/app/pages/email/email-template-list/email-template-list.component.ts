@@ -49,6 +49,14 @@ export class EmailTemplateListComponent implements OnInit {
       .subscribe({
         next: (res) => {
           this.isLoading = false;
+
+          console.log("Full Response", res);
+          if(res.length > 0) {
+            console.log("First Item", res[0]);
+            console.log("Id value", res[0].id);
+            
+          }
+          
           this.emailList = res || [];
           this.buildCategoryList();
           this.applyFilters();
@@ -127,10 +135,35 @@ export class EmailTemplateListComponent implements OnInit {
   }
 
   deleteTemplate(): void {
-    // Wire up actual API call here
-    console.log("Delete:", this.itemToDelete);
-    this.showDeleteConfirm = false;
-    this.itemToDelete = null;
+
+    if (!this.itemToDelete?.id) {
+      return;
+    }
+
+    this.http.delete(`http://192.168.0.155:8080/admin/email-management/${this.itemToDelete.id}`)
+    .subscribe({
+      next: (res) => {
+
+        this.emailList = this.emailList.filter(
+          item => item.id !== this.itemToDelete.id
+        );
+
+        this.filteredList = this.filteredList.filter(
+          item => item.id !== this.itemToDelete.id
+        );
+
+        this.showDeleteConfirm = false;
+        this.itemToDelete = null;
+
+      },
+
+      error: (err) => {
+        console.log(err);
+
+      }
+
+    });
+
   }
 
   // ── UTILS ──

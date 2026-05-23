@@ -143,8 +143,8 @@
       <div class="item-discount-bottom">
         <span class="item-price"
           >sparen
-          <mat-icon *ngIf="discountinfo" class="info-icon" (click)="openInfo(infoDialog, discountinfo)">
-            info_i
+          <mat-icon class="info-icon" (click)="openInfo(infoDialog, discountinfo || '')">
+            info
           </mat-icon>
         </span>
       </div>

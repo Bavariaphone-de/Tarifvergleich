@@ -1,35 +1,152 @@
 package com.tarifvergleich.electricity.service.customer;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import com.tarifvergleich.electricity.dto.CustomerInvoiceRequestDto;
+import com.tarifvergleich.electricity.dto.ReportMeterReadingDto;
+import com.tarifvergleich.electricity.exception.InternalServerException;
+import com.tarifvergleich.electricity.model.CustomerInvoiceRequest;
+import com.tarifvergleich.electricity.model.ReportMeterReading;
 import com.tarifvergleich.electricity.repository.CustomerConnectionRepository;
+import com.tarifvergleich.electricity.repository.CustomerInvoiceRequestRepository;
+import com.tarifvergleich.electricity.repository.ReportMeterReadingRepository;
+import com.tarifvergleich.electricity.util.FileServiceCustomer;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class CustomerMeterService {
+
+    private final CustomerInvoiceRequestRepository invoiceRepo;
 
     private final CustomerConnectionRepository customerConnectionRepository;
 
-    public CustomerMeterService(
-            CustomerConnectionRepository customerConnectionRepository
-    ) {
-        this.customerConnectionRepository = customerConnectionRepository;
-    }
+    private final ReportMeterReadingRepository reportMeterReadingRepo;
+
+    private final FileServiceCustomer fileServiceCustomer;
 
     public Map<String, Object> updateMeterDesignation(
             Long connectionId,
-            String meterDesignation
-    ) {
+            String meterDesignation) {
 
         customerConnectionRepository.updateMeterDesignation(
                 connectionId,
-                meterDesignation
-        );
+                meterDesignation);
 
         return Map.of(
                 "res", true,
-                "message", "Meter designation updated successfully"
-        );
+                "message", "Meter designation updated successfully");
+    }
+
+    public Map<String, Object> submitInvoiceRequest(
+            CustomerInvoiceRequestDto dto) {
+
+        CustomerInvoiceRequest request =
+                CustomerInvoiceRequest.builder()
+                        .customerId(dto.getCustomerId())
+                        .connectionId(dto.getConnectionId())
+                        .invoiceCategory(dto.getInvoiceCategory())
+                        .orderId(dto.getOrderId())
+                        .deliveryId(dto.getDeliveryId())
+                        .message(dto.getMessage())
+                        .status(1)
+                        .createdAt(LocalDateTime.now())
+                        .build();
+
+        invoiceRepo.save(request);
+
+        return Map.of(
+                "res", true,
+                "message", "Invoice request submitted successfully");
+    }
+
+    @Transactional
+    public Map<String, Object> reportMeterReading(
+            ReportMeterReadingDto dto,
+            MultipartFile[] files) {
+
+        if (dto.getDeliveryId() == null || dto.getDeliveryId() <= 0)
+            throw new InternalServerException(
+                    "Delivery id missing",
+                    HttpStatus.OK);
+
+        if (dto.getOrderId() == null || dto.getOrderId() <= 0)
+            throw new InternalServerException(
+                    "Order id missing",
+                    HttpStatus.OK);
+
+        if (dto.getConnectionId() == null || dto.getConnectionId() <= 0)
+            throw new InternalServerException(
+                    "Connection id missing",
+                    HttpStatus.OK);
+
+        if (dto.getCategory() == null
+                || dto.getCategory().trim().isEmpty())
+            throw new InternalServerException(
+                    "Category missing",
+                    HttpStatus.OK);
+
+        if (dto.getReadingDate() == null
+                || dto.getReadingDate().trim().isEmpty())
+            throw new InternalServerException(
+                    "Reading date missing",
+                    HttpStatus.OK);
+
+        if (dto.getMeterReading() == null
+                || dto.getMeterReading().trim().isEmpty())
+            throw new InternalServerException(
+                    "Meter reading missing",
+                    HttpStatus.OK);
+
+        if (files == null || files.length == 0)
+            throw new InternalServerException(
+                    "Meter image missing",
+                    HttpStatus.OK);
+
+        for (MultipartFile file : files) {
+
+            if (file.isEmpty())
+                continue;
+
+            String filePath =
+                    fileServiceCustomer.saveFile(
+                            file,
+                            "meter-reading");
+
+            ReportMeterReading report =
+                    new ReportMeterReading();
+
+            report.setDeliveryId(dto.getDeliveryId());
+
+            report.setOrderId(dto.getOrderId());
+
+            report.setConnectionId(dto.getConnectionId());
+
+            report.setCategory(dto.getCategory());
+
+            report.setReadingDate(dto.getReadingDate());
+
+            report.setMeterReading(dto.getMeterReading());
+
+            report.setImagePath(filePath);
+
+            report.setStatus(1);
+
+            report.setCreatedAt(LocalDateTime.now());
+
+            reportMeterReadingRepo.save(report);
+        }
+
+        return Map.of(
+                "res", true,
+                "message",
+                "Meter reading submitted successfully");
     }
 }

@@ -1,7 +1,6 @@
 package com.tarifvergleich.electricity.service.customer;
 
 import java.math.BigInteger;
-import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -27,9 +26,11 @@ import com.tarifvergleich.electricity.dto.CustomerServiceRequestDto.CustomerServ
 import com.tarifvergleich.electricity.dto.CustomerServiceRequestDto.CustomerServiceRequestResDtoForMessages;
 import com.tarifvergleich.electricity.dto.CustomerServicesDto;
 import com.tarifvergleich.electricity.dto.CustomerServicesDto.CustomerListOfServiceResDto;
+import com.tarifvergleich.electricity.dto.ReportMeterReadingDto;
 import com.tarifvergleich.electricity.dto.ServiceRequestEmailEvent;
 import com.tarifvergleich.electricity.dto.ServiceRequestEmailEvent.ServiceResponseEmailEvent;
 import com.tarifvergleich.electricity.exception.InternalServerException;
+import com.tarifvergleich.electricity.model.AdminSignature;
 import com.tarifvergleich.electricity.model.AdminUser;
 import com.tarifvergleich.electricity.model.TokenManagement;
 import com.tarifvergleich.electricity.model.Customer;
@@ -42,22 +43,29 @@ import com.tarifvergleich.electricity.model.CustomerOrder;
 import com.tarifvergleich.electricity.model.CustomerServiceRequest;
 import com.tarifvergleich.electricity.model.CustomerServiceRequestMessages;
 import com.tarifvergleich.electricity.model.CustomerServices;
+import com.tarifvergleich.electricity.model.ReportMeterReading;
+import com.tarifvergleich.electricity.repository.AdminSignatureRepository;
 import com.tarifvergleich.electricity.repository.AdminUserRepository;
 import com.tarifvergleich.electricity.repository.TokenManagementRespository;
 import com.tarifvergleich.electricity.repository.CustomerAddressRepository;
 import com.tarifvergleich.electricity.repository.CustomerAttornyRepository;
 import com.tarifvergleich.electricity.repository.CustomerDeliveryRepository;
+import com.tarifvergleich.electricity.repository.CustomerInvoiceRequestRepository;
 import com.tarifvergleich.electricity.repository.CustomerOrderRepository;
 import com.tarifvergleich.electricity.repository.CustomerRepository;
 import com.tarifvergleich.electricity.repository.CustomerServiceRequestRepository;
 import com.tarifvergleich.electricity.repository.CustomerServicesRepository;
+import com.tarifvergleich.electricity.repository.ReportMeterReadingRepository;
 import com.tarifvergleich.electricity.service.AesEncryptionService;
 import com.tarifvergleich.electricity.util.EmailTemplate;
 import com.tarifvergleich.electricity.util.FileServiceCustomer;
 import com.tarifvergleich.electricity.util.Helper;
-import com.tarifvergleich.electricity.repository.CustomerInvoiceRequestRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import java.util.List;
+import java.util.Map;
+import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -77,7 +85,8 @@ public class CustomerDetailService {
 	private final AesEncryptionService aesEncryptionService;
 	private final TokenManagementRespository contractTokenRespo;
 	private final CustomerInvoiceRequestRepository invoiceRepo;
-
+	private final ReportMeterReadingRepository reportMeterReadingRepo;
+	private AdminSignatureRepository adminSignatureRepository;
 
 	public Map<String, Object> getCustomerDetails(Integer customerId) {
 
@@ -194,25 +203,141 @@ public class CustomerDetailService {
 
 	public Map<String, Object> fetchAllCustomerDeliveries(Integer customerId) {
 
-		if (customerId == null || customerId <= 0)
-			throw new InternalServerException("Customer id missing", HttpStatus.OK);
+	    if (customerId == null || customerId <= 0)
+	        throw new InternalServerException("Customer id missing", HttpStatus.OK);
+	
+	    Customer customer = customerRepo.findById(customerId).orElseThrow(
+	            () -> new InternalServerException("Customer not found with this credentian", HttpStatus.OK));
+	
+	    List<CustomerDelivery> customerDeliveries = customer.getCustomerDelivery();
+	
+	    if (customerDeliveries == null || customerDeliveries.isEmpty())
+	        return Map.of("res", true, "customerDeliveries", List.of());
+	
+	    // STEP 1: filter placed deliveries
+	    List<CustomerDelivery> placedDeliveries = customerDeliveries.stream()
+	            .filter(CustomerDelivery::getOrderPlaced)
+	            .toList();
+	
+	    // STEP 2: collect delivery IDs
+	    List<Integer> deliveryIds = placedDeliveries.stream()
+	            .map(CustomerDelivery::getId)
+	            .toList();
+	
+	    // STEP 3: fetch invoices
+	    List<CustomerInvoiceRequest> allInvoices =
+	            invoiceRepo.findByDeliveryIdIn(deliveryIds);
+	    
+	    // STEP 3B: fetch meter readings
+	    List<ReportMeterReading> allMeterReadings =
+	            reportMeterReadingRepo.findByDeliveryIdIn(deliveryIds);
 
-		Customer customer = customerRepo.findById(customerId).orElseThrow(
-				() -> new InternalServerException("Customer not found with this credentian", HttpStatus.OK));
+	    // STEP 3C: group by deliveryId
+	    Map<Integer, List<ReportMeterReading>> meterReadingMap =
+	            allMeterReadings.stream()
+	                    .collect(Collectors.groupingBy(
+	                            ReportMeterReading::getDeliveryId
+	                    ));
+	
+	    // STEP 4: group invoices by deliveryId
+	    Map<Integer, List<CustomerInvoiceRequest>> invoiceMap =
+	            allInvoices.stream()
+	                    .collect(Collectors.groupingBy(CustomerInvoiceRequest::getDeliveryId));
+	
+	    // STEP 5: build response DTO list
+	    List<CustomerDeliveryResponseAll> deliveryResponse = placedDeliveries.stream()
+	            .map(CustomerDeliveryResponseDto::getDeliveryResponse)
+	            .sorted((a, b) -> b.getOrderPlacedOn().compareTo(a.getOrderPlacedOn()))
+	            .toList();
+	
+	    CustomerShortDetail customerResponse =
+	            CustomerDto.customerShortResponse(customer);
+	
+	    // STEP 6: SAFE MATCHING BY deliveryId (FIXED)
+	    Map<Integer, CustomerDeliveryResponseAll> dtoMap = deliveryResponse.stream()
+	            .collect(Collectors.toMap(
+	                    CustomerDeliveryResponseAll::getDeliveryId,
+	                    d -> d
+	            ));
+	
+	    for (CustomerDelivery entity : placedDeliveries) {
+	
+	        CustomerDeliveryResponseAll dto = dtoMap.get(entity.getId());
+	
+	        if (dto == null) continue;
+	
+	        List<CustomerInvoiceRequestDto> invoiceDtoList =
+	                invoiceMap.getOrDefault(entity.getId(), List.of())
+	                        .stream()
+	                        .map(inv -> CustomerInvoiceRequestDto.builder()
+	                                .id(inv.getId())
+	                                .customerId(inv.getCustomerId())
+	                                .connectionId(inv.getConnectionId())
+	                                .orderId(inv.getOrderId())
+	                                .deliveryId(inv.getDeliveryId())
+	                                .invoiceCategory(inv.getInvoiceCategory())
+	                                .message(inv.getMessage())
+	                                .status(inv.getStatus())
+	                                .createdAt(inv.getCreatedAt())
+	                                .build()
+	                        )
+	                        .toList();
+	
+	        dto.setInvoiceRequests(invoiceDtoList);
+	        
+	        // METER READING LIST
+	        List<ReportMeterReadingDto> meterReadingDtoList =
+	                meterReadingMap.getOrDefault(entity.getId(), List.of())
+	                        .stream()
+	                        .map(reading -> {
 
-		List<CustomerDelivery> customerDeliveries = customer.getCustomerDelivery();
+	                            ReportMeterReadingDto meterDto =
+	                                    new ReportMeterReadingDto();
 
-		if (customerDeliveries == null || customerDeliveries.isEmpty())
-			return Map.of("res", true, "customerDeliveries", List.of());
+	                            meterDto.setId(reading.getId());
 
-		List<CustomerDeliveryResponseAll> deliveryResponse = customerDeliveries.stream()
-				.filter(delivery -> delivery.getOrderPlaced()).map(CustomerDeliveryResponseDto::getDeliveryResponse)
-				.sorted((a, b) -> b.getOrderPlacedOn().compareTo(a.getOrderPlacedOn())).toList();
-		CustomerShortDetail customerResponse = CustomerDto.customerShortResponse(customer);
+	                            meterDto.setDeliveryId(
+	                                    reading.getDeliveryId());
 
-		return Map.of("res", true, "customer", customerResponse, "delivery", deliveryResponse);
+	                            meterDto.setOrderId(
+	                                    reading.getOrderId());
+
+	                            meterDto.setConnectionId(
+	                                    reading.getConnectionId());
+
+	                            meterDto.setCategory(
+	                                    reading.getCategory());
+
+	                            meterDto.setReadingDate(
+	                                    reading.getReadingDate());
+
+	                            meterDto.setMeterReading(
+	                                    reading.getMeterReading());
+
+	                            meterDto.setImagePath(
+	                                    reading.getImagePath());
+
+	                            meterDto.setStatus(
+	                                    reading.getStatus());
+
+	                            meterDto.setCreatedAt(
+	                                    reading.getCreatedAt());
+
+	                            return meterDto;
+	                        })
+	                        .toList();
+
+	        dto.setReportMeterReadings(meterReadingDtoList);
+	    }
+	
+	    // FINAL RESPONSE
+	    return Map.of(
+	            "res", true,
+	            "customer", customerResponse,
+	            "delivery", deliveryResponse
+	    );
 	}
-
+	
 	public Map<String, Object> fetchAllCustomerDeliveriesByGroup(Integer adminId, Integer customerId) {
 
 		if (adminId == null || adminId <= 0)
@@ -613,8 +738,8 @@ public class CustomerDetailService {
 			TokenManagement validToken = contractTokenRespo.findByToken(tokenId)
 					.orElseThrow(() -> new InternalServerException("Invalid token", HttpStatus.OK));
 
-			if (validToken.getUsed())
-				throw new InternalServerException("Token already used", HttpStatus.OK);
+//			if (validToken.getUsed())
+//				throw new InternalServerException("Token already used", HttpStatus.OK);
 
 //			if (validToken.getExpiryDate().compareTo(Helper.getCurrentTimeBerlin()) < 0)
 //				throw new InternalServerException("Token expired", HttpStatus.OK);
@@ -707,28 +832,24 @@ public class CustomerDetailService {
 
 		CustomerDeliveryResponseAll resp = CustomerDeliveryResponseDto.getDeliveryResponse(delivery);
 
-		return Map.of("res", true, "data", resp);
+		 String adminSignaturePath = null;
+
+		    if (delivery != null && delivery.getAdmin() != null) {
+
+		        Integer adminId = delivery.getAdmin().getAdminId();
+
+		        adminSignaturePath = adminSignatureRepository
+		                .findByAdmin_AdminId(adminId)
+		                .map(AdminSignature::getFilePath)
+		                .orElse(null);
+		    }
+		    
+		    return Map.of(
+		            "res", true,
+		            "data", resp,
+		            "adminSignaturePath", adminSignaturePath
+		    );
 	}
 
-	public Map<String, Object> submitInvoiceRequest(
-	        CustomerInvoiceRequestDto dto
-	) {
-
-	    CustomerInvoiceRequest request =
-	            CustomerInvoiceRequest.builder()
-	            .customerId(dto.getCustomerId())
-	            .connectionId(dto.getConnectionId())
-	            .invoiceCategory(dto.getInvoiceCategory())
-	            .orderId(dto.getOrderId())
-	            .message(dto.getMessage())
-	            .createdAt(LocalDateTime.now())
-	            .build();
-
-	    invoiceRepo.save(request);
-
-	    return Map.of(
-	            "res", true,
-	            "message", "Invoice request submitted successfully"
-	    );
-	}
+	
 }

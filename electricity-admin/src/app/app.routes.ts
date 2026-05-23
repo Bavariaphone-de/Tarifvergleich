@@ -202,6 +202,10 @@ export const routes: Routes = [
         title: "E-Mail Anfragen",
       },
       {
+        path: "email-template/edit/:id",
+        component: EmailRequestsComponent,
+      },
+      {
         path: "email-category",
         component: EmailCategoryComponent,
         title: "E-Mail Kategorie",

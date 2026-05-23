@@ -60,7 +60,7 @@ export class Electricity implements OnInit {
     private contentService: ContentService,
   ) {}
 
-  discountinfo: string | null = null;
+  discountinfo: string | null = 'Die mögliche Ersparnis berechnet sich aus dem Vergleich zum örtlichen Grundversorger bei einem durchschnittlichen Verbrauch.';
 
   activeInfo: 'discountinfo' | null = null;
 

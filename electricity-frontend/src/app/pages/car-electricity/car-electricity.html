@@ -3,7 +3,14 @@
     <div class="dialog-header">
       <mat-icon (click)="dialog.closeAll()">close</mat-icon>
     </div>
-    <div class="dialog-content" [innerHTML]="currentDialogText">
+    <div class="dialog-item" *ngFor="let item of currentDialogData">
+      <div class="left" *ngIf="item.image || item.title">
+        <img *ngIf="item.image" [src]="item.image" class="dialog-image" alt="Image" />
+        <p *ngIf="item.title" class="dialog-title" [innerHtml]="item.title"></p>
+      </div>
+      <div class="right" [class.full]="!(item.image || item.title)" [innerHtml]="item.description">
+        <p></p>
+      </div>
     </div>
   </div>
 </ng-template>
@@ -93,7 +100,7 @@
       <div class="item-discount-bottom">
         <span class="item-price">sparen
           <mat-icon class="info-icon" (click)="openInfo(infoDialog, discountinfo)">
-            info_i
+            info
           </mat-icon>
         </span>
       </div>

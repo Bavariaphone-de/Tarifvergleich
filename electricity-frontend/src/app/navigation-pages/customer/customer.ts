@@ -142,6 +142,10 @@ export class Customer {
     this.profileSubTab = '';
     this.resetForm();
 
+    if (this.activeTab == 2) {
+      this.fetchCards();
+    }
+
     if (this.activeTab == 3) {
       this.fetchServiceCount();
       this.fetchAllRequests();
@@ -333,61 +337,7 @@ export class Customer {
 
   /* ════════════════════════════════════════════════════════════════════════════════════════════════*/
   /*── Meter Section Start ──*/
-  meterList = [
-    {
-      type: 'electricity',
-      status: 'Auftrag eingegangen',
-      meterIcon: 'assets/icons/electric-meter.png',
-      providerIcon: 'assets/icons/65bd2fa8-bd0e-497e-a781-a3c434fe6176_Stromvergleich.png',
-
-      providerType: 'Strom | Hausstrom',
-
-      meterNumber: 'MHD-1325-79-45943268',
-      marketLocation: 'MILD-054321-98674',
-
-      meterName: 'MHD-OZR-1325-79-45943268',
-
-      address: {
-        name: 'Marie Mustermann',
-        street: 'Mustermannstraße 29',
-        city: '12345 Musterhausen',
-      },
-
-      provider: 'E.ON',
-      tariff: 'EON ÖkoStrom Extra 12',
-      contractStart: '28.12.2023',
-      contractEnd: '27.12.2024',
-      contractNumber: '0215123456789',
-      customerNumber: '2026-1234567890',
-    },
-
-    {
-      type: 'gas',
-      status: 'In Belieferung',
-      meterIcon: 'assets/icons/gas-meter.png',
-      providerIcon: 'assets/icons/1a9ebeaf-78b8-48a3-9514-94f57aa1de2c_Gasvergleich.png',
-
-      providerType: 'Gas',
-
-      meterNumber: 'ZKH-1325-9147122',
-      marketLocation: 'MILD-054321-98674',
-
-      meterName: 'MHD-ZKH-31529147-122',
-
-      address: {
-        name: 'Marie Mustermann',
-        street: 'Mustermannstraße 29',
-        city: '12345 Musterhausen',
-      },
-
-      provider: 'E.ON',
-      tariff: 'Gas Extra 12',
-      contractStart: '15.09.2024',
-      contractEnd: '14.09.2026',
-      contractNumber: '012455-64564564',
-      customerNumber: '546321456987',
-    },
-  ];
+  meterList: any[] = [];
 
   inactiveMeterList = [
     {
@@ -619,6 +569,21 @@ export class Customer {
     item.originalMeterName = item.meterDesignation;
     item.isEditingMeterName = true;
   }
+
+  private syncMeterDesignation(deliveryId: number, newName: string) {
+    const updateList = (list: any[]) => {
+      list.forEach((item) => {
+        if (item.deliveryId === deliveryId) {
+          item.meterDesignation = newName;
+        }
+      });
+    };
+
+    updateList(this.meterList);
+    updateList(this.electricityList);
+    this.cdr.detectChanges();
+  }
+
   saveListMeterName(item: any) {
     const payload = {
       connectionId: item.id,
@@ -630,36 +595,72 @@ export class Customer {
         if (res?.res) {
           item.isEditingMeterName = false;
 
-          console.log(res.message);
+          this.syncMeterDesignation(item.deliveryId, item.meterDesignation);
+
           this.cdr.detectChanges();
         }
       },
-      error: (err) => {
-        console.error(err);
-      },
+      error: (err) => console.error(err),
     });
   }
   $itemAny(item: any): any {
     return item;
   }
+
   cancelListMeterEdit(item: any) {
     item.meterName = item.originalMeterName;
     item.isEditingMeterName = false;
   }
 
   // Report meter reading
-
-  // component.ts
-
   meterReadingCategory: string = '';
   meterReadingDate: string = '';
   meterReadingValue: string = '';
+  submittedReportMeterReading: boolean = false;
 
-  rredirectPhotoUpload() {
+  validateMeterReadingForm(): boolean {
+    this.fieldErrors = {};
+    let isValid = true;
+
+    // Category
+    if (!this.meterReadingCategory) {
+      this.fieldErrors['meterReadingCategory'] = 'Bitte Kategorie wählen';
+      isValid = false;
+    }
+
+    // Date
+    if (!this.meterReadingDate?.trim()) {
+      this.fieldErrors['meterReadingDate'] = 'Bitte Ablesedatum eingeben';
+      isValid = false;
+    }
+
+    // Meter value
+    const meterValue = this.meterReadingValue?.toString().trim();
+
+    if (!meterValue) {
+      this.fieldErrors['meterReadingValue'] = 'Bitte Zählerstand eingeben';
+      isValid = false;
+    } else if (!/^\d+$/.test(meterValue)) {
+      this.fieldErrors['meterReadingValue'] = 'Nur ganze Zahlen erlaubt';
+      isValid = false;
+    }
+
+    return isValid;
+  }
+
+  redirectPhotoUpload() {
+    if (!this.validateMeterReadingForm()) {
+      console.log('validation failed', this.fieldErrors);
+      return;
+    }
+
+    console.log('redirect working');
+
     this.redirect = 4;
   }
 
   selectedFiles: File[] = [];
+  replaceIndex: number | null = null;
   onFileSelected(event: any) {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -678,36 +679,90 @@ export class Customer {
   removeImage(index: number) {
     this.selectedFiles.splice(index, 1);
   }
+
+  @ViewChild('fileInput')
+  fileInput!: ElementRef<HTMLInputElement>;
+
+  // NORMAL IMAGE ADD
+  onReplaceFileSelected(event: any) {
+    const file = event.target.files?.[0];
+
+    if (!file) return;
+
+    // REPLACE IMAGE
+    if (this.replaceIndex !== null) {
+      this.selectedFiles[this.replaceIndex] = file;
+
+      this.replaceIndex = null;
+    } else {
+      // NORMAL ADD
+      this.selectedFiles.push(file);
+    }
+
+    // RESET INPUT
+    event.target.value = '';
+
+    // MOVE TO STEP 3
+    if (this.currentStep !== 3) {
+      this.currentStep = 3;
+    }
+
+    this.cdr.detectChanges();
+  }
+
+  // CLICK DELETE + OPEN PICKER
+  replaceImage(index: number, input: HTMLInputElement) {
+    this.replaceIndex = index;
+
+    input.click();
+  }
+  getMeterReadingStatus(item: any): string {
+    const status = item?.reportMeterReadings?.[0]?.status;
+
+    if (status === 1) {
+      return 'In Progress';
+    }
+
+    if (status === 2) {
+      return 'Forwarded';
+    }
+
+    return '';
+  }
   submitMeterReading() {
+    const payload = {
+      deliveryId: this.selectedMeter?.deliveryId,
+      orderId: this.selectedMeter?.order.orderId,
+      connectionId: this.selectedMeter?.id,
+
+      category: this.meterReadingCategory,
+      readingDate: this.meterReadingDate,
+      meterReading: this.meterReadingValue,
+    };
+
     const formData = new FormData();
 
-    // meter details
-    formData.append('category', this.meterReadingCategory);
-    formData.append('readingDate', this.meterReadingDate);
-    formData.append('meterReading', this.meterReadingValue);
+    // DTO JSON
+    formData.append('data', JSON.stringify(payload));
 
-    formData.append('contractNumber', this.selectedMeter?.contractNumber || '');
-    formData.append('meterNumber', this.selectedMeter?.meterNumber || '');
-
-    // ✅ ALL IMAGES IN ONE REQUEST
-    this.selectedFiles.forEach((file, index) => {
-      formData.append('files', file); // backend should support multiple "files"
+    // MULTIPLE FILES
+    this.selectedFiles.forEach((file) => {
+      formData.append('files', file);
     });
 
-    this.http.post('YOUR_FINAL_API_URL_HERE', formData).subscribe({
+    this.http.post(`${API_BASE}/customer/report-meter-reading`, formData).subscribe({
       next: (res: any) => {
-        console.log('Final submit success', res);
+        console.log('Meter reading success', res);
 
-        // redirect after success
-        this.redirect = 4;
+        if (res) {
+         this.submittedReportMeterReading = true;
+        }
+
+        this.cdr.detectChanges();
       },
 
       error: (err) => {
-        console.error('Final submit error', err);
-
-        // TEST MODE → still redirect
-        this.redirect = 4;
-        this.cdr.detectChanges();
+        console.error('Meter reading error', err);
       },
     });
   }
@@ -715,11 +770,32 @@ export class Customer {
   // Request Invoice
   invoiceCategory: string = '';
   invoiceMessage: string = '';
+  submittedInvoice: boolean = false;
+
+  hasInvoice(item: any): boolean {
+    console.log('check item ', item);
+    return Array.isArray(item?.invoiceRequests) && item.invoiceRequests.length > 0;
+  }
+
+  getInvoiceStatus(item: any): string {
+    const status = item?.invoiceRequests?.[0]?.status || '';
+
+    if (status === 1) {
+      return 'In Progress';
+    }
+
+    if (status === 2) {
+      return 'Forwarded';
+    }
+
+    return '';
+  }
 
   submitInvoiceRequest() {
     const payload = {
       customerId: Number(this.authService.getUserId()),
       connectionId: this.selectedMeter?.id,
+      deliveryId: this.selectedMeter?.deliveryId ?? 0,
       invoiceCategory: this.invoiceCategory,
       orderId: this.selectedMeter?.order.orderId,
       message: this.invoiceMessage,
@@ -730,6 +806,7 @@ export class Customer {
         if (res?.res) {
           this.invoiceCategory = '';
           this.invoiceMessage = '';
+          this.submittedInvoice = true;
         }
         this.cdr.detectChanges();
       },
@@ -1579,6 +1656,7 @@ export class Customer {
             const order = item?.order;
 
             return {
+              deliveryId: item?.deliveryId || 0,
               type: provider?.branch === 'gas' ? 'gas' : 'electricity',
 
               status: order?.orderId ? 'Vertrag aktiv' : 'In Bearbeitung',
@@ -1636,6 +1714,10 @@ export class Customer {
               zip: address?.zip || '',
               city: address?.city || '',
 
+              invoiceRequests: item.invoiceRequests,
+
+              reportMeterReadings: item.reportMeterReadings,
+
               address: {
                 name: `${customer?.firstName || ''} ${customer?.lastName || ''}`.trim(),
 
@@ -1647,6 +1729,71 @@ export class Customer {
           });
 
         console.log('electricityList', this.electricityList);
+
+        this.meterList = res.delivery
+          .filter((item: any) => item?.order?.orderId) // only valid contracts
+          .map((item: any) => {
+            const provider = item?.provider;
+            const connection = item?.connection;
+            const address = item?.customerAddress;
+            const customer = item?.customer;
+
+            return {
+              type: provider?.branch === 'gas' ? 'gas' : 'electricity',
+
+              status: item?.order?.orderId
+                ? provider?.branch === 'gas'
+                  ? 'In Belieferung'
+                  : 'Auftrag eingegangen'
+                : 'In Bearbeitung',
+
+              meterIcon:
+                provider?.branch === 'gas'
+                  ? 'assets/icons/gas-meter.png'
+                  : 'assets/icons/electric-meter.png',
+
+              providerIcon:
+                provider?.branch === 'gas'
+                  ? 'assets/icons/1a9ebeaf-78b8-48a3-9514-94f57aa1de2c_Gasvergleich.png'
+                  : 'assets/icons/65bd2fa8-bd0e-497e-a781-a3c434fe6176_Stromvergleich.png',
+
+              providerType: provider?.branch === 'gas' ? 'Gas' : 'Strom | Hausstrom',
+
+              meterNumber: connection?.meterNumber || '-',
+
+              marketLocation: connection?.marketLocationId || '-',
+
+              meterName: connection?.meterDesignation || connection?.meterNumber || '-',
+              meterDesignation: connection?.meterDesignation || connection?.meterNumber || '-',
+
+              id: connection?.id || '',
+              isEditingMeterName: false,
+              originalMeterName: '',
+
+              street: address?.street || '',
+              houseNumber: address?.houseNumber || '',
+              zip: address?.zip || '',
+              city: address?.city || '',
+
+              address: {
+                name: `${customer?.firstName || ''} ${customer?.lastName || ''}`.trim(),
+                street: `${address?.street || ''} ${address?.houseNumber || ''}`,
+                city: `${address?.zip || ''} ${address?.city || ''}`,
+              },
+
+              provider: provider?.providerName || '',
+              tariff: provider?.rateName || '',
+
+              contractStart: connection?.desiredDelivery
+                ? new Date(connection.desiredDelivery * 1000).toLocaleDateString('de-DE')
+                : '-',
+
+              contractEnd: '-', // not provided in API
+
+              contractNumber: item?.uniqueDeliveryId || '',
+              customerNumber: connection?.customerNumber || '-',
+            };
+          });
 
         this.cdr.detectChanges();
         this.isLoading = false;

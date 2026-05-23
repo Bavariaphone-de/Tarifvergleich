@@ -57,10 +57,14 @@ export class CarElectricity implements OnInit {
     this.selectedOption = 'ja'; // switches to JA view when X is clicked
   }
 
-  currentDialogText = '';
+  currentDialogData: any[] = [];
 
   openInfo(template: any, text: string) {
-    this.currentDialogText = text;
+    this.currentDialogData = [
+      {
+        description: text,
+      }
+    ];
 
     this.dialog.open(template, { width: '200px', maxWidth: '80vw' });
   }

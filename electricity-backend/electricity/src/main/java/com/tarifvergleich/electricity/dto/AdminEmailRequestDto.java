@@ -18,7 +18,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @Data
 public class AdminEmailRequestDto {
-
+	
 	private String title;
 	private String subtitle;
 	private String emailContent;
@@ -33,6 +33,9 @@ public class AdminEmailRequestDto {
 	@Builder
 	@Data
 	public static class AdminEmailResponseDto {
+		
+		private Long id;
+		
 		private String title;
 		private String subtitle;
 		private String emailContent;
@@ -45,7 +48,7 @@ public class AdminEmailRequestDto {
 		if (management == null)
 			return null;
 
-		return AdminEmailResponseDto.builder().title(management.getTitle()).subtitle(management.getSubtitle())
+		return AdminEmailResponseDto.builder().id(management.getId()).title(management.getTitle()).subtitle(management.getSubtitle())
 				.emailContent(management.getEmailContent())
 				.category(AdminEmailRequestCategoryDto.mapCategory(management.getCategory()))
 				.documents(Optional.ofNullable(management.getDocuments()).orElseGet(Collections::emptySet).stream()
