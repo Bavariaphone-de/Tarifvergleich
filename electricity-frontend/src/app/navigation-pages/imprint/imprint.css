@@ -19,6 +19,12 @@
   object-fit: cover;
 }
 
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
 /* Title */
 .page-title {
   padding: 12px 20px;
@@ -41,6 +47,9 @@
   background: #f7f7f7;
   padding: 12px;
   margin: 20px;
+
+  width: 100%;
+  overflow-x: auto;
 }
 
 /* Table */
@@ -119,4 +128,9 @@
     font-size: 13px;
     margin-bottom: 18px;
   }
+}
+
+.content-wrapper {
+  width: 100%;
+  overflow-x: auto;
 }

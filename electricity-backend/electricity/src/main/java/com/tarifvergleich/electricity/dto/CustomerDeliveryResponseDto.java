@@ -14,6 +14,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import java.util.List;
+
 
 @Data
 @NoArgsConstructor
@@ -36,6 +38,7 @@ public class CustomerDeliveryResponseDto {
 	private CustomerAddressRes customerAddress;
 	private CustomerBillingAddressRes billingAddress;
 	private EnergyRateDto provider;
+	
 
 	private Integer adminId;
 	private Integer page;
@@ -96,6 +99,8 @@ public class CustomerDeliveryResponseDto {
 		private CustomerContactScheduleResponse contactSchedule;
 		private SingleCustomerAdminResponseDelivery customer;
 		private CustomerOrderAdminResDto order;
+		private List<CustomerInvoiceRequestDto> invoiceRequests;
+		private List<ReportMeterReadingDto> reportMeterReadings;
 	}
 
 	@Data

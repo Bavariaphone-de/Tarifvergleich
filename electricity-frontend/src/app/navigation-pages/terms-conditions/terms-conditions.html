@@ -1,114 +1,26 @@
 <div class="impressum-page">
   <!-- Banner Image -->
   <div class="banner">
-    <img src="assets/images/imprintBanner.png" alt="Banner" />
+    <img
+      *ngIf="content?.logoPath"
+      [src]="staticContentService.getImageUrl(content?.logoPath)"
+      alt="Banner"
+    />
   </div>
 
   <!-- Title -->
   <div class="page-title">
-    <span>Allgemeine Geschäftsbedingungen</span>
+    <span>{{ content?.title }}</span>
   </div>
 
-  <!-- Content Box -->
+    <!-- Content Box -->
   <div class="impressum-card">
-    <table>
-      <tbody>
-        <tr>
-          <td class="label">AGB der Tarifvergleich.Bayern</td>
-
-          <td class="right">
-            Soweit nicht nachfolgend für bestimmte Leistungen auf spezielle Geschäftsbedingungen
-            Bezug genommen wird, gelten diese allgemeinen Geschäftsbedingungen (AGB) für Endkunden
-            für alle von der Tarifvergleich.Bayern angebotenen Vergleiche von Produkten oder
-            Dienstleistungen Dritter („Drittprodukte“), die diesbezügliche Vermittlungs- bzw.
-            Beratungsdienstleistungen sowie sonstige Dienstleistungen zu Drittprodukten, soweit
-            diese AGB wirksam in den mit dem Kunden geschlossenen Vertrag einbezogen wurden und
-            nichts anderes vereinbart ist. Sämtliche vorgenannten Leistungen der
-            Tarifvergleich.Bayern werden nachfolgend auch „Vertragsleistungen“ genannt.
-            <br /><br />
-
-            Für die nachfolgend Leistungen der Verivox GmbH gelten zusätzlich zu den vorliegenden
-            AGB die jeweils vereinbarten Geschäftsbedingungen, wobei im Falle von Widersprüchen die
-            nachfolgend benannten Geschäftsbedingungen vorgehen:
-            <br /><br />
-
-            - Persönliches Kundenkonto „Mein Konto“ Nutzungsbedingungen von Mein Konto |
-            Tarifvergleich.Bayern
-            <br /><br />
-
-            Folgende auf den unter www.tarifvergleich.bayern aufrufbaren Online-Portal verfügbaren
-            Leistungen werden nicht von der Tarifvergleich.Bayern angeboten und erbracht. Hierfür
-            gelten die vorliegenden AGB nicht, sondern die nachfolgend verlinkten
-            Geschäftsbedingungen:
-            <br /><br />
-
-            - AGB der Verivox GmbH für gewerbliche Serviceanbieter im Bereich Energieversorgung
-            <br /><br />
-
-            Der Nutzer der Vertragsleistungen („Benutzer“) kann die vorliegenden AGB in den
-            Arbeitsspeicher des von ihm verwendeten Endgeräts laden und auch als PDF speichern oder
-            ausdrucken. Diese AGB können auf Wunsch auch bei der Tarifvergleich.Bayern per E-Mail an
-            service@tarifvergleich.bayern oder schriftlich angefordert werden.
-            <br /><br />
-
-            Diese AGB umfassen einen Allgemeinen Teil (nachfolgend unter A.) und – für bestimmte
-            Dienstleistungen der Tarifvergleich.Bayern – zusätzlich einen Besonderen Teil
-            (nachfolgend unter B.). Bei Widersprüchen gelten die Regelungen des Besonderen Teils
-            vorrangig vor den Regelungen des Allgemeinen Teils. Die Widerrufsbelehrung finden Sie
-            unter C. am Ende dieses Dokuments.
-          </td>
-        </tr>
-
-        <tr>
-          <td class="label">Hinweis:</td>
-
-          <td class="right">
-            Folgende auf dem unter www.tarfivergleich.Bayern aufrufbaren Online-Portal verfügbaren
-            Leistungen werden nicht von der Tarifvergleich.Bayern angeboten und erbracht. Hierfür
-            gelten die vorliegenden AGB nicht, sondern die nachfolgend verlinkten
-            Geschäftsbedingungen: <br /><br />
-            • AGB der Verivox GmbH für gewerbliche Serviceanbieter im Bereich Energieversorgung
-            <br /><br />
-            Der Nutzer der Vertragsleistungen („Benutzer“) kann die vorliegenden AGB in den
-            Arbeitsspeicher des von ihm verwendeten Endgeräts laden und auch als PDF speichern oder
-            ausdrucken.
-            <br /><br />
-             Diese AGB können auf Wunsch auch bei der Tarifvergleich.Bayern per E-Mail an
-            service@tarifvergleich.bayern oder schriftlich angefragt werden. Diese AGB umfassen
-            einen Allgemeinen Teil (nachfolgend unter A.) und - für bestimmte Dienstleistungen der
-            Tarifvergleich.Bayern – zusätzlich einen Besonderen Teil (nachfolgend unter B.). Bei
-            Widersprüchen gelten die Regelungendes Besonderen Teils vorrangig vor den Regelungen des
-            Allgemeinen Teils. Die Widerrufsbelehrung finden Sie unter C. am Ende dieses Dokuments.
-          </td>
-        </tr>
-
-        <tr>
-          <td class="label">A. Allgemeiner Teil</td>
-
-          <td class="right">
-            <strong>§1 Anwendungsbereich und Leistungsumfang</strong>
-            <br /><br />
-
-            1.1 Es gelten jeweils die AGB in der zum Zeitpunkt des Vertragsschlusses gültigen
-            Fassung. Die Verivox GmbH kann diese AGB jederzeit ändern.
-            <br /><br />
-
-            1.2 Soweit hierdurch wesentliche Regelungen des Vertrages (z.B. Art und Umfang der
-            vereinbarten Leistungen) nicht berührt werden und dies zur Anpassung an Entwicklungen,
-            insbesondere technische, rechtliche oder regulatorische Veränderungen, erforderlich ist,
-            welche bei Abschluss des Vertrages nicht sicher vorhersehbar waren und deren
-            Nichtberücksichtigung die Ausgewogenheit des Vertrages merklich stören würde.
-            <br /><br />
-
-            c. soweit dies zur Beseitigung von Schwierigkeiten bei der Durchführung des Vertrages
-            aufgrund von nach Vertragsschluss entstandenen Regelungslücken erforderlich ist; dies
-            kann insbesondere der Fall sein, wenn sich die Rechtsprechung oder Gesetzgebung ändert
-            und hierdurch beispielsweise einzelne Klauseln dieser AGB unwirksam sind bzw. werden. In
-            diesem Fall wird die Tarifvergleich.Bayern die unwirksame durch eine dem Sinne nach
-            vergleichbare, rechtlich wirksame AGB ersetzen.
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="content-wrapper">
+      <div
+        class="right"
+        [innerHTML]="content?.description">
+      </div>
+    </div>
   </div>
+  
 </div>

@@ -47,6 +47,7 @@ export class CreateCustomerComponent {
     this.successMessage = "";
 
     const payload = {
+      
       adminId: 1,
       firstName: this.formData.firstName.trim(),
       lastName: this.formData.lastName.trim(),

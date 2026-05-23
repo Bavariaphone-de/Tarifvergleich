@@ -41,11 +41,12 @@ public class GlobalExceptionHandler {
 	
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<?> handleAllExceptions(Exception ex){
+		ex.printStackTrace(); // Log the exception for debugging
 		Map<String, Object> body = new LinkedHashMap<String, Object>();
 		ex.printStackTrace();
 		body.put("res", false);
 		body.put("errMessage", "Etwas ist schiefgelaufen");
-		body.put("errorDetail", ex.getMessage() !=null ? ex.getMessage() : ex.toString());
+		body.put("errorDetail", ex.getMessage() != null ? ex.getMessage() : ex.toString());
 		
 		return new ResponseEntity<>(body, HttpStatus.INTERNAL_SERVER_ERROR);
 		

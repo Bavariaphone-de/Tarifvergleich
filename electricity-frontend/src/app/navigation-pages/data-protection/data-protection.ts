@@ -1,48 +1,45 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { StaticContentService } from '../../services/static-content.service';
+import { ChangeDetectorRef } from '@angular/core';
 
 @Component({
   selector: 'app-data-protection',
-  imports: [],
+  standalone: true,
+  imports: [CommonModule],
   templateUrl: './data-protection.html',
-  styleUrl: './data-protection.css',
+  styleUrls: ['./data-protection.css']
 })
-export class DataProtection {
+export class DataProtection implements OnInit {
 
+  content: any;
+
+  constructor(
+    public staticContentService: StaticContentService,
+    private cdr: ChangeDetectorRef
+  ) {}
+
+  ngOnInit(): void {
+
+    this.staticContentService
+      .getData()
+      .subscribe({
+
+        next: (res: any) => {
+
+          console.log('API RESPONSE', res);
+
+          this.content = res.find(
+            (item: any) => item.id === 3
+          );
+          console.log("FILTERED CONTENT", this.content);
+          this.cdr.detectChanges();
+        },
+
+        error: (err) => {
+
+          console.log(err);
+        }
+      });
+  }
 }
-
-// import { Component, OnInit } from '@angular/core';
-// // import { StaticContentService } from '../../services/static-content.service';
-// // import { log } from 'console';
-// import { CommonModule } from '@angular/common';
-
-
-// @Component({
-//   selector: 'app-data-protection',
-//   imports: [CommonModule],
-//   templateUrl: './data-protection.html',
-//   styleUrls: ['./data-protection.css']
-// })
-
-// export class DataProtection implements OnInit {
-
-  // content: any;
-
-  // title: string = '';
-
-  // constructor(private staticContentService: StaticContentService) {}
-
-  // ngOnInit(): void {
-  //   // this.getContent();
-  //       this.staticContentService.getContentById(3).subscribe({
-  //     next: (res) => {
-  //       console.log(res.title)
-  //       this.content = res;
-  //       this.title = res.title;
-  //       console.log(this.content)
-  //     },
-  //     error: (err: any) => {
-  //       console.log(err);
-  //     }
-  //   });
-  // }
-  // }
