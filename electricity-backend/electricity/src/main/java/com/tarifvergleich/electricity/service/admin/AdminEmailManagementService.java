@@ -49,6 +49,18 @@ public class AdminEmailManagementService {
 
 		if (request.getCateId() == null)
 			throw new InternalServerException("Category must be selected", HttpStatus.OK);
+		
+//		boolean exists = repository.existsByCategoryCateIdAndAdminAdminId(
+//			    request.getCateId(),
+//			    request.getAdminId()
+//			);
+//
+//			if (exists) {
+//			    throw new InternalServerException(
+//			        "Template already exists for this category",
+//			        HttpStatus.OK
+//			    );
+//			}
 
 		AdminUser admin = adminUserRepo.findById(request.getAdminId())
 				.orElseThrow(() -> new InternalServerException("Admin not found with this credential", HttpStatus.OK));

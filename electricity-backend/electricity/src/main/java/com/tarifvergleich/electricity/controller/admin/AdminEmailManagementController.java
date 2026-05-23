@@ -54,4 +54,9 @@ public class AdminEmailManagementController {
 	public AdminEmailManagement getById(@PathVariable Long id) {
 		return service.getById(id);
 	}
+	
+//	@GetMapping("/{id}")
+//	public AdminEmailResponseDto getById(@PathVariable Long id) {
+//		return AdminEmailRequestDto.mapResponseForAdmin(service.getById(id));
+//	}
 }

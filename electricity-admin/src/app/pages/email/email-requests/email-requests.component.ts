@@ -244,7 +244,7 @@ export class EmailRequestsComponent {
     this.selectedPdfIds = new Set();
     this.message = "";
 
-    this.router.navigate(["/email-template-list"]);
+    this.router.navigate(["/email-template"]);
   }
 
   copyToClipboard(text: string) {

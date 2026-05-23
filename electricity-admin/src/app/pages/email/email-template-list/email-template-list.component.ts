@@ -16,6 +16,11 @@ export class EmailTemplateListComponent implements OnInit {
   isLoading = false;
   errorMessage = "";
 
+  test(item: any) {
+    console.log(Object.keys(item));
+    console.log(item);
+  }
+
   // Filters
   searchTerm = "";
   selectedCategory = "";
