@@ -18,19 +18,35 @@ public class EmailBodyRender {
 
 	public String verifyOtpBody(String otp) {
 
-		AdminEmailManagement adminEmailManagement = adminEmailManagementRepo.findByCategoryNameLike("VERIFICATION_OTP")
+		AdminEmailManagement adminEmailManagement = adminEmailManagementRepo
+				.findByCategoryCategorySlugLike("%VERIFICATION_OTP%")
 				.orElseThrow(() -> new InternalServerException("Error finding Email body", HttpStatus.OK));
-		
+
 		String tempEmailBody = adminEmailManagement.getEmailContent();
-		
+
 		tempEmailBody = tempEmailBody.replace("{OTP}", otp);
-		
-		String emailBody = customEmailTemplate.generateEmailHtml(adminEmailManagement.getTitle(), adminEmailManagement.getSubtitle(), tempEmailBody);
-		
+
+		String emailBody = customEmailTemplate.generateEmailHtml(adminEmailManagement.getTitle(),
+				adminEmailManagement.getSubtitle(), tempEmailBody);
+
 		return emailBody;
 	}
-	
+
 	public String conscent365AdvisorBody() {
 		return null;
 	}
+
+	public String beratervollmachtBody() {
+		AdminEmailManagement adminEmailManagement = adminEmailManagementRepo
+				.findByCategoryCategorySlugLike("%BERATERVOLLMACHT%")
+				.orElseThrow(() -> new InternalServerException("Error finding Email body", HttpStatus.OK));
+
+		String tempEmailBody = adminEmailManagement.getEmailContent();
+		String emailBody = customEmailTemplate.generateEmailHtml(adminEmailManagement.getTitle(),
+				adminEmailManagement.getSubtitle(), tempEmailBody);
+
+		return emailBody;
+	}
+	
+	public String 
 }

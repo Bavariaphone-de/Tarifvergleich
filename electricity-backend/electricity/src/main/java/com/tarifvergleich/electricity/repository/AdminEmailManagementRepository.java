@@ -14,6 +14,6 @@ public interface AdminEmailManagementRepository extends JpaRepository<AdminEmail
 	List<AdminEmailManagement> findAllByAdminAdminId(Integer adminId);
 	Optional<AdminEmailManagement> findByCategoryCateId(Long cateId);
 	
-	Optional<AdminEmailManagement> findByCategoryNameLike(String name);
+	Optional<AdminEmailManagement> findByCategoryCategorySlugLike(String name);
 
 }

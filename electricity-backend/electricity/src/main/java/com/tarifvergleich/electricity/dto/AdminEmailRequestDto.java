@@ -48,7 +48,7 @@ public class AdminEmailRequestDto {
 		return AdminEmailResponseDto.builder().title(management.getTitle()).subtitle(management.getSubtitle())
 				.emailContent(management.getEmailContent())
 				.category(AdminEmailRequestCategoryDto.mapCategory(management.getCategory()))
-				.documents(Optional.ofNullable(management.getDocuments()).orElseGet(Collections::emptyList).stream()
+				.documents(Optional.ofNullable(management.getDocuments()).orElseGet(Collections::emptySet).stream()
 						.map(ManageAdminDocumentDto::mapForAdmin).toList())
 				.build();
 	}

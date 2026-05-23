@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import com.tarifvergleich.electricity.dto.CustomerDto;
 import com.tarifvergleich.electricity.dto.ServiceRequestEmailEvent.ServiceAttachmentMailOfAcknowledgement;
 import com.tarifvergleich.electricity.dto.ServiceRequestEmailEvent.ServiceResponseEmailEvent;
+import com.tarifvergleich.electricity.dto.email.VerifyOtpEmail;
 import com.tarifvergleich.electricity.exception.InternalServerException;
 import com.tarifvergleich.electricity.model.AdminEmailManagement;
 import com.tarifvergleich.electricity.model.AdminUser;
@@ -29,6 +30,7 @@ import com.tarifvergleich.electricity.repository.CustomerRepository;
 import com.tarifvergleich.electricity.repository.TokenManagementRespository;
 import com.tarifvergleich.electricity.service.AesEncryptionService;
 import com.tarifvergleich.electricity.service.MailService;
+import com.tarifvergleich.electricity.util.EmailBodyRender;
 import com.tarifvergleich.electricity.util.EmailTemplate;
 import com.tarifvergleich.electricity.util.Helper;
 
@@ -50,6 +52,7 @@ public class CustomerAuthService {
 	private final TokenManagementRespository tokenManagementRespo;
 	private final AesEncryptionService aesEncryptionService;
 	private final AdminEmailManagementRepository adminEmailManagementRepo;
+	private final EmailBodyRender emailRender;
 
 	@Value("${otp.verification-timer}")
 	private int expiryMinutes;
@@ -639,28 +642,14 @@ public class CustomerAuthService {
 		return Map.of("res", true, "message", "Password reset successfully");
 	}
 
-	@Transactional
-	public Map<String, Object> sendMail(Integer id) {
-		Customer customer = customerRepo.findById(id).orElse(null);
+//	public Map<String, Object> sendMail(Integer id) {
+//		Customer customer = customerRepo.findById(id).orElse(null);
 //
-//		String encodedId = Base64.getEncoder().encodeToString(customer.getCustomerId().toString().getBytes());
+//		AdminEmailManagement emailManagement = adminEmailManagementRepo.findByCategoryCateId(1l).orElse(null);
+//		String emailBody = emailRender.verifyOtpBody("123456");
+//		VerifyOtpEmail emailContent = new VerifyOtpEmail(customer.getEmail(), emailManagement.getTitle(), emailBody);
+//		eventPublisher.publishEvent(emailContent);
 //
-//		String mailBody = emailTemplate.createCustomerConsentEmailBody(customer.getSalutation(), customer.getLastName(),
-//				encodedId);
-//
-//		ServiceAttachmentMailOfAcknowledgement mailRes = new ServiceAttachmentMailOfAcknowledgement(customer.getEmail(),
-//				"Action Required: Confirm your Energy Selection", mailBody, customer.getAdmin().getAdminId());
-//
-//		eventPublisher.publishEvent(mailRes);
-//		
-//		mailService.sendMail(customer.getEmail(), "Something", mailBody);
-
-		AdminEmailManagement emailManagement = adminEmailManagementRepo.findByCategoryCateId(1l).orElse(null);
-		String emailBody = emailManagement.getEmailContent().replace("{OTP}", "123456");
-		ServiceResponseEmailEvent emailContent = new ServiceResponseEmailEvent(customer.getEmail(),
-				emailManagement.getTitle(), emailBody);
-		eventPublisher.publishEvent(emailContent);
-
-		return Map.of("res", true);
-	}
+//		return Map.of("res", true);
+//	}
 }
