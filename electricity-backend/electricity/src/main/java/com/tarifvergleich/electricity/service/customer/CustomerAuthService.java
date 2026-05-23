@@ -164,8 +164,7 @@ public class CustomerAuthService {
 				customer.setOtp(otp);
 				customer.setOtpGeneratedOn(Helper.getCurrentTimeBerlin());
 				String subject = "Verify Your Account - Tarifvergleich Electricity";
-				String body = emailTemplate.createOtpEmailBody(customer.getFirstName(), otp);
-
+				String body = emailRender.verifyOtpBody(otp);
 				if (customerDto.getIsVerified() == null || !customerDto.getIsVerified())
 					mailService.sendMail(customer.getEmail(), subject, body);
 
@@ -271,7 +270,7 @@ public class CustomerAuthService {
 			customer.setOtp(newOtp);
 			customer.setOtpGeneratedOn(Helper.getCurrentTimeBerlin());
 			String subject = "Verify Your Account - Tarifvergleich Electricity";
-			String body = emailTemplate.createOtpEmailBody(customer.getFirstName(), newOtp);
+			String body = emailRender.verifyOtpBody(newOtp);
 
 			mailService.sendMail(customer.getEmail(), subject, body);
 

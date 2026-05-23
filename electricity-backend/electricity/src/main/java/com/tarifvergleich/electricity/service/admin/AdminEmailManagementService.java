@@ -113,7 +113,7 @@ public class AdminEmailManagementService {
 	}
 	
 	@Transactional
-	public AdminEmailManagement updateEmail( Long id, AdminEmailRequestDto request) {
+	public AdminEmailManagement updateEmail(Long id, AdminEmailRequestDto request) {
 
 	    AdminEmailManagement email = repository.findById(id).orElseThrow(() ->
 	            new InternalServerException("Email template not found", HttpStatus.OK));
@@ -127,8 +127,8 @@ public class AdminEmailManagementService {
 	    email.setEmailContent(request.getEmailContent());
 	    email.setCategory(category);
 
-	    List<ManageAdminDocument> documents =  manageAdminDocumentRepository.findAllById(
-	            request.getPdfIds().stream().map(Long::intValue).toList());
+	    Set<ManageAdminDocument> documents =  manageAdminDocumentRepository.findAllById(
+	            request.getPdfIds().stream().map(Long::intValue).toList()).stream().collect(Collectors.toSet());
 
 	    email.setDocuments(documents);
 	    return repository.save(email);
