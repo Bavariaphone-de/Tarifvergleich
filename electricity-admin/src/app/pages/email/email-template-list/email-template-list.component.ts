@@ -3,6 +3,7 @@ import { CommonModule } from "@angular/common";
 import { RouterModule } from "@angular/router";
 import { FormsModule } from "@angular/forms";
 import { HttpClient } from "@angular/common/http";
+import { ApiService } from "../../../shared/services/api.service";
 
 @Component({
   selector: "app-email-template-list",
@@ -39,7 +40,9 @@ export class EmailTemplateListComponent implements OnInit {
   showDeleteConfirm = false;
   itemToDelete: any = null;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient,
+    private api: ApiService
+  ) {}
 
   ngOnInit(): void {
     this.fetchTemplates();
@@ -47,8 +50,8 @@ export class EmailTemplateListComponent implements OnInit {
 
   fetchTemplates(): void {
     this.isLoading = true;
-    this.http
-      .post<any[]>("http://192.168.0.155:8080/admin/email-management/all", {
+    this.api
+      .post("/email-management/all", {
         adminId: 1,
       })
       .subscribe({

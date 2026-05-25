@@ -16,7 +16,8 @@ import { Router } from "@angular/router";
   styleUrl: "./email-requests.component.css",
 })
 export class EmailRequestsComponent {
-  selectedCategory: string = "";
+
+  selectedCategory: number | null = null;
   title: string = "";
   subtitle: string = "";
   emailContent: string = "";
@@ -41,11 +42,12 @@ export class EmailRequestsComponent {
   ) {}
 
   ngOnInit(): void {
-    this.api
-      .post("email-category/all", { adminId: 1 })
+    this.http
+      .post("http://192.168.0.155:8080/email-category/all", { adminId: 1 })
       .subscribe((res: any) => {
         console.log(res);
         this.categories = res;
+
       });
 
     this.loadPdfs();
@@ -67,7 +69,7 @@ export class EmailRequestsComponent {
           this.subtitle = res.subtitle;
           this.emailContent = res.emailContent;
 
-          this.selectedCategory = res.category?.cateId;
+          this.selectedCategory = res.cateId;
         });
       }
   }
@@ -168,22 +170,38 @@ export class EmailRequestsComponent {
     this.http
       .post("http://192.168.0.155:8080/admin/email-management/save", body)
       .subscribe({
-        next: (res) => {
+        next: (res: any) => {
+
+          if(res.res === false) {
+
+            //DUPLICATE TEMPLATE
+            this.message = res.errMessage || "Template already exists for this category";
+            this.isError = true;
+
+
+          } else {
+                      
+          //SUCCESS
           this.message = "Successfully Submitted";
           this.isError = false;
 
           this.title = "";
           this.subtitle = "";
           this.emailContent = "";
-          this.selectedCategory = "";
+          this.selectedCategory = null;
           this.selectedPdfIds = new Set();
+
+          }
 
           setTimeout(() => {
             this.message = "";
           }, 3000);
         },
+          
         error: (err) => {
           console.log(err);
+
+          //SERVER / API FAILURE
           this.message = "Submission Failed";
           this.isError = true;
 
@@ -192,7 +210,7 @@ export class EmailRequestsComponent {
           }, 3000);
         },
       });
-  }
+    }
 
   // FOR EDITING TEMPLATE
 
@@ -211,33 +229,50 @@ export class EmailRequestsComponent {
         body
       )
       .subscribe({
-        next: () => {
+        next: (res: any) => {
 
+          if(res.res === false) {
+
+            //DUPLICATE TEMPLATE
+            this.message = res.errMessage || "Template already exists for this category";
+            this.isError = true;
+
+
+          } else {
+                      
+          //SUCCESS
           this.message = "Successfully Updated";
           this.isError = false;
+
+          this.title = "";
+          this.subtitle = "";
+          this.emailContent = "";
+          this.selectedCategory = null;
+          this.selectedPdfIds = new Set();
+
+          }
 
           setTimeout(() => {
             this.message = "";
           }, 3000);
-
         },
+          
         error: (err) => {
-
           console.log(err);
 
+          //SERVER / API FAILURE
           this.message = "Update Failed";
           this.isError = true;
 
           setTimeout(() => {
             this.message = "";
           }, 3000);
-
-        }
+        },
       });
     }
 
   cancelForm() {
-    this.selectedCategory = "";
+    this.selectedCategory = null;
     this.title = "";
     this.subtitle = "";
     this.emailContent = "";

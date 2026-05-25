@@ -18,10 +18,10 @@
         <select name="selectedCategory" [(ngModel)]="selectedCategory"
           class="w-full border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded-lg px-4 py-3 outline-none focus:border-brand-400">
 
-          <option value="">Select Option</option>
+          <option [ngValue] = "null">Select Option</option>
 
           @for (c of categories; track c.cateId) {
-          <option [value]="c.cateId">
+          <option [ngValue]="c.cateId">
             {{ c.name }}
           </option>
           }
