@@ -12,13 +12,13 @@ import org.springframework.stereotype.Service;
 
 import com.tarifvergleich.electricity.dto.ServiceRequestEmailEvent.ServiceResponseEmailEvent;
 import com.tarifvergleich.electricity.exception.InternalServerException;
-import com.tarifvergleich.electricity.model.TokenManagement;
 import com.tarifvergleich.electricity.model.Customer;
 import com.tarifvergleich.electricity.model.CustomerOrder;
-import com.tarifvergleich.electricity.repository.TokenManagementRespository;
+import com.tarifvergleich.electricity.model.TokenManagement;
 import com.tarifvergleich.electricity.repository.CustomerOrderRepository;
+import com.tarifvergleich.electricity.repository.TokenManagementRespository;
 import com.tarifvergleich.electricity.service.AesEncryptionService;
-import com.tarifvergleich.electricity.util.EmailTemplate;
+import com.tarifvergleich.electricity.util.EmailBodyRender;
 import com.tarifvergleich.electricity.util.Helper;
 
 import jakarta.transaction.Transactional;
@@ -33,7 +33,7 @@ public class AsyncServiceAdmin {
 	private final TokenManagementRespository contractTokenRespo;
 	private final Helper helper;
 	private final ApplicationEventPublisher eventPublisher;
-	private final EmailTemplate emailTemplate;
+	private final EmailBodyRender emailBodyRender;
 
 	@Value("${app.secrets.aes-expiry}")
 	private Long TokenExpiry;
@@ -75,11 +75,10 @@ public class AsyncServiceAdmin {
 
 		customerOrderRepo.save(order);
 
-		String mailBody = emailTemplate.createSignatureRequestEmailBody(customer.getSalutation(),
-				customer.getLastName(), securedToken);
+		String mailBody = emailBodyRender.orderSignatureBody(customer, securedToken, customerOrderId);
 
 		ServiceResponseEmailEvent emailEvent = new ServiceResponseEmailEvent(customer.getEmail(),
-				"Sign Provider Contract", mailBody);
+				"Bitte unterschreiben Sie Ihren Vertrag: (Contract Number: " + customerOrderId + ")", mailBody);
 
 		eventPublisher.publishEvent(emailEvent);
 	}

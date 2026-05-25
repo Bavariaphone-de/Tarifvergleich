@@ -31,7 +31,6 @@ import com.tarifvergleich.electricity.dto.CustomerServiceRequestDto.CustomerServ
 import com.tarifvergleich.electricity.dto.CustomerServiceRequestDto.CustomerServiceRequestResDtoForListing;
 import com.tarifvergleich.electricity.dto.ServiceRequestEmailEvent.ServiceResponseEmailEvent;
 import com.tarifvergleich.electricity.exception.InternalServerException;
-import com.tarifvergleich.electricity.model.AdminUser;
 import com.tarifvergleich.electricity.model.Customer;
 import com.tarifvergleich.electricity.model.CustomerAttorny;
 import com.tarifvergleich.electricity.model.CustomerComparingEnergy;
@@ -47,7 +46,7 @@ import com.tarifvergleich.electricity.repository.CustomerDetailsContactHistoryRe
 import com.tarifvergleich.electricity.repository.CustomerRepository;
 import com.tarifvergleich.electricity.repository.CustomerServiceRequestRepository;
 import com.tarifvergleich.electricity.service.customer.CustomerAuthService;
-import com.tarifvergleich.electricity.util.EmailTemplate;
+import com.tarifvergleich.electricity.util.EmailBodyRender;
 import com.tarifvergleich.electricity.util.Helper;
 
 import jakarta.transaction.Transactional;
@@ -63,7 +62,7 @@ public class AdminCustomerManagementService {
 	private final CustomerServiceRequestRepository customerServiceRequestRepo;
 	private final CustomerAttornyRepository customerAttornyRepo;
 	private final ApplicationEventPublisher eventPublisher;
-	private final EmailTemplate emailTemplate;
+	private final EmailBodyRender emailBodyRender;
 	private final CustomerAuthService customerAuthService;
 	private final ObjectMapper objectMapper;
 	private final CustomerDetailsContactHistoryRepository customerDetailsContactHistoryRepo;
@@ -80,7 +79,8 @@ public class AdminCustomerManagementService {
 			if (customer.getAdmin().getAdminId() != customerReq.getAdminId())
 				throw new InternalServerException("Not authorised to access customer details", HttpStatus.OK);
 
-			SingleCustomerResponseDeliveryForAdmin customerRes = CustomerDto.getAdminSingleCustomerResponseDto(customer);
+			SingleCustomerResponseDeliveryForAdmin customerRes = CustomerDto
+					.getAdminSingleCustomerResponseDto(customer);
 
 			return Map.of("res", true, "data", customerRes);
 
@@ -270,7 +270,7 @@ public class AdminCustomerManagementService {
 
 		Customer customer = serviceRequest.getCustomer();
 
-		AdminUser admin = customer.getAdmin();
+//		AdminUser admin = customer.getAdmin();
 
 		CustomerServiceRequestMessages message = CustomerServiceRequestMessages.builder().chatUser("ADMIN")
 				.message(serviceRequestDto.getMessage()).build();
@@ -281,18 +281,15 @@ public class AdminCustomerManagementService {
 
 		customerServiceRequestRepo.save(serviceRequest);
 
-		Map<String, Object> dateTimeMap = Helper.getLocalDateTimeFromBigInteger(serviceRequest.getCreatedOn());
+//		Map<String, Object> dateTimeMap = Helper.getLocalDateTimeFromBigInteger(serviceRequest.getCreatedOn());
 
-		String formattedDateTime = dateTimeMap.get("monthName").toString() + " " + dateTimeMap.get("date").toString()
-				+ " " + dateTimeMap.get("year").toString() + ", at " + dateTimeMap.get("hour").toString() + ":"
-				+ dateTimeMap.get("minute").toString() + " " + dateTimeMap.get("amPm").toString();
+//		String formattedDateTime = dateTimeMap.get("monthName").toString() + " " + dateTimeMap.get("date").toString()
+//				+ " " + dateTimeMap.get("year").toString() + ", at " + dateTimeMap.get("hour").toString() + ":"
+//				+ dateTimeMap.get("minute").toString() + " " + dateTimeMap.get("amPm").toString();
 
 		String subject = "Received  a  response  from  the  consultant on ticket-No. "
 				+ serviceRequest.getTicketNumber();
-		String body = emailTemplate.createServiceRequestResponseEmailBody(customer.getSalutation(),
-				customer.getLastName(), customer.getFirstName(), serviceRequest.getTicketNumber(), formattedDateTime,
-				customer.getEmail(), serviceRequestDto.getMessage(), admin.getName());
-
+		String body = emailBodyRender.serviceRequestResponseBody(serviceRequest);
 		ServiceResponseEmailEvent serviceEventData = new ServiceResponseEmailEvent(customer.getEmail(), subject, body);
 		eventPublisher.publishEvent(serviceEventData);
 
@@ -505,26 +502,26 @@ public class AdminCustomerManagementService {
 		customerRepo.save(customer);
 		return Map.of("res", true, "message", "Note added successfully");
 	}
-	
+
 	@Transactional
 	public Map<String, Object> addCustomerContactHistoryByAdmin(CustomerDetailsContactHistoryDto historyDto) {
-	    if (historyDto == null)
-	        throw new InternalServerException("All required data missing", HttpStatus.OK);
-	    if (historyDto.getAdminId() == null || historyDto.getAdminId() <= 0)
-	        throw new InternalServerException("Admin id missing", HttpStatus.OK);
-	    if (historyDto.getCustomerId() == null || historyDto.getCustomerId() <= 0)
-	        throw new InternalServerException("Customer id missing", HttpStatus.OK);
+		if (historyDto == null)
+			throw new InternalServerException("All required data missing", HttpStatus.OK);
+		if (historyDto.getAdminId() == null || historyDto.getAdminId() <= 0)
+			throw new InternalServerException("Admin id missing", HttpStatus.OK);
+		if (historyDto.getCustomerId() == null || historyDto.getCustomerId() <= 0)
+			throw new InternalServerException("Customer id missing", HttpStatus.OK);
 
-	    Customer customer = customerRepo.findByCustomerIdAndAdminAdminId(historyDto.getCustomerId(), historyDto.getAdminId())
-	            .orElseThrow(
-	            		() -> new InternalServerException("Customer not found with this credential", HttpStatus.OK));
+		Customer customer = customerRepo
+				.findByCustomerIdAndAdminAdminId(historyDto.getCustomerId(), historyDto.getAdminId()).orElseThrow(
+						() -> new InternalServerException("Customer not found with this credential", HttpStatus.OK));
 
-	    CustomerDetailsContactHistory history = CustomerDetailsContactHistory.builder().note(historyDto.getNote())
-	    		.customer(customer).build();
-	    
-	    history.setCustomer(customer);
-	    customerDetailsContactHistoryRepo.save(history);
-	    return Map.of("res", true,"message", "Contact history added successfully");
+		CustomerDetailsContactHistory history = CustomerDetailsContactHistory.builder().note(historyDto.getNote())
+				.customer(customer).build();
+
+		history.setCustomer(customer);
+		customerDetailsContactHistoryRepo.save(history);
+		return Map.of("res", true, "message", "Contact history added successfully");
 	}
 
 	@Transactional
