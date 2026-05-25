@@ -25,6 +25,7 @@ export class BannersComponent implements OnInit {
 
   isLoading = false;
   errorMessage = "";
+  successMessage = "";
 
   constructor(
     private api: ApiService,
@@ -39,7 +40,7 @@ export class BannersComponent implements OnInit {
     // Payload for getting the specific banner type
     const payload = {
       adminId: this.authService.getUserId(),
-      type: 3 // Matching the type used in onSubmit
+      type: 3, // Matching the type used in onSubmit
     };
 
     // Using your get-all endpoint to find the existing banner
@@ -65,8 +66,8 @@ export class BannersComponent implements OnInit {
       return;
     }
 
-    if (file.size > 2 * 1024 * 1024) {
-      this.errorMessage = "Bild muss kleiner als 2MB sein";
+    if (file.size > 5 * 1024 * 1024) {
+      this.errorMessage = "Bild muss kleiner als 5MB sein";
       return;
     }
 
@@ -90,10 +91,11 @@ export class BannersComponent implements OnInit {
 
     this.isLoading = true;
     this.errorMessage = "";
+    this.successMessage = "";
 
     const payload: any = {
       adminId: adminId,
-      type: 3, 
+      type: 3,
     };
 
     // If bannerId exists, add it to the payload so the backend updates the existing record
@@ -108,14 +110,18 @@ export class BannersComponent implements OnInit {
     this.api.post("admin/add-menu", formData).subscribe({
       next: (res: any) => {
         this.isLoading = false;
-        alert("✅ Banner erfolgreich aktualisiert");
-        
+        this.successMessage = "Banner erfolgreich aktualisiert";
         // Refresh the view
         this.fetchCurrentBanner();
-        
+
         // Reset upload slot
         this.imageFile = null;
         this.imagePreview = null;
+
+        // Auto-hide the success message after 5 seconds
+        setTimeout(() => {
+          this.successMessage = "";
+        }, 5000);
       },
       error: (err) => {
         this.isLoading = false;

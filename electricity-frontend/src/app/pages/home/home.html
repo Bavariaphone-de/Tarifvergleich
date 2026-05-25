@@ -33,7 +33,8 @@
             <img src="assets/icons/Telefonhörer_Weiss.png" class="phone-icon" alt="telephone-icon" />
           </div>
           <span class="expert phone">
-            <span class="text">08157 / 999 42 - 0</span>
+            <span class="text">{{ aboutData?.contactNumber || '08157 / 999 42 - 0' }}</span>
+            <span class="text">{{ aboutData?.contactNumber || '08157 / 999 42 - 0' }}</span>
           </span>
         </div> -->
       </div>
@@ -51,7 +52,7 @@
           <span class="icon-wrapper">
             <img src="assets/icons/WhatsApp_weiss.png" class="chat-icon" alt="whats-app" />
           </span>
-          <span class="text">08157 / 999 42 - 0</span>
+          <span class="text">{{ aboutData?.contactNumber || '08157 / 999 42 - 0' }}</span>
         </button>
 
         <button class="contact-button">
