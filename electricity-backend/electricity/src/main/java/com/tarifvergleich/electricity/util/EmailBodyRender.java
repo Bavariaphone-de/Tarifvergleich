@@ -1,10 +1,14 @@
 package com.tarifvergleich.electricity.util;
 
+import java.util.Map;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 import com.tarifvergleich.electricity.exception.InternalServerException;
 import com.tarifvergleich.electricity.model.AdminEmailManagement;
+import com.tarifvergleich.electricity.model.Customer;
+import com.tarifvergleich.electricity.model.CustomerServiceRequest;
 import com.tarifvergleich.electricity.repository.AdminEmailManagementRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -18,19 +22,166 @@ public class EmailBodyRender {
 
 	public String verifyOtpBody(String otp) {
 
-		AdminEmailManagement adminEmailManagement = adminEmailManagementRepo.findByCategoryNameLike("VERIFICATION_OTP")
+		AdminEmailManagement adminEmailManagement = adminEmailManagementRepo
+				.findByCategoryCategorySlugLike("%VERIFICATION_OTP%")
 				.orElseThrow(() -> new InternalServerException("Error finding Email body", HttpStatus.OK));
-		
+
 		String tempEmailBody = adminEmailManagement.getEmailContent();
-		
+
 		tempEmailBody = tempEmailBody.replace("{OTP}", otp);
-		
-		String emailBody = customEmailTemplate.generateEmailHtml(adminEmailManagement.getTitle(), adminEmailManagement.getSubtitle(), tempEmailBody);
-		
+
+		String emailBody = customEmailTemplate.generateEmailHtml(adminEmailManagement.getTitle(),
+				adminEmailManagement.getSubtitle(), tempEmailBody);
+
+		return emailBody;
+	}
+
+	public String conscent365AdvisorBody() {
+		return null;
+	}
+
+	public String beratervollmachtBody() {
+		AdminEmailManagement adminEmailManagement = adminEmailManagementRepo
+				.findByCategoryCategorySlugLike("%BERATERVOLLMACHT%")
+				.orElseThrow(() -> new InternalServerException("Error finding Email body", HttpStatus.OK));
+
+		String tempEmailBody = adminEmailManagement.getEmailContent();
+		String emailBody = customEmailTemplate.generateEmailHtml(adminEmailManagement.getTitle(),
+				adminEmailManagement.getSubtitle(), tempEmailBody);
+
+		return emailBody;
+	}
+
+	public String serviceAnfrageBody(CustomerServiceRequest customerServiceRequest) {
+
+		if (customerServiceRequest == null)
+			throw new InternalServerException("Customer service request not found for email body", HttpStatus.OK);
+
+		AdminEmailManagement adminEmailManagement = adminEmailManagementRepo
+				.findByCategoryCategorySlugLike("%SERVICE_ANFRAGE%")
+				.orElseThrow(() -> new InternalServerException("Error finding Email body", HttpStatus.OK));
+
+		String tempEmailBody = adminEmailManagement.getEmailContent();
+
+		Map<String, Object> dateTimeMap = Helper.getLocalDateTimeFromBigInteger(customerServiceRequest.getCreatedOn());
+
+		String formattedDateTime = dateTimeMap.get("monthName").toString() + " " + dateTimeMap.get("date").toString()
+				+ " " + dateTimeMap.get("year").toString() + ", at " + dateTimeMap.get("hour").toString() + ":"
+				+ dateTimeMap.get("minute").toString() + " " + dateTimeMap.get("amPm").toString();
+
+		tempEmailBody = tempEmailBody.replace("{DATE_TIME}", formattedDateTime);
+		tempEmailBody = tempEmailBody.replace("{CUSTOMER_EMAIL}", customerServiceRequest.getCustomer().getEmail());
+		tempEmailBody = tempEmailBody.replace("{SERVICE_CONTENT}", customerServiceRequest.getDescription());
+
+		String title = adminEmailManagement.getTitle().replace("{TICKET_NUMBER}",
+				customerServiceRequest.getTicketNumber());
+
+		String emailBody = customEmailTemplate.generateEmailHtml(title, adminEmailManagement.getSubtitle(),
+				tempEmailBody);
+
+		return emailBody;
+	}
+
+	public String orderSignatureBody(Customer customer, String securedToken, Integer customerOrderId) {
+
+		if (customer == null || securedToken == null || securedToken.isEmpty())
+			throw new InternalServerException("Error building email body", HttpStatus.OK);
+
+		AdminEmailManagement adminEmailManagement = adminEmailManagementRepo
+				.findByCategoryCategorySlugLike("%ORDER_SIGNATURE%")
+				.orElseThrow(() -> new InternalServerException("Error finding Email body", HttpStatus.OK));
+
+		String tempEmailBody = adminEmailManagement.getEmailContent();
+
+		tempEmailBody = tempEmailBody.replace("{CUSTOMER_NAME}",
+				customer.getFirstName() + " " + customer.getLastName());
+
+		String signatureUrl = "http://192.168.0.131:4200/order-signature?token=" + securedToken;
+
+		String htmlButtonBlock = "<!--[if mso]>"
+				+ "<v:roundrect xmlns:v=\"urn:schemas-microsoft-com:vml\" xmlns:w=\"urn:schemas-microsoft-com:office:word\" href=\""
+				+ signatureUrl
+				+ "\" style=\"height:50px;v-text-anchor:middle;width:240px;\" arcsize=\"10%\" strokecolor=\"#1b5e20\" fillcolor=\"#2e7d32\">"
+				+ "<w:anchorlock/>"
+				+ "<center style=\"color:#ffffff;font-family:sans-serif;font-size:16px;font-weight:bold;\">Vertrag unterschreiben</center>"
+				+ "</v:roundrect>" + "<![endif]-->" + "<a href=\"" + signatureUrl
+				+ "\" style=\"background-color:#2e7d32; border-radius:5px; color:#ffffff; display:inline-block; font-family:sans-serif; font-size:16px; font-weight:bold; line-height:50px; text-align:center; text-decoration:none; width:240px; -webkit-text-size-adjust:none; mso-hide:all; box-shadow: 0 4px 6px rgba(0,0,0,0.1);\">Vertrag unterschreiben</a>";
+
+		tempEmailBody = tempEmailBody.replace("|Vertrag unterschreiben|", htmlButtonBlock);
+
+		String title = adminEmailManagement.getTitle().replace("{ORDER_NUMBER}", customerOrderId.toString());
+
+		String emailBody = customEmailTemplate.generateEmailHtml(title, adminEmailManagement.getSubtitle(),
+				tempEmailBody);
+
+		return emailBody;
+	}
+
+	public String contractConfirmationEmailBody() {
+		return null;
+	}
+
+	public String contractUploadReminderBody() {
+		return null;
+	}
+
+	public String serviceRequestResponseBody(CustomerServiceRequest serviceRequest) {
+
+		if (serviceRequest == null)
+			throw new InternalServerException("Error creating email body", HttpStatus.OK);
+
+		Map<String, Object> dateTimeMap = Helper.getLocalDateTimeFromBigInteger(serviceRequest.getCreatedOn());
+
+		String formattedDateTime = dateTimeMap.get("monthName").toString() + " " + dateTimeMap.get("date").toString()
+				+ " " + dateTimeMap.get("year").toString() + ", at " + dateTimeMap.get("hour").toString() + ":"
+				+ dateTimeMap.get("minute").toString() + " " + dateTimeMap.get("amPm").toString();
+
+		AdminEmailManagement adminEmailManagement = adminEmailManagementRepo
+				.findByCategoryCategorySlugLike("%SERVICE_ANFRAGE_ANTWORT%")
+				.orElseThrow(() -> new InternalServerException("Error finding Email body", HttpStatus.OK));
+
+		String title = adminEmailManagement.getTitle().replace("{TICKET_NUMBER}", serviceRequest.getTicketNumber());
+
+		String tempEmailBody = adminEmailManagement.getEmailContent();
+
+		tempEmailBody = tempEmailBody.replace("{SALUTATION}", serviceRequest.getCustomer().getSalutation());
+		tempEmailBody = tempEmailBody.replace("{CUSTOMER_NAME}", serviceRequest.getCustomer().getLastName());
+		tempEmailBody = tempEmailBody.replace("{DATE_TIME}", formattedDateTime);
+		tempEmailBody = tempEmailBody.replace("{CUSTOMER_EMAIL}", serviceRequest.getCustomer().getEmail());
+
+		String emailBody = customEmailTemplate.generateEmailHtml(title, adminEmailManagement.getSubtitle(),
+				tempEmailBody);
+
 		return emailBody;
 	}
 	
-	public String conscent365AdvisorBody() {
-		return null;
+	public String serviceRequestReopenBody(CustomerServiceRequest serviceRequest) {
+		
+		if (serviceRequest == null)
+			throw new InternalServerException("Error creating email body", HttpStatus.OK);
+
+		Map<String, Object> dateTimeMap = Helper.getLocalDateTimeFromBigInteger(serviceRequest.getCreatedOn());
+
+		String formattedDateTime = dateTimeMap.get("monthName").toString() + " " + dateTimeMap.get("date").toString()
+				+ " " + dateTimeMap.get("year").toString() + ", at " + dateTimeMap.get("hour").toString() + ":"
+				+ dateTimeMap.get("minute").toString() + " " + dateTimeMap.get("amPm").toString();
+
+		AdminEmailManagement adminEmailManagement = adminEmailManagementRepo
+				.findByCategoryCategorySlugLike("%SERVICE_ANFRAGE_REOPENED%")
+				.orElseThrow(() -> new InternalServerException("Error finding Email body", HttpStatus.OK));
+
+		String title = adminEmailManagement.getTitle().replace("{TICKET_NUMBER}", serviceRequest.getTicketNumber());
+
+		String tempEmailBody = adminEmailManagement.getEmailContent();
+
+		tempEmailBody = tempEmailBody.replace("{SALUTATION}", serviceRequest.getCustomer().getSalutation());
+		tempEmailBody = tempEmailBody.replace("{CUSTOMER_NAME}", serviceRequest.getCustomer().getLastName());
+		tempEmailBody = tempEmailBody.replace("{DATE_TIME}", formattedDateTime);
+		tempEmailBody = tempEmailBody.replace("{CUSTOMER_EMAIL}", serviceRequest.getCustomer().getEmail());
+
+		String emailBody = customEmailTemplate.generateEmailHtml(title, adminEmailManagement.getSubtitle(),
+				tempEmailBody);
+				
+		return emailBody;
 	}
 }

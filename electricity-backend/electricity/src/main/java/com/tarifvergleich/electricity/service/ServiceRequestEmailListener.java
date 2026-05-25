@@ -63,7 +63,6 @@ public class ServiceRequestEmailListener {
 		mailService.sendMailWithAttachment(event.customerMail(), event.customerSub(), event.custmerBody(), fileUrls);
 	}
 
-	@Async("taskExecutor")
 	@EventListener
 	public void sendverifyEmail(VerifyOtpEmail verifyEmail) {
 
@@ -72,11 +71,13 @@ public class ServiceRequestEmailListener {
 			TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
 				@Override
 				public void afterCommit() {
-					mailService.sendMail("", "", "");
+					System.err.println("Hello from transaction");
+					mailService.sendMail(verifyEmail.to(), verifyEmail.subject(), verifyEmail.body());
 				}
 			});
 		} else {
-			mailService.sendMail("", "", "");
+			System.err.println("Hello from non-transaction");
+			mailService.sendMail(verifyEmail.to(), verifyEmail.subject(), verifyEmail.body());
 		}
 	}
 }

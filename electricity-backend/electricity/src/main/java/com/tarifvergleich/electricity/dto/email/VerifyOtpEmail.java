@@ -1,5 +1,5 @@
 package com.tarifvergleich.electricity.dto.email;
 
-public record VerifyOtpEmail(String subject, String to, String otp) {
+public record VerifyOtpEmail(String to, String subject, String body) {
 
 }

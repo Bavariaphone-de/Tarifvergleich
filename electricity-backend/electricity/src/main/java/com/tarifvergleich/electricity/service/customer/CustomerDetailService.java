@@ -57,6 +57,8 @@ import com.tarifvergleich.electricity.repository.CustomerServiceRequestRepositor
 import com.tarifvergleich.electricity.repository.CustomerServicesRepository;
 import com.tarifvergleich.electricity.repository.ReportMeterReadingRepository;
 import com.tarifvergleich.electricity.service.AesEncryptionService;
+import com.tarifvergleich.electricity.util.CustomEmailTemplate;
+import com.tarifvergleich.electricity.util.EmailBodyRender;
 import com.tarifvergleich.electricity.util.EmailTemplate;
 import com.tarifvergleich.electricity.util.FileServiceCustomer;
 import com.tarifvergleich.electricity.util.Helper;
@@ -80,12 +82,14 @@ public class CustomerDetailService {
 	private final CustomerAddressRepository customerAddressRepo;
 	private final CustomerServiceRequestRepository customerServiceRequestRepo;
 	private final EmailTemplate emailTemplate;
+	private final EmailBodyRender emailBodyRender;
 	private final ApplicationEventPublisher eventPublisher;
 	private final CustomerOrderRepository customerOrderRepo;
 	private final AesEncryptionService aesEncryptionService;
 	private final TokenManagementRespository contractTokenRespo;
 	private final CustomerInvoiceRequestRepository invoiceRepo;
 	private final ReportMeterReadingRepository reportMeterReadingRepo;
+	private final CustomEmailTemplate customEmailTemplate;
 	private AdminSignatureRepository adminSignatureRepository;
 
 	public Map<String, Object> getCustomerDetails(Integer customerId) {
@@ -203,141 +207,101 @@ public class CustomerDetailService {
 
 	public Map<String, Object> fetchAllCustomerDeliveries(Integer customerId) {
 
-	    if (customerId == null || customerId <= 0)
-	        throw new InternalServerException("Customer id missing", HttpStatus.OK);
-	
-	    Customer customer = customerRepo.findById(customerId).orElseThrow(
-	            () -> new InternalServerException("Customer not found with this credentian", HttpStatus.OK));
-	
-	    List<CustomerDelivery> customerDeliveries = customer.getCustomerDelivery();
-	
-	    if (customerDeliveries == null || customerDeliveries.isEmpty())
-	        return Map.of("res", true, "customerDeliveries", List.of());
-	
-	    // STEP 1: filter placed deliveries
-	    List<CustomerDelivery> placedDeliveries = customerDeliveries.stream()
-	            .filter(CustomerDelivery::getOrderPlaced)
-	            .toList();
-	
-	    // STEP 2: collect delivery IDs
-	    List<Integer> deliveryIds = placedDeliveries.stream()
-	            .map(CustomerDelivery::getId)
-	            .toList();
-	
-	    // STEP 3: fetch invoices
-	    List<CustomerInvoiceRequest> allInvoices =
-	            invoiceRepo.findByDeliveryIdIn(deliveryIds);
-	    
-	    // STEP 3B: fetch meter readings
-	    List<ReportMeterReading> allMeterReadings =
-	            reportMeterReadingRepo.findByDeliveryIdIn(deliveryIds);
+		if (customerId == null || customerId <= 0)
+			throw new InternalServerException("Customer id missing", HttpStatus.OK);
 
-	    // STEP 3C: group by deliveryId
-	    Map<Integer, List<ReportMeterReading>> meterReadingMap =
-	            allMeterReadings.stream()
-	                    .collect(Collectors.groupingBy(
-	                            ReportMeterReading::getDeliveryId
-	                    ));
-	
-	    // STEP 4: group invoices by deliveryId
-	    Map<Integer, List<CustomerInvoiceRequest>> invoiceMap =
-	            allInvoices.stream()
-	                    .collect(Collectors.groupingBy(CustomerInvoiceRequest::getDeliveryId));
-	
-	    // STEP 5: build response DTO list
-	    List<CustomerDeliveryResponseAll> deliveryResponse = placedDeliveries.stream()
-	            .map(CustomerDeliveryResponseDto::getDeliveryResponse)
-	            .sorted((a, b) -> b.getOrderPlacedOn().compareTo(a.getOrderPlacedOn()))
-	            .toList();
-	
-	    CustomerShortDetail customerResponse =
-	            CustomerDto.customerShortResponse(customer);
-	
-	    // STEP 6: SAFE MATCHING BY deliveryId (FIXED)
-	    Map<Integer, CustomerDeliveryResponseAll> dtoMap = deliveryResponse.stream()
-	            .collect(Collectors.toMap(
-	                    CustomerDeliveryResponseAll::getDeliveryId,
-	                    d -> d
-	            ));
-	
-	    for (CustomerDelivery entity : placedDeliveries) {
-	
-	        CustomerDeliveryResponseAll dto = dtoMap.get(entity.getId());
-	
-	        if (dto == null) continue;
-	
-	        List<CustomerInvoiceRequestDto> invoiceDtoList =
-	                invoiceMap.getOrDefault(entity.getId(), List.of())
-	                        .stream()
-	                        .map(inv -> CustomerInvoiceRequestDto.builder()
-	                                .id(inv.getId())
-	                                .customerId(inv.getCustomerId())
-	                                .connectionId(inv.getConnectionId())
-	                                .orderId(inv.getOrderId())
-	                                .deliveryId(inv.getDeliveryId())
-	                                .invoiceCategory(inv.getInvoiceCategory())
-	                                .message(inv.getMessage())
-	                                .status(inv.getStatus())
-	                                .createdAt(inv.getCreatedAt())
-	                                .build()
-	                        )
-	                        .toList();
-	
-	        dto.setInvoiceRequests(invoiceDtoList);
-	        
-	        // METER READING LIST
-	        List<ReportMeterReadingDto> meterReadingDtoList =
-	                meterReadingMap.getOrDefault(entity.getId(), List.of())
-	                        .stream()
-	                        .map(reading -> {
+		Customer customer = customerRepo.findById(customerId).orElseThrow(
+				() -> new InternalServerException("Customer not found with this credentian", HttpStatus.OK));
 
-	                            ReportMeterReadingDto meterDto =
-	                                    new ReportMeterReadingDto();
+		List<CustomerDelivery> customerDeliveries = customer.getCustomerDelivery();
 
-	                            meterDto.setId(reading.getId());
+		if (customerDeliveries == null || customerDeliveries.isEmpty())
+			return Map.of("res", true, "customerDeliveries", List.of());
 
-	                            meterDto.setDeliveryId(
-	                                    reading.getDeliveryId());
+		// STEP 1: filter placed deliveries
+		List<CustomerDelivery> placedDeliveries = customerDeliveries.stream().filter(CustomerDelivery::getOrderPlaced)
+				.toList();
 
-	                            meterDto.setOrderId(
-	                                    reading.getOrderId());
+		// STEP 2: collect delivery IDs
+		List<Integer> deliveryIds = placedDeliveries.stream().map(CustomerDelivery::getId).toList();
 
-	                            meterDto.setConnectionId(
-	                                    reading.getConnectionId());
+		// STEP 3: fetch invoices
+		List<CustomerInvoiceRequest> allInvoices = invoiceRepo.findByDeliveryIdIn(deliveryIds);
 
-	                            meterDto.setCategory(
-	                                    reading.getCategory());
+		// STEP 3B: fetch meter readings
+		List<ReportMeterReading> allMeterReadings = reportMeterReadingRepo.findByDeliveryIdIn(deliveryIds);
 
-	                            meterDto.setReadingDate(
-	                                    reading.getReadingDate());
+		// STEP 3C: group by deliveryId
+		Map<Integer, List<ReportMeterReading>> meterReadingMap = allMeterReadings.stream()
+				.collect(Collectors.groupingBy(ReportMeterReading::getDeliveryId));
 
-	                            meterDto.setMeterReading(
-	                                    reading.getMeterReading());
+		// STEP 4: group invoices by deliveryId
+		Map<Integer, List<CustomerInvoiceRequest>> invoiceMap = allInvoices.stream()
+				.collect(Collectors.groupingBy(CustomerInvoiceRequest::getDeliveryId));
 
-	                            meterDto.setImagePath(
-	                                    reading.getImagePath());
+		// STEP 5: build response DTO list
+		List<CustomerDeliveryResponseAll> deliveryResponse = placedDeliveries.stream()
+				.map(CustomerDeliveryResponseDto::getDeliveryResponse)
+				.sorted((a, b) -> b.getOrderPlacedOn().compareTo(a.getOrderPlacedOn())).toList();
 
-	                            meterDto.setStatus(
-	                                    reading.getStatus());
+		CustomerShortDetail customerResponse = CustomerDto.customerShortResponse(customer);
 
-	                            meterDto.setCreatedAt(
-	                                    reading.getCreatedAt());
+		// STEP 6: SAFE MATCHING BY deliveryId (FIXED)
+		Map<Integer, CustomerDeliveryResponseAll> dtoMap = deliveryResponse.stream()
+				.collect(Collectors.toMap(CustomerDeliveryResponseAll::getDeliveryId, d -> d));
 
-	                            return meterDto;
-	                        })
-	                        .toList();
+		for (CustomerDelivery entity : placedDeliveries) {
 
-	        dto.setReportMeterReadings(meterReadingDtoList);
-	    }
-	
-	    // FINAL RESPONSE
-	    return Map.of(
-	            "res", true,
-	            "customer", customerResponse,
-	            "delivery", deliveryResponse
-	    );
+			CustomerDeliveryResponseAll dto = dtoMap.get(entity.getId());
+
+			if (dto == null)
+				continue;
+
+			List<CustomerInvoiceRequestDto> invoiceDtoList = invoiceMap.getOrDefault(entity.getId(), List.of()).stream()
+					.map(inv -> CustomerInvoiceRequestDto.builder().id(inv.getId()).customerId(inv.getCustomerId())
+							.connectionId(inv.getConnectionId()).orderId(inv.getOrderId())
+							.deliveryId(inv.getDeliveryId()).invoiceCategory(inv.getInvoiceCategory())
+							.message(inv.getMessage()).status(inv.getStatus()).createdAt(inv.getCreatedAt()).build())
+					.toList();
+
+			dto.setInvoiceRequests(invoiceDtoList);
+
+			// METER READING LIST
+			List<ReportMeterReadingDto> meterReadingDtoList = meterReadingMap.getOrDefault(entity.getId(), List.of())
+					.stream().map(reading -> {
+
+						ReportMeterReadingDto meterDto = new ReportMeterReadingDto();
+
+						meterDto.setId(reading.getId());
+
+						meterDto.setDeliveryId(reading.getDeliveryId());
+
+						meterDto.setOrderId(reading.getOrderId());
+
+						meterDto.setConnectionId(reading.getConnectionId());
+
+						meterDto.setCategory(reading.getCategory());
+
+						meterDto.setReadingDate(reading.getReadingDate());
+
+						meterDto.setMeterReading(reading.getMeterReading());
+
+						meterDto.setImagePath(reading.getImagePath());
+
+						meterDto.setStatus(reading.getStatus());
+
+						meterDto.setCreatedAt(reading.getCreatedAt());
+
+						return meterDto;
+					}).toList();
+
+			dto.setReportMeterReadings(meterReadingDtoList);
+		}
+
+		// FINAL RESPONSE
+		return Map.of("res", true, "customer", customerResponse, "delivery", deliveryResponse);
 	}
-	
+
 	public Map<String, Object> fetchAllCustomerDeliveriesByGroup(Integer adminId, Integer customerId) {
 
 		if (adminId == null || adminId <= 0)
@@ -478,17 +442,13 @@ public class CustomerDetailService {
 		String adminSubject = "";
 		Map<String, Object> dateTimeMap = Helper.getLocalDateTimeFromBigInteger(customerServiceRequest.getCreatedOn());
 
-		String formattedDateTime = dateTimeMap.get("monthName").toString() + " " + dateTimeMap.get("date").toString()
-				+ " " + dateTimeMap.get("year").toString() + ", at " + dateTimeMap.get("hour").toString() + ":"
-				+ dateTimeMap.get("minute").toString() + " " + dateTimeMap.get("amPm").toString();
+//		String formattedDateTime = dateTimeMap.get("monthName").toString() + " " + dateTimeMap.get("date").toString()
+//				+ " " + dateTimeMap.get("year").toString() + ", at " + dateTimeMap.get("hour").toString() + ":"
+//				+ dateTimeMap.get("minute").toString() + " " + dateTimeMap.get("amPm").toString();
 
 		if (isReopened) {
 			customerSubject = "Ticket " + customerServiceRequest.getTicketNumber() + " Reopened";
-			customerBody = emailTemplate.createServiceRequestReopenedEmailBody(customer.getSalutation(),
-					customer.getLastName(), customer.getFirstName(), customerServiceRequest.getTicketNumber(),
-					formattedDateTime, customerServiceRequest.getService().getServiceName(), customer.getEmail(),
-					serviceRequestDto.getMessage());
-
+			customerBody = emailBodyRender.serviceRequestReopenBody(customerServiceRequest);
 			adminSubject = "REOPENED: Ticket " + customerServiceRequest.getTicketNumber();
 			adminBody = emailTemplate.createAdminServiceRequestReopenedEmailBody(admin.getName(),
 					customer.getFirstName() + " " + customer.getLastName(), customerServiceRequest.getTicketNumber(),
@@ -496,10 +456,7 @@ public class CustomerDetailService {
 
 		} else if (isNewMessage) {
 			customerSubject = "Ticket " + customerServiceRequest.getTicketNumber() + " Added New Message";
-			customerBody = emailTemplate.createNewMessageNotificationToCustomerBody(customer.getSalutation(),
-					customer.getLastName(), customer.getFirstName(), customerServiceRequest.getTicketNumber(),
-					customerServiceRequest.getService().getServiceName(), formattedDateTime,
-					serviceRequestDto.getMessage());
+			customerBody = emailBodyRender.serviceAnfrageBody(customerServiceRequest);
 
 			adminSubject = "New Message: Ticket " + customerServiceRequest.getTicketNumber();
 			adminBody = emailTemplate.createAdminNewMessageNotificationBody(admin.getName(),
@@ -508,10 +465,7 @@ public class CustomerDetailService {
 
 		} else {
 			customerSubject = "New Ticket " + customerServiceRequest.getTicketNumber() + " Opened";
-			customerBody = emailTemplate.createServiceRequestOpenedEmailBody(customer.getSalutation(),
-					customer.getLastName(), customer.getFirstName(), customerServiceRequest.getTicketNumber(),
-					customerServiceRequest.getService().getServiceName(), customerMailId, formattedDateTime,
-					serviceRequestDto.getMessage());
+			customerBody = emailBodyRender.serviceAnfrageBody(customerServiceRequest);
 
 			adminSubject = "ACTION REQUIRED: New Ticket " + customerServiceRequest.getTicketNumber();
 			adminBody = emailTemplate.createAdminServiceRequestOpenedEmailBody(admin.getName(),
@@ -718,7 +672,8 @@ public class CustomerDetailService {
 				() -> new InternalServerException("Customer not found with this credential", HttpStatus.OK));
 
 		ServiceResponseEmailEvent mailEvent = new ServiceResponseEmailEvent(customer.getEmail(), "Attorny Signing",
-				emailTemplate.getPowerOfAttorneyEmailTemplate(customer.getFirstName() + " " + customer.getLastName()));
+				customEmailTemplate.generateEmailHtml("Power of Attorney for your energy contracts", "", emailTemplate
+						.getPowerOfAttorneyEmailTemplate(customer.getFirstName() + " " + customer.getLastName())));
 
 		eventPublisher.publishEvent(mailEvent);
 
@@ -832,24 +787,17 @@ public class CustomerDetailService {
 
 		CustomerDeliveryResponseAll resp = CustomerDeliveryResponseDto.getDeliveryResponse(delivery);
 
-		 String adminSignaturePath = null;
+		String adminSignaturePath = null;
 
-		    if (delivery != null && delivery.getAdmin() != null) {
+		if (delivery != null && delivery.getAdmin() != null) {
 
-		        Integer adminId = delivery.getAdmin().getAdminId();
+			Integer adminId = delivery.getAdmin().getAdminId();
 
-		        adminSignaturePath = adminSignatureRepository
-		                .findByAdmin_AdminId(adminId)
-		                .map(AdminSignature::getFilePath)
-		                .orElse(null);
-		    }
-		    
-		    return Map.of(
-		            "res", true,
-		            "data", resp,
-		            "adminSignaturePath", adminSignaturePath
-		    );
+			adminSignaturePath = adminSignatureRepository.findByAdmin_AdminId(adminId).map(AdminSignature::getFilePath)
+					.orElse(null);
+		}
+
+		return Map.of("res", true, "data", resp, "adminSignaturePath", adminSignaturePath);
 	}
 
-	
 }
