@@ -186,73 +186,45 @@ public class CustomerController {
 	public ResponseEntity<?> fetchCustomerProfileInfo(@RequestBody CustomerDto customerDto) {
 		return ResponseEntity.ok(customerDetailService.fetchCustomerProfile(customerDto));
 	}
-	
+
 	@PostMapping("/update-customer-detail")
 	public ResponseEntity<?> updateCustomerDetail(@RequestBody CustomerDto customerDto) {
 		return ResponseEntity.ok(customerUpdateService.updateCustomerDetail(customerDto));
 	}
-	
+
 	@PostMapping("/update-meter-designation")
-	public ResponseEntity<?> updateMeterDesignation(
-	        @RequestBody Map<String, Object> payload
-	) {
+	public ResponseEntity<?> updateMeterDesignation(@RequestBody Map<String, Object> payload) {
 
-	    Long connectionId = Long.valueOf(
-	            payload.get("connectionId").toString()
-	    );
+		Long connectionId = Long.valueOf(payload.get("connectionId").toString());
 
-	    String meterDesignation =
-	            payload.get("meterDesignation").toString();
+		String meterDesignation = payload.get("meterDesignation").toString();
 
-	    customerMeterService.updateMeterDesignation(
-	            connectionId,
-	            meterDesignation
-	    );
+		customerMeterService.updateMeterDesignation(connectionId, meterDesignation);
 
-	    return ResponseEntity.ok(
-	    	    customerMeterService.updateMeterDesignation(
-	    	        connectionId,
-	    	        meterDesignation
-	    	    )
-	    	);
+		return ResponseEntity.ok(customerMeterService.updateMeterDesignation(connectionId, meterDesignation));
 	}
-	
-	@PostMapping("/submit-invoice-request")
-	public ResponseEntity<?> submitInvoiceRequest(
-	        @RequestBody CustomerInvoiceRequestDto dto
-	) {
 
-	    return ResponseEntity.ok(
-	    		customerMeterService.submitInvoiceRequest(dto)
-	    );
+	@PostMapping("/submit-invoice-request")
+	public ResponseEntity<?> submitInvoiceRequest(@RequestBody CustomerInvoiceRequestDto dto) {
+
+		return ResponseEntity.ok(customerMeterService.submitInvoiceRequest(dto));
 	}
 
 	@PostMapping(value = "/report-meter-reading")
-	public ResponseEntity<?> reportMeterReading(
-	        @RequestPart("data") String jsonData,
-	        @RequestPart(value = "files", required = false)
-	        MultipartFile[] files) {
+	public ResponseEntity<?> reportMeterReading(@RequestPart("data") String jsonData,
+			@RequestPart(value = "files", required = false) MultipartFile[] files) {
 
-	    try {
+		try {
 
-	        ReportMeterReadingDto dto =
-	                objectMapper.readValue(
-	                        jsonData,
-	                        ReportMeterReadingDto.class);
+			ReportMeterReadingDto dto = objectMapper.readValue(jsonData, ReportMeterReadingDto.class);
 
-	        return ResponseEntity.ok(
-	                customerMeterService.reportMeterReading(
-	                        dto,
-	                        files));
+			return ResponseEntity.ok(customerMeterService.reportMeterReading(dto, files));
 
-	    } catch (Exception e) {
+		} catch (Exception e) {
 
-	        e.printStackTrace();
+			e.printStackTrace();
 
-	        return ResponseEntity.ok(
-	                Map.of(
-	                        "res", false,
-	                        "message", e.getMessage()));
-	    }
+			return ResponseEntity.ok(Map.of("res", false, "message", e.getMessage()));
+		}
 	}
 }

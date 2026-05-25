@@ -3,9 +3,11 @@ package com.tarifvergleich.electricity.service;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Base64;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -18,6 +20,7 @@ import com.tarifvergleich.electricity.exception.InternalServerException;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
+
 @Service
 @RequiredArgsConstructor
 public class MailService {
@@ -103,6 +106,32 @@ public class MailService {
 			mailSender.send(message);
 		} catch (MessagingException e) {
 			throw new InternalServerException("Failed to send email with attachment", HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	@Async
+	public void sendEmailWithBase64Attachment(String to, String body, String pdfBase64String,
+			String attachmentFileName) {
+
+		try {
+			byte[] pdfBytes = Base64.getDecoder().decode(pdfBase64String);
+
+			MimeMessage message = mailSender.createMimeMessage();
+			MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+			helper.setFrom(sendFrom);
+			helper.setTo(to);
+			helper.setSubject("Ihre unterschriebene Beratervollmacht - Tarifvergleich");
+
+			helper.setText(body, true);
+
+			ByteArrayResource attachmentResource = new ByteArrayResource(pdfBytes);
+			helper.addAttachment(attachmentFileName, attachmentResource);
+
+			mailSender.send(message);
+
+		} catch (Exception e) {
+			throw new RuntimeException("Error processing email transmission queues", e);
 		}
 	}
 }

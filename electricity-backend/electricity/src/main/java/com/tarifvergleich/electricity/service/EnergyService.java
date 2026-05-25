@@ -13,6 +13,7 @@ import com.tarifvergleich.electricity.dto.BaseProviderResponse;
 import com.tarifvergleich.electricity.dto.CheckIbanResponseDto;
 import com.tarifvergleich.electricity.dto.EgonFileSignatureResponse.EgonDocumentDto;
 import com.tarifvergleich.electricity.dto.EgonFileSignatureResponse.EgonFileSignatureRequest;
+import com.tarifvergleich.electricity.dto.EgonOrderStatusResponse;
 import com.tarifvergleich.electricity.dto.EnergyApiResponse;
 import com.tarifvergleich.electricity.exception.EnergyApiUnavailableException;
 
@@ -115,6 +116,16 @@ public class EnergyService {
 					throw new EnergyApiUnavailableException("Invalid orderNo", body);
 				}).body(EgonDocumentDto.class);
 	}
-	
-	
+
+	public EgonOrderStatusResponse checkOrderStatus(String orderId) {
+		return energyApi.get().uri("/order/{orderNo}/status", orderId).retrieve()
+				.onStatus(HttpStatusCode::isError, (request, response) -> {
+					Map<String, Object> body = objectMapper.readValue(response.getBody(),
+							new TypeReference<Map<String, Object>>() {
+							});
+					body.put("code", (Object) 200);
+					throw new EnergyApiUnavailableException("Invalid orderNo", body);
+				}).body(EgonOrderStatusResponse.class);
+	}
+
 }

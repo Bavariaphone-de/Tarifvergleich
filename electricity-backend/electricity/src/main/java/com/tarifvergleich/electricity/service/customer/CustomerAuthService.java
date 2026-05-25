@@ -14,25 +14,28 @@ import org.springframework.stereotype.Service;
 import com.tarifvergleich.electricity.dto.CustomerDto;
 import com.tarifvergleich.electricity.dto.ServiceRequestEmailEvent.ServiceAttachmentMailOfAcknowledgement;
 import com.tarifvergleich.electricity.dto.ServiceRequestEmailEvent.ServiceResponseEmailEvent;
-import com.tarifvergleich.electricity.dto.email.VerifyOtpEmail;
 import com.tarifvergleich.electricity.exception.InternalServerException;
 import com.tarifvergleich.electricity.model.AdminEmailManagement;
 import com.tarifvergleich.electricity.model.AdminUser;
 import com.tarifvergleich.electricity.model.Customer;
 import com.tarifvergleich.electricity.model.CustomerAddress;
+import com.tarifvergleich.electricity.model.CustomerAttorny;
 import com.tarifvergleich.electricity.model.CustomerChangePasswordHistory;
 import com.tarifvergleich.electricity.model.CustomerLoginHistory;
 import com.tarifvergleich.electricity.model.TokenManagement;
 import com.tarifvergleich.electricity.repository.AdminEmailManagementRepository;
 import com.tarifvergleich.electricity.repository.AdminUserRepository;
 import com.tarifvergleich.electricity.repository.CustomerAddressRepository;
+import com.tarifvergleich.electricity.repository.CustomerAttornyRepository;
 import com.tarifvergleich.electricity.repository.CustomerRepository;
 import com.tarifvergleich.electricity.repository.TokenManagementRespository;
 import com.tarifvergleich.electricity.service.AesEncryptionService;
 import com.tarifvergleich.electricity.service.MailService;
+import com.tarifvergleich.electricity.util.CustomEmailTemplate;
 import com.tarifvergleich.electricity.util.EmailBodyRender;
 import com.tarifvergleich.electricity.util.EmailTemplate;
 import com.tarifvergleich.electricity.util.Helper;
+import com.tarifvergleich.electricity.util.PdfGenerator;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
@@ -43,6 +46,9 @@ import lombok.RequiredArgsConstructor;
 public class CustomerAuthService {
 
 	private final CustomerRepository customerRepo;
+	private final CustomerAttornyRepository customerAttornyRepo;
+	private final PdfGenerator pdfGenerator;
+	private final CustomEmailTemplate customEmailTemplate;
 	private final CustomerAddressRepository customerAddressRepo;
 	private final Helper helper;
 	private final MailService mailService;
@@ -209,7 +215,7 @@ public class CustomerAuthService {
 			if (customerDto.getIsVerified() == null || !customerDto.getIsVerified())
 				mailService.sendMail(savedCustomer.getEmail(), subject, body);
 		} else {
-			String emailBody = emailManagement.getEmailContent().replace("{OTP}", otp);
+			String emailBody = emailRender.verifyOtpBody(otp);
 			ServiceResponseEmailEvent emailContent = new ServiceResponseEmailEvent(savedCustomer.getEmail(),
 					emailManagement.getTitle(), emailBody);
 			eventPublisher.publishEvent(emailContent);
@@ -254,11 +260,14 @@ public class CustomerAuthService {
 			if (firstTimeVerification) {
 				String encodedId = Base64.getEncoder().encodeToString(customer.getCustomerId().toString().getBytes());
 
-				String mailBody = emailTemplate.createCustomerConsentEmailBody(customer.getSalutation(),
-						customer.getLastName(), encodedId);
+//				String mailBody = customEmailTemplate.generateEmailHtml("Bestätigen Sie den Empfang Ihres Kontos", "", emailTemplate.createCustomerConsentEmailBody(customer.getSalutation(),
+//						customer.getLastName(), encodedId));
+
+				String consentUrl = "http://192.168.0.155:8080/auth/mark-acknowledgement?token=" + encodedId;
+				String mailBody = emailRender.conscent365AdvisorBody(consentUrl, customer);
 
 				ServiceAttachmentMailOfAcknowledgement mailRes = new ServiceAttachmentMailOfAcknowledgement(
-						customer.getEmail(), "Action Required: Confirm your Energy Selection", mailBody,
+						customer.getEmail(), "Action Required: Bestätigen Sie den Empfang Ihres Kontos", mailBody,
 						customer.getAdmin().getAdminId());
 
 				eventPublisher.publishEvent(mailRes);
@@ -452,6 +461,13 @@ public class CustomerAuthService {
 
 		customerRepo.save(customer);
 
+		String mailBody = emailRender.resetPasswordConfirmationBody(customer);
+
+		ServiceResponseEmailEvent mailEvent = new ServiceResponseEmailEvent(customer.getEmail(),
+				"Reset Password Successful", mailBody);
+
+		eventPublisher.publishEvent(mailEvent);
+
 		return Map.of("res", true, "message", "Password changed successfully");
 	}
 
@@ -589,8 +605,7 @@ public class CustomerAuthService {
 
 		tokenManagementRespo.save(manageToken);
 
-		String mailBody = emailTemplate.createPasswordResetEmailBody(customer.getSalutation(), customer.getLastName(),
-				encryptedToken);
+		String mailBody = emailRender.forgotPasswordBody(customer, encryptedToken);
 
 		ServiceResponseEmailEvent mailEvent = new ServiceResponseEmailEvent(customer.getEmail(), "Reset Password",
 				mailBody);
@@ -638,16 +653,24 @@ public class CustomerAuthService {
 
 		customerRepo.save(customer);
 
+		String mailBody = emailRender.resetPasswordConfirmationBody(customer);
+
+		ServiceResponseEmailEvent mailEvent = new ServiceResponseEmailEvent(customer.getEmail(),
+				"Reset Password Successful", mailBody);
+
+		eventPublisher.publishEvent(mailEvent);
+
 		return Map.of("res", true, "message", "Password reset successfully");
 	}
 
 //	public Map<String, Object> sendMail(Integer id) {
-//		Customer customer = customerRepo.findById(id).orElse(null);
-//
-//		AdminEmailManagement emailManagement = adminEmailManagementRepo.findByCategoryCateId(1l).orElse(null);
-//		String emailBody = emailRender.verifyOtpBody("123456");
-//		VerifyOtpEmail emailContent = new VerifyOtpEmail(customer.getEmail(), emailManagement.getTitle(), emailBody);
-//		eventPublisher.publishEvent(emailContent);
+//		CustomerAttorny attorny = customerAttornyRepo.findById(1).orElseThrow(() -> new InternalServerException("Something went wrong", HttpStatus.OK));
+//		
+//		String pdfContent = pdfGenerator.generateVollmachtDocument(attorny);
+//		
+//		String emailBody = customEmailTemplate.generateEmailHtml("Test", "Test", "This is test email to check pdf generation");
+//		
+//		mailService.sendEmailWithBase64Attachment("syntnpddr@gmail.com", emailBody, pdfContent, "Attorny_contract.pdf");
 //
 //		return Map.of("res", true);
 //	}

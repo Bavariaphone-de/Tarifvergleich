@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import com.tarifvergleich.electricity.exception.InternalServerException;
 import com.tarifvergleich.electricity.model.AdminEmailManagement;
 import com.tarifvergleich.electricity.model.Customer;
+import com.tarifvergleich.electricity.model.CustomerAttorny;
 import com.tarifvergleich.electricity.model.CustomerServiceRequest;
 import com.tarifvergleich.electricity.repository.AdminEmailManagementRepository;
 
@@ -36,16 +37,28 @@ public class EmailBodyRender {
 		return emailBody;
 	}
 
-	public String conscent365AdvisorBody() {
-		return null;
+	public String conscent365AdvisorBody(String concentUrl, Customer customer) {
+		AdminEmailManagement adminEmailManagement = adminEmailManagementRepo
+				.findByCategoryCategorySlugLike("%CONSENT_360_ADVISOR_SERVICE%")
+				.orElseThrow(() -> new InternalServerException("Error finding Email body", HttpStatus.OK));
+
+		String tempEmailBody = adminEmailManagement.getEmailContent();
+		tempEmailBody = tempEmailBody.replace("{SALUTATION}", customer.getSalutation());
+		tempEmailBody = tempEmailBody.replace("{CUSTOMER_NAME}", customer.getLastName());
+		tempEmailBody = tempEmailBody.replace("{CONFIRMATION_URL}", concentUrl);
+		String emailBody = customEmailTemplate.generateEmailHtml(adminEmailManagement.getTitle(),
+				adminEmailManagement.getSubtitle(), tempEmailBody);
+		return emailBody;
 	}
 
-	public String beratervollmachtBody() {
+	public String beratervollmachtBody(CustomerAttorny customerAttorny) {
 		AdminEmailManagement adminEmailManagement = adminEmailManagementRepo
 				.findByCategoryCategorySlugLike("%BERATERVOLLMACHT%")
 				.orElseThrow(() -> new InternalServerException("Error finding Email body", HttpStatus.OK));
 
 		String tempEmailBody = adminEmailManagement.getEmailContent();
+		tempEmailBody = tempEmailBody.replace("{SALUTATION}", customerAttorny.getSalutation());
+		tempEmailBody = tempEmailBody.replace("{CUSTOMER_NAME}", customerAttorny.getLastName());
 		String emailBody = customEmailTemplate.generateEmailHtml(adminEmailManagement.getTitle(),
 				adminEmailManagement.getSubtitle(), tempEmailBody);
 
@@ -154,9 +167,9 @@ public class EmailBodyRender {
 
 		return emailBody;
 	}
-	
+
 	public String serviceRequestReopenBody(CustomerServiceRequest serviceRequest) {
-		
+
 		if (serviceRequest == null)
 			throw new InternalServerException("Error creating email body", HttpStatus.OK);
 
@@ -181,7 +194,49 @@ public class EmailBodyRender {
 
 		String emailBody = customEmailTemplate.generateEmailHtml(title, adminEmailManagement.getSubtitle(),
 				tempEmailBody);
-				
+
+		return emailBody;
+	}
+
+	public String resetPasswordConfirmationBody(Customer customer) {
+
+		if (customer == null)
+			throw new InternalServerException("Error creating email body", HttpStatus.OK);
+
+		AdminEmailManagement adminEmailManagement = adminEmailManagementRepo
+				.findByCategoryCategorySlugLike("%RESET_PASSWORD_CONFIRMATION%")
+				.orElseThrow(() -> new InternalServerException("Error finding Email body", HttpStatus.OK));
+
+		String tempEmailBody = adminEmailManagement.getEmailContent();
+
+		tempEmailBody = tempEmailBody.replace("{SALUTATION}", customer.getSalutation());
+		tempEmailBody = tempEmailBody.replace("{CUSTOMER_NAME}", customer.getLastName());
+
+		String emailBody = customEmailTemplate.generateEmailHtml(adminEmailManagement.getTitle(),
+				adminEmailManagement.getSubtitle(), tempEmailBody);
+
+		return emailBody;
+	}
+
+	public String forgotPasswordBody(Customer customer, String token) {
+
+		if (customer == null)
+			throw new InternalServerException("Error creating email body", HttpStatus.OK);
+
+		AdminEmailManagement adminEmailManagement = adminEmailManagementRepo
+				.findByCategoryCategorySlugLike("%FORGOT_PASSWORD_LINK%")
+				.orElseThrow(() -> new InternalServerException("Error finding Email body", HttpStatus.OK));
+
+		String tempEmailBody = adminEmailManagement.getEmailContent();
+
+		tempEmailBody = tempEmailBody.replace("{SALUTATION}", customer.getSalutation());
+		tempEmailBody = tempEmailBody.replace("{CUSTOMER_NAME}", customer.getLastName());
+		tempEmailBody = tempEmailBody.replace("{RESET_LINK}",
+				"http://192.168.0.131:4200/forgot-old-password?token=" + token);
+
+		String emailBody = customEmailTemplate.generateEmailHtml(adminEmailManagement.getTitle(),
+				adminEmailManagement.getSubtitle(), tempEmailBody);
+
 		return emailBody;
 	}
 }
