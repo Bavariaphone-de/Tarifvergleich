@@ -100,27 +100,19 @@
           <div class="contact-fields">
             <div #dropdownContainer class="form-group service-input">
               <div class="field-wrap dropdown-wrap" (click)="toggleDropdown($event)">
-                <input
-                  type="text"
-                  [value]="selectedCategory?.categoryName || ''"
-                  placeholder="Bitte wählen..."
-                  readonly
-                />
+                <input type="text" [value]="selectedCategory?.categoryName || ''" placeholder="Bitte wählen..."
+                  readonly />
 
                 <span class="arrow"></span>
 
                 <div class="dropdown" *ngIf="showDropdown">
-                  <div
-                    class="dropdown-item"
-                    *ngFor="let item of categories"
-                    (click)="selectCategory(item, $event)"
-                  >
+                  <div class="dropdown-item" *ngFor="let item of categories" (click)="selectCategory(item, $event)">
                     {{ item.categoryName }}
                   </div>
                 </div>
               </div>
             </div>
-              <div class="field-error-msg" *ngIf="fieldErrors['category']">
+            <div class="field-error-msg" *ngIf="fieldErrors['category']">
               {{ fieldErrors['category'] }}
             </div>
 
@@ -128,12 +120,8 @@
             <div class="form-group label">
               <div class="tab-header">Ihr Anfragetext</div>
             </div>
-            <textarea
-              class="textarea"
-              rows="5"
-              placeholder="Wie können wir Ihnen weiterhelfen?"
-              [(ngModel)]="formData.inquiry"
-            ></textarea>
+            <textarea class="textarea" rows="5" placeholder="Wie können wir Ihnen weiterhelfen?"
+              [(ngModel)]="formData.inquiry"></textarea>
             <div class="field-error-msg" *ngIf="fieldErrors['inquiry']">
               {{ fieldErrors['inquiry'] }}
             </div>
@@ -155,16 +143,15 @@
               </div>
             </div>
 
-            <div
-              style="
+            <div style="
                 display: flex;
                 flex-direction: row;
                 justify-content: flex-end;
                 margin-top: 10px;
-              "
-            >
-              <button class="btn-primary" (click)="submitForm()">
-                <span class="spinner"></span>
+              ">
+              <!-- reCAPTCHA v3 is invisible — no widget needed here -->
+              <button class="btn-primary" (click)="submitForm()" [disabled]="isSubmitting">
+                <span class="spinner" *ngIf="isSubmitting"></span>
                 Anfrage abschicken
               </button>
             </div>

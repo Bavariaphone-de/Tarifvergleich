@@ -9,7 +9,7 @@
             <span class="container-services">
               <img src="assets/icons/Telefonhörer_Weiss.png" class="icon-telephone" alt="telephone">
             </span>
-            <span class="btn-text">{{ contactNumber || '...' }}</span>
+            <span class="btn-text">{{ contactNumber$ | async }}</span>
           </button>
 
           <button class="main-btn">

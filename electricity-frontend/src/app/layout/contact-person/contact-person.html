@@ -6,19 +6,19 @@
     <img src="assets/images/MM.png" alt="Familienbetrieb">
   </div>
   <div class="partner-info">
-    <div class="partner-name">Manuel Markovic</div>
+    <div class="partner-name">{{ (contactPerson$ | async)?.name ?? 'Manuel Markovic' }}</div>
     <div class="container-main-btn">
       <button class="main-btn partner-btn">
         <span class="container-services">
           <img src="assets/icons/Telefonhörer_Weiss.png" class="icon-telephone" alt="telephone">
         </span>
-        <span class="btn-text">08157 / 999 42-0</span>
+        <span class="btn-text">{{ (contactPerson$ | async)?.phone ?? '08157 / 999 42-0' }}</span>
       </button>
       <button class="main-btn partner-btn">
         <span class="container-services">
           <img src="assets/icons/Mail.png" class="icon-email" alt="email">
         </span>
-        <span class="btn-text">mm@energiehandel.bayern</span>
+        <span class="btn-text">{{ (contactPerson$ | async)?.email ?? 'mm@energiehandel.bayern' }}</span>
       </button>
     </div>
   </div>

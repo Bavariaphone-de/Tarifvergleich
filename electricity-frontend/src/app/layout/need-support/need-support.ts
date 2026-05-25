@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ContentService } from '../../services/content.service';
+import { Observable, map, tap } from 'rxjs';
 
 @Component({
   selector: 'app-need-support',
@@ -10,24 +11,27 @@ import { ContentService } from '../../services/content.service';
   styleUrl: './need-support.css',
 })
 export class NeedSupport implements OnInit {
-  contactNumber: string = '';
+  // Define an Observable instead of a raw string variable
+  contactNumber$!: Observable<string>;
 
   constructor(private contentService: ContentService) {}
 
   ngOnInit(): void {
-    console.log('NeedSupport: Starting to load data');
-    this.contentService.getData().subscribe({
-      next: (data) => {
-        console.log('NeedSupport: Data received', data);
+    console.log('NeedSupport: Initializing stream');
+
+    // Use RxJS pipes to transform the incoming data stream
+    this.contactNumber$ = this.contentService.getData().pipe(
+      tap((data) => console.log('NeedSupport: Data received', data)),
+      map((data) => {
         const about = data?.menu?.about;
-        if (about?.length > 0) {
-          this.contactNumber = about[0].contactNumber ?? '';
-          console.log('NeedSupport: Contact number set to', this.contactNumber);
-        } else {
-          console.log('NeedSupport: No about data found');
+        if (about && about.length > 0) {
+          const number = about[0].contactNumber ?? '';
+          console.log('NeedSupport: Contact number extracted:', number);
+          return number;
         }
-      },
-      error: (err) => console.error('NeedSupport load failed', err),
-    });
+        console.log('NeedSupport: No about data found');
+        return '';
+      }),
+    );
   }
 }
