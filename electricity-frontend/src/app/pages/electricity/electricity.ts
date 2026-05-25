@@ -497,6 +497,7 @@ export class Electricity implements OnInit {
       houseNumber: this.addressForm.value.houseNumber,
       persons: this.selectedPersons,
       consumption: this.consumption,
+      route: 'electricity',
     };
 
     this.authService.setAddressData(data);

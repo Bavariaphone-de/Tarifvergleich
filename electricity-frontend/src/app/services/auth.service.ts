@@ -512,8 +512,14 @@ export class AuthService {
             phone: data.mobileNumber,
             salutation: data.salutation,
             deliveryDetails: data.deliveryDetails || [],
-            address: data.address || null,
+            // address: data.address || null,
             title: data.title || null,
+            address: {
+              zip: data?.address?.zip || '',
+              city: data?.address?.city || '',
+              street: data?.address?.street || '',
+              houseNumber: data?.address?.houseNumber || '',
+            },
           };
 
           this.customerData$.next(formattedData);

@@ -383,49 +383,104 @@
             </div>
           </div>
 
+          <!-- ZIP + CITY -->
           <div class="form-row">
+
+            <!-- ZIP -->
             <div class="form-group postcode">
               <div class="field-wrap">
                 <span class="field-label">Ihre PLZ</span>
-                <input type="text" [(ngModel)]="customerData.address.zip" placeholder="12345" />
+
+                <input type="text" maxlength="5" [value]="customerData.address.zip"
+                  (input)="onEditPostalCodeInput($event)" placeholder="12345" />
               </div>
+
               <div class="field-error-msg" *ngIf="addressFieldErrors['zip']">
                 {{ addressFieldErrors['zip'] }}
               </div>
             </div>
+
+            <!-- CITY -->
             <div class="form-group">
-              <div class="field-wrap">
+              <div class="field-wrap dropdown-wrapper">
+
                 <span class="field-label">Ort</span>
-                <input type="text" [(ngModel)]="customerData.address.city" placeholder="Musterhausen" />
+
+                <input type="text" [(ngModel)]="editCitySearch" placeholder="Musterhausen"
+                  (input)="onEditCityInput($event)" (focus)="showEditCityDropdown = true"
+                  (click)="$event.stopPropagation()" />
+
+                <div class="dropdown" *ngIf="showEditCityDropdown">
+
+                  <div *ngIf="editFilteredCityOptions.length === 0" class="dropdown-item disabled">
+                    Keine Orte gefunden
+                  </div>
+
+                  <div *ngFor="let c of editFilteredCityOptions" class="dropdown-item" (click)="selectEditCity(c)">
+                    {{ c.city }}
+                  </div>
+                </div>
               </div>
+
               <div class="field-error-msg" *ngIf="addressFieldErrors['city']">
                 {{ addressFieldErrors['city'] }}
               </div>
             </div>
           </div>
 
+
+          <!-- STREET + HOUSE NUMBER -->
           <div class="form-row">
+
+            <!-- STREET -->
             <div class="form-group">
-              <div class="field-wrap">
+              <div class="field-wrap dropdown-wrapper">
+
                 <span class="field-label">Ihre Straße</span>
-                <input type="text" [(ngModel)]="customerData.address.street" placeholder="Mustermannstraße" />
+
+                <input type="text" [(ngModel)]="editStreetSearch" placeholder="Mustermannstraße"
+                  (input)="onEditStreetInput($event)" (focus)="showEditStreetDropdown = true"
+                  (click)="$event.stopPropagation()" [disabled]="!customerData.address.city" />
+
+                <div class="dropdown" *ngIf="showEditStreetDropdown">
+
+                  <div *ngIf="isEditStreetLoading" class="dropdown-item">
+                    Laden...
+                  </div>
+
+                  <div *ngIf="!isEditStreetLoading && editFilteredStreetOptions.length === 0"
+                    class="dropdown-item disabled">
+                    Keine Straße gefunden
+                  </div>
+
+                  <div *ngFor="let s of editFilteredStreetOptions" class="dropdown-item" (click)="selectEditStreet(s)">
+                    {{ s.street }}
+                  </div>
+                </div>
               </div>
+
               <div class="field-error-msg" *ngIf="addressFieldErrors['street']">
                 {{ addressFieldErrors['street'] }}
               </div>
             </div>
+
+            <!-- HOUSE NUMBER -->
             <div class="form-group postcode">
               <div class="field-wrap">
                 <span class="field-label">Hausnummer</span>
+
                 <input type="text" [(ngModel)]="customerData.address.houseNumber" placeholder="456" />
               </div>
+
               <div class="field-error-msg" *ngIf="addressFieldErrors['houseNumber']">
                 {{ addressFieldErrors['houseNumber'] }}
               </div>
             </div>
           </div>
         </div>
-
+        <div class="success-msg" *ngIf="successMessage">
+          {{ successMessage }}
+        </div>
         <div class="form-actions">
           <button type="button" class="btn-primary" (click)="saveAddressData()">
             Ändern &amp; Speichern
@@ -448,6 +503,10 @@
               <div>Straße</div>
               <div>Hausnummer</div>
               <div>Editieren</div>
+            </div>
+            <div class="no-data-found"
+              *ngIf="!customerData?.additionalAddresses || customerData.additionalAddresses.length === 0">
+              Keine Daten gefunden
             </div>
             <div class="address-table-row" *ngFor="let addr of customerData.additionalAddresses">
               <div>{{ addr.salutation }}</div>
@@ -681,6 +740,11 @@
       <div class="profile-orange-header">Meine Standard-Zahlungsarten</div>
 
       <div class="tab-row">
+        <!-- EMPTY STATE -->
+        <div class="no-data-found"
+          *ngIf="!customerData?.standardBankAccounts || customerData.standardBankAccounts.length === 0">
+          Keine Bankdaten gefunden.
+        </div>
         <div class="payment-cards-grid">
           <!-- Primary private bank account -->
           <div class="payment-sepa-card" *ngFor="let account of customerData.standardBankAccounts">
@@ -759,6 +823,10 @@
               <div>Private Bankverbindung</div>
               <div>SEPA-Mandat</div>
               <div>Editieren</div>
+            </div>
+            <div class="no-data-found"
+              *ngIf="!customerData?.additionalBankAccounts || customerData.additionalBankAccounts.length === 0">
+              Keine Daten gefunden
             </div>
             <div class="payment-table-row" *ngFor="let pa of customerData.additionalBankAccounts">
               <div>{{ pa.bankName }}</div>
@@ -1080,7 +1148,7 @@
 
                 <button class="meter-blue-btn">Vertragsdetails ändern</button>
 
-                <button class="meter-blue-btn" >Abschlag ändern</button>
+                <button class="meter-blue-btn">Abschlag ändern</button>
 
                 <!-- <button class="meter-blue-btn" (click)="rerquestInvoice(item)">Rechnungen anfordern</button> -->
 
@@ -1167,7 +1235,7 @@
 
                 <button class="meter-orange-btn">Anfrage an Ihren Berater stellen</button>
 
-                <button class="meter-orange-btn">Rückruf von Berater anfordern</button>
+                <button class="meter-orange-btn" (click)="rerquestCallback(item)">Rückruf von Berater anfordern</button>
 
                 <button class="meter-orange-btn">Umzug melden</button>
 
@@ -2047,6 +2115,257 @@
         </div>
       </div>
     </div>
+
+    <!--══════════ Request a callback ══════════-->
+    <!-- <div *ngIf="activeTab === 1 && currentStep === 5">
+      <div class="login-berich">Rückruf von Berater anfordern</div>
+      <br />
+
+      <div class="selected-contract-wrapper" *ngIf="!submittedInvoice">
+       
+        <div class="selected-contract-header">Ausgewählter Vertrag</div>
+
+        
+        <div class="selected-contract-card">
+         
+          <div class="green-container">
+            <div class="contract-top">
+             
+              <div class="contract-left">
+                <img [src]="selectedMeter.meterIcon" alt="provider" class="provider-logo" />
+
+                <div class="provider-name">
+                  {{ selectedMeter.tariff }}
+                </div>
+
+                <div class="meter-provider-badge">
+                  <img [src]="selectedMeter.providerIcon" alt="" class="badge-icon" />
+
+                  <span>
+                    {{ selectedMeter.providerType }}
+                  </span>
+                </div>
+              </div>
+
+              
+              <div class="contract-center">
+                <div class="contract-row-title">
+                  <strong>Zählerbezeichnung:</strong>
+
+                  <a class="change-link" *ngIf="!isEditingSelectedMeterName" (click)="editSelectedMeterName()">
+                    ändern
+                    <img src="assets/icons/Bearbeiten_schwarz.png" alt="edit" />
+                  </a>
+                </div>
+
+                
+                <div class="meter-id" *ngIf="!isEditingSelectedMeterName">
+                  {{ selectedMeter?.meterDesignation }}
+                </div>
+
+                
+                <div class="meter-edit-box" *ngIf="isEditingSelectedMeterName">
+                  <input type="text" [(ngModel)]="selectedMeter.meterDesignation" class="meter-input"
+                    placeholder="Zählerbezeichnung" />
+
+                 
+                  <button type="button" class="icon-action save-icon" (click)="saveSelectedMeterName()">
+                    ✓
+                  </button>
+
+                 
+                  <button type="button" class="icon-action cancel-icon" (click)="cancelSelectedMeterEdit()">
+                    ✕
+                  </button>
+                </div>
+                <div class="address-wrap">
+                  <p>
+                    <strong>Adresse:</strong>
+                    {{ selectedMeter.address.name }}
+                  </p>
+
+                  <p>
+                    {{ selectedMeter.address.street }}
+                  </p>
+
+                  <p>
+                    {{ selectedMeter.address.city }}
+                  </p>
+                </div>
+              </div>
+
+            
+              <div class="contract-right">
+                <p>
+                  Vertragsnummer:
+                  <strong>
+                    {{ selectedMeter.contractNumber }}
+                  </strong>
+                </p>
+
+                <p>
+                  Kundennummer:
+                  <strong>
+                    {{ selectedMeter.customerNumber }}
+                  </strong>
+                </p>
+
+                <br />
+
+                <p>
+                  Zählernummer:
+                  <strong>
+                    {{ selectedMeter.meterNumber }}
+                  </strong>
+                </p>
+
+                <p>
+                  Marktlokation-ID:
+                  <strong>
+                    {{ selectedMeter.marketLocation }}
+                  </strong>
+                </p>
+              </div>
+            </div>
+
+           
+            <div class="meter-reading-section">
+              <h4>Rechnung anfordern</h4>
+
+              <p class="meter-subtext">
+                Bitte tragen Sie hier die Details Ihrer Rechnungsanfrage ein.
+              </p>
+
+
+              <div class="container-callback">
+                <div class="container-wish">
+                  <span class="telefon"><strong>Bitte geben Sie Ihre Telefonnummer an, <br />
+                      unter der wir Sie erreichen können.</strong>
+                  </span>
+                </div>
+                <div class="container-phone">
+                  <input class="country-code" type="text" [(ngModel)]="countryCode" readonly />
+                  <input type="number" placeholder="Mobilnummer oder Festnetznummer" [(ngModel)]="phoneNumber"
+                    class="number" />
+                  <button class="callback" (click)="onNextPhone()">Rückrufzeit festlegen</button>
+                </div>
+                <div class="error" style="color: red" *ngIf="fieldErrors['phoneNumber']">
+                  {{ fieldErrors['phoneNumber'] }}
+                </div>
+              </div>
+
+              <div class="container-callback">
+                <div class="container-wishlist">
+                  <span>
+                    <strong> Bitte wählen Sie, an welchem Wochentag wir Sie erreichen können. </strong>
+                  </span>
+                </div>
+
+                <div class="container-days">
+                  <button class="days" *ngFor="let day of filteredDays; trackBy: trackByDay"
+                    (click)="selectDay(day.value ?? '')" [class.active]="selectedDay === (day.value ?? '')">
+                    {{ getDayLabelByValue(day.value ?? '') }}
+                    ({{ day.label }})
+                  </button>
+                </div>
+
+                <div class="item-callback">
+                  <button class="callback btn-time" [disabled]="!selectedDay" (click)="submitDay()">
+                    Wochentag festlagen
+                  </button>
+                </div>
+
+                <div class="api-message api-error" style="color: red" *ngIf="scheduleErrorMessage">
+                  {{ scheduleErrorMessage }}
+                </div>
+              </div>
+
+              <div class="container-callback">
+                <div class="container-wishlist">
+                  <span><strong>Bitte wählen Sie, zu welcher Uhrzeit wir Sie erreichen können.</strong> </span>
+                </div>
+                <div class="container-days">
+                  <button class="days" *ngFor="let slot of timeSlots" (click)="selectTimeSlot(slot.value)"
+                    [class.active]="selectedTimeSlot === slot.value" [disabled]="!isTimeSlotEnabled(slot.value)"
+                    [class.disabled]="!isTimeSlotEnabled(slot.value)">
+                    {{ slot.label }}
+                  </button>
+                </div>
+                <div class="item-callback">
+                  <button class="callback btn-time" [disabled]="!selectedTimeSlot">
+                    Uhrzeit festlegen
+                  </button>
+                </div>
+              </div>
+
+              <div class="container-callback">
+                <div class="container-wishlist">
+                  <span><strong>Möchten Sie noch weitere Informationen hinterlassen?</strong> </span>
+                  <div class="container-days">
+                    <input class="information-box"
+                      placeholder="Platz für Infos, z.B. genaue Uhrzeit, an der Sie gut erreichbar sind"
+                      [(ngModel)]="scheduleDescription" />
+                  </div>
+                </div>
+                <div class="item-callback">
+                  <button class="callback btn-time" (click)="submitCallback()">
+                    Infos absenden & Rückruf erhalten
+                  </button>
+                </div>
+                <div class="api-message success" *ngIf="scheduleSuccessMessage">
+                  {{ scheduleSuccessMessage }}
+                </div>
+
+                <div class="api-message error" *ngIf="scheduleErrorMessage">
+                  {{ scheduleErrorMessage }}
+                </div>
+              </div>
+
+            </div>
+
+            <br />
+
+          
+            <div class="meter-btn-row">
+
+
+
+              <button type="button" class="btn-primary" [disabled]="isLoadingNewReq" (click)="submitInvoiceRequest()">
+                <span *ngIf="isLoadingNewReq; else normal">
+                  <span class="spinner"></span> Einreichen...
+                </span>
+
+                <ng-template #normal>
+                  <span> Anfrage senden</span>
+                </ng-template>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="success-box" style="width: auto" *ngIf="submittedInvoice">
+        <div class="success-content">
+          <div class="success-row">
+            <img src="assets/icons/Kreis_Haken_gruen.png" alt="success" />
+
+            <div class="text-block">
+              <div class="tab-header">Rechnungsanfrage erfolgreich gesendet!</div>
+
+              <div class="tab-text">
+                Ihre Anfrage zur Rechnung wurde erfolgreich übermittelt.
+                Unser Team prüft diese und bearbeitet sie so schnell wie möglich.
+              </div>
+
+              <div class="tab-text">
+                Sie erhalten eine Rückmeldung per E-Mail, sobald Ihre Anfrage bearbeitet wurde.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div> -->
+
     <!--══════════ Meters Section End ══════════-->
 
     <!--══════════ Reminder Section Start (Tab - 2) ══════════-->
