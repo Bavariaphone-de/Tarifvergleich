@@ -222,6 +222,16 @@ public class CustomerDto {
 	@Builder
 	@NoArgsConstructor
 	@AllArgsConstructor
+	public static class UpdateGdprContactStatusDto {
+		private Integer adminId;
+		private Integer customerId;
+		private Boolean gdprContactAllowed;
+	}
+	
+	@Data
+	@Builder
+	@NoArgsConstructor
+	@AllArgsConstructor
 	public static class CustomerInfoForProfile {
 
 		private Integer customerId;

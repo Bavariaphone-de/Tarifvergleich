@@ -401,7 +401,7 @@ public class AdminCustomerDeliveryManagementService {
         CustomerContractSignature customerSignatures = order.getCustomerContractSignature();
 
         if (customerSignatures == null)
-            throw new InternalServerException("Customer signature is missing", HttpStatus.OK);
+            throw new InternalServerException("Customer have not submitted their contract signature yet", HttpStatus.OK);
 
         String fetchSignature = "";
         String fetchSignatureBank = "";
@@ -537,4 +537,25 @@ public class AdminCustomerDeliveryManagementService {
         customerBookingDocumentRepo.save(bookingDocument);
         return Map.of("res", true, "message", "Customer signed document uploaded successfully");
     }
+    
+    public Map<String, Object> resendSigningContractMail(CustomerOrderDto orderDto) {
+
+		if (orderDto.getAdminId() == null || orderDto.getAdminId() <= 0)
+			throw new InternalServerException("Admin id missing", HttpStatus.OK);
+
+		if (orderDto.getCustomerOrderId() == null || orderDto.getCustomerOrderId() < 0)
+			throw new InternalServerException("Customer order id missing", HttpStatus.OK);
+
+		CustomerOrder order = customerOrderRepo
+				.findByIdAndAdminAdminId(orderDto.getCustomerOrderId(), orderDto.getAdminId())
+				.orElseThrow(() -> new InternalServerException("Customer order not found with this credential",
+						HttpStatus.OK));
+
+		if (order.getOrderId() == null || order.getOrderId() <= 0)
+			throw new InternalServerException("Order not placed", HttpStatus.OK);
+
+		asyncServiceAdmin.sendMailToCustomerForSignatures(orderDto.getCustomerOrderId());
+
+		return Map.of("res", true, "message", "Email for signature contract send successfully");
+	}
 }

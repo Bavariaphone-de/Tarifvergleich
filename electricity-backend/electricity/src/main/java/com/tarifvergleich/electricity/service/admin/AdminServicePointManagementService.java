@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
@@ -65,6 +66,15 @@ public class AdminServicePointManagementService {
 
 		AdminUser admin = adminUserRepo.findById(servicesDto.getAdminId())
 				.orElseThrow(() -> new InternalServerException("Admin not found with this credential", HttpStatus.OK));
+
+		// Check for duplicate service name
+		Optional<CustomerServices> existingServiceOpt = customerServicesRepo
+				.findByServiceNameIgnoreCaseAndAdminAdminId(servicesDto.getServiceName(), servicesDto.getAdminId());
+		if (existingServiceOpt.isPresent()) {
+			if (servicesDto.getServiceId() == null || !existingServiceOpt.get().getId().equals(servicesDto.getServiceId())) {
+				throw new InternalServerException("This service already exists", HttpStatus.OK);
+			}
+		}
 
 		CustomerServices service = null;
 		if (servicesDto.getServiceId() != null && servicesDto.getServiceId() > 0) {
@@ -147,6 +157,20 @@ public class AdminServicePointManagementService {
 				.map(CustomerServicesDto::mapCustomerServiceForAdmin).toList();
 
 		return Map.of("res", true, "data", servicesResponse);
+	}
+
+	public Map<String, Object> getServiceById(CustomerServicesDto servicesDto) {
+		if (servicesDto.getAdminId() == null || servicesDto.getAdminId() <= 0)
+			throw new InternalServerException("Admin id missing", HttpStatus.OK);
+
+		if (servicesDto.getServiceId() == null || servicesDto.getServiceId() <= 0)
+			throw new InternalServerException("Service id missing", HttpStatus.OK);
+
+		CustomerServices service = customerServicesRepo
+				.findByIdAndAdminAdminId(servicesDto.getServiceId(), servicesDto.getAdminId()).orElseThrow(
+						() -> new InternalServerException("Service not found with this credential", HttpStatus.OK));
+
+		return Map.of("res", true, "data", CustomerServicesDto.mapCustomerServiceForAdmin(service));
 	}
 
 	@Transactional
@@ -415,5 +439,4 @@ public class AdminServicePointManagementService {
 
 		return Map.of("res", true, "data", adminDocsRes);
 	}
-
 }

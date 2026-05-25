@@ -20,4 +20,6 @@ public interface CustomerServicesRepository extends JpaRepository<CustomerServic
 	Page<CustomerServices> findAllByAdminAdminId(Integer adminId, Pageable pageable);
 
 	Optional<CustomerServices> findByIdAndAdminAdminId(Integer id, Integer adminId);
+
+	Optional<CustomerServices> findByServiceNameIgnoreCaseAndAdminAdminId(String serviceName, Integer adminId);
 }

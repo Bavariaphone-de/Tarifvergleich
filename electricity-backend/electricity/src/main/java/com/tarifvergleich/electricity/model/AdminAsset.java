@@ -54,6 +54,7 @@ public class AdminAsset {
 	@Column(name = "saving")
 	private String saving;
 	
+	
 	@Column(name = "saving_price_detail", columnDefinition = "TEXT")
 	private String savingPriceDetail;
 	
@@ -77,6 +78,12 @@ public class AdminAsset {
 	@Column(name = "popup_content_3", columnDefinition = "TEXT")
 	private String popupContent3;
 
+	@Column(name = "contact_name")
+	private String contactName;
+
+	@Column(name = "contact_email")
+	private String contactEmail;
+	
 	@PrePersist
 	protected void onCreate() {
 		createdOn = Helper.getCurrentTimeBerlin();

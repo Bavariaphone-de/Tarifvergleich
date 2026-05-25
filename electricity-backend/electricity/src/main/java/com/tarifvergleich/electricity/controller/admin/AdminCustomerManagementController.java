@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.tarifvergleich.electricity.dto.CustomerDetailsContactHistoryDto;
+import com.tarifvergleich.electricity.dto.CustomerDto.UpdateGdprContactStatusDto;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tarifvergleich.electricity.dto.CustomerDeliveryRequestWrapper.AdminEditCustomerDeliveryRelated;
@@ -91,6 +92,11 @@ public class AdminCustomerManagementController {
         return ResponseEntity.ok(servicePointManagementService.fetchServices(servicesDto));
     }
 
+    @PostMapping("/get-service-by-id")
+    public ResponseEntity<?> getServiceById(@RequestBody CustomerServicesDto servicesDto) {
+        return ResponseEntity.ok(servicePointManagementService.getServiceById(servicesDto));
+    }
+
     @PostMapping("/close-service-request")
     public ResponseEntity<?> closeCustomerServiceRequest(@RequestBody CustomerServiceRequestDto serviceRequestDto) {
         return ResponseEntity.ok(adminCustomerManagementService
@@ -116,6 +122,11 @@ public class AdminCustomerManagementController {
     @PostMapping("/place-order")
     public ResponseEntity<?> placeCustomerOrder(@RequestBody CustomerOrderDto customerOrderDto) {
         return ResponseEntity.ok(adminCustomerDeliveryManagementService.placeNewOrderToEgon(customerOrderDto));
+    }
+    
+    @PostMapping("/update-gdpr-contact-status")
+    public ResponseEntity<?> updateGdprContactStatus(@RequestBody UpdateGdprContactStatusDto payload) {
+        return ResponseEntity.ok(adminCustomerManagementService.toggleNotificationOfCustomer(payload.getAdminId(), payload.getCustomerId()));
     }
 
     @PostMapping("/toggle-customer-notification")
@@ -182,4 +193,10 @@ public class AdminCustomerManagementController {
     public ResponseEntity<?> fetchSignedContract(@RequestBody CustomerOrderDto customerOrderDto) {
         return ResponseEntity.ok(adminCustomerDeliveryManagementService.getSignedPdfFromEgon(customerOrderDto));
     }
+    
+    @PostMapping("/resend-signing-order")
+	public ResponseEntity<?> resendSigningContractMail(@RequestBody CustomerOrderDto customerOrderDto) {
+
+		return ResponseEntity.ok(adminCustomerDeliveryManagementService.resendSigningContractMail(customerOrderDto));
+	}
 }
