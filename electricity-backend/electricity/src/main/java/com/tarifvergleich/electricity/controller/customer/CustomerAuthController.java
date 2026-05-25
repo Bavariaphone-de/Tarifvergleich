@@ -112,9 +112,9 @@ public class CustomerAuthController {
 		return ResponseEntity.ok(customerAuthService.changePasswordWithEmail(token, newPassword, confirmPassword));
 	}
 
-	@PostMapping("/try-mail")
-	public ResponseEntity<?> sendTryMail(@RequestBody CustomerDto dto){
-		return ResponseEntity.ok(customerAuthService.sendMail(dto.getId()));
-	}
+//	@PostMapping("/try-mail")
+//	public ResponseEntity<?> sendTryMail(@RequestBody CustomerDto dto){
+//		return ResponseEntity.ok(customerAuthService.sendMail(dto.getId()));
+//	}
 
 }
