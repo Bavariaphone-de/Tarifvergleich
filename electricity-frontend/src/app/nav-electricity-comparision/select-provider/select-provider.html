@@ -782,10 +782,11 @@
             <div class="tc-price__savings" *ngIf="getSavingPerYear(rate)">
               Sie sparen:
               <span class="amount" style="color: red" translate="no">
-                {{
+                <!-- {{
                 (priceDisplayMonthly ? getSavingPerYear(rate) / 12 : getSavingPerYear(rate))
                 | number: '1.2-2'
-                }}
+                }} -->
+                {{(getAveragePrice(baseRate) - getDisplayPrice(rate) )| number: '1.2-2' }}
                 €</span>
               &nbsp;
               <span class="info-wrapper" #popoverContainer>
