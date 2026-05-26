@@ -642,7 +642,7 @@ public class CustomerDetailService {
 			throw new InternalServerException("Notification value missing", HttpStatus.OK);
 
 		Customer customer = customerRepo.findByCustomerIdAndAdminAdminId(customerId, adminId).orElseThrow(
-				() -> new InternalServerException("Customer not found wiyth this credential", HttpStatus.OK));
+				() -> new InternalServerException("Customer not found with this credential", HttpStatus.OK));
 
 		customer.setIsNotificationEnabled(isNotificationEnabled);
 

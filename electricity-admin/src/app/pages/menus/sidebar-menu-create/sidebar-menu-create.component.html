@@ -65,9 +65,9 @@
             </div>
         </div>
 
-        <div *ngIf="title.includes('Nachtspeicher')">
+        <div *ngIf="title.includes('mepumpe') || title.includes('Nachtspeicher') || title.includes('Wärmepumpe')">
             <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
-                Popup-Inhalt 3 (optional)
+                Popup-Inhalt 3 (optional) - Eintarif/Doppeltarifzähler
             </label>
             <div class="min-h-[250px]">
                 <ckeditor [editor]="Editor" [(ngModel)]="popupContent3" name="popupContent3"
@@ -75,7 +75,6 @@
                 </ckeditor>
             </div>
         </div>
-        
 
         @if (errorMessage) {
         <p class="text-sm text-red-500">{{ errorMessage }}</p>

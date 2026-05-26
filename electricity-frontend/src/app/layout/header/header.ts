@@ -5,8 +5,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { CommonModule } from '@angular/common';
-import { Observable, Subscription } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Subscription } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { NavItem } from '../navigation/navigation';
@@ -30,6 +29,7 @@ import { ContentService } from '../../services/content.service';
 export class Header {
   isLoggedIn = computed(() => !!this.authService.currentUser()?.user_id);
   navItems: NavItem[] = [];
+  aboutData: any = null;
   // Restore the original design by mapping filenames to CSS classes
   private readonly CLASS_MAP: Record<string, string> = {
     'Stromvergleich.png': 'nav-icon-strom',
@@ -109,10 +109,17 @@ export class Header {
     this.contentService.getNav().subscribe({
       next: (data) => {
         this.navItems = data;
+        this.cdr.detectChanges();
       },
       error: () => {
         this.cdr.detectChanges();
       },
+    });
+    this.contentService.getAbout().subscribe((data) => {
+      if (data && data.length > 0) {
+        this.aboutData = data[0];
+        this.cdr.detectChanges();
+      }
     });
   }
 }

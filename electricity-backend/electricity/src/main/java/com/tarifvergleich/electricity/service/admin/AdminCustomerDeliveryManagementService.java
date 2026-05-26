@@ -244,12 +244,14 @@ public class AdminCustomerDeliveryManagementService {
 	@Transactional
 	public Map<String, Object> addNewDeliveryByAdmin(AdminEditCustomerDeliveryRelated deliveryDetails) {
 
-		if (deliveryDetails == null)
-			throw new InternalServerException("No details found for edit", HttpStatus.OK);
-		if (deliveryDetails.getAdminId() == null || deliveryDetails.getAdminId() <= 0)
-			throw new InternalServerException("Admin id missing", HttpStatus.OK);
-		if (deliveryDetails.getCustomerId() == null || deliveryDetails.getCustomerId() <= 0)
-			throw new InternalServerException("Customer id missing", HttpStatus.OK);
+        if (deliveryDetails == null)
+            throw new InternalServerException("No details found for edit", HttpStatus.OK);
+
+        if (deliveryDetails.getAdminId() == null || deliveryDetails.getAdminId() <= 0)
+            throw new InternalServerException("Admin id missing", HttpStatus.OK);
+        
+        if (deliveryDetails.getCustomerId() == null || deliveryDetails.getCustomerId() <= 0)
+            throw new InternalServerException("Customer id missing", HttpStatus.OK);
 
 		Integer customerId = deliveryDetails.getCustomerId();
 		CustomerDeliveryDto newDeliveryDetails = deliveryDetails.getDelivery();

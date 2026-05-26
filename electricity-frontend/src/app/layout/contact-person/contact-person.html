@@ -3,7 +3,7 @@
     Ihr persönlicher Ansprechpartner
   </div>
   <div class=" partner-photo-wrap">
-    <img src="assets/images/MM.png" alt="Familienbetrieb">
+    <img [src]="aboutData?.contentUrl ? contentService.getImageUrl(aboutData.contentUrl) : 'assets/images/MM.png'" alt="Ansprechpartner">
   </div>
   <div class="partner-info">
     <div class="partner-name">{{ (contactPerson$ | async)?.name ?? 'Manuel Markovic' }}</div>
