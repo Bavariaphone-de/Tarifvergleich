@@ -51,7 +51,7 @@ public class CustomerOrderDto {
 		private Boolean cancelledOn;
 		private BigInteger lastDateOfCancellation;
 		private BigInteger operationPeriod;
-
+		private Boolean customerSignatureSet;
 		private CustomerBookingDocumentAdminResDto doc;
 
 		private Integer bookingDocId;
@@ -89,14 +89,16 @@ public class CustomerOrderDto {
 						order.getCustomerBookingDocument() != null ? order.getCustomerBookingDocument().getId() : null)
 				.doc(CustomerBookingDocumentDto.mapAdminBookingDocRes(order.getCustomerBookingDocument()))
 				.isExpired(order.getIsExpired()).operationPeriod(order.getOperationPeriod())
+				.customerSignatureSet(order.getCustomerContractSignature() != null
+						&& order.getCustomerContractSignature().getSignature() != null
+						&& !order.getCustomerContractSignature().getSignature().isEmpty())
 				.isCancelled(order.getIsCancelled()).cancelledOn(order.getCancelledOn()).build();
 	}
-	
-	
+
 	public static CustomerOrderDetailsForProfile mapCustomerResForProfile(CustomerOrder order) {
 		if (order == null)
 			return null;
-		
+
 		return CustomerOrderDetailsForProfile.builder().customerOrderId(order.getId()).orderId(order.getOrderId())
 				.orderStatus(order.getOrderStatus()).adminPlacedOrder(order.getAdminPlacedOrder())
 				.adminOrderPlacedOn(order.getAdminPlacedOrderOn()).expiryOn(order.getExpiryOn())
