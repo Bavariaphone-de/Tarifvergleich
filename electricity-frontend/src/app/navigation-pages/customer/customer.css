@@ -99,7 +99,9 @@
   /* color: #555; */
   margin-top: 4px;
 }
-
+.no-data-found{
+  text-align: center;
+}
 /* Logout */
 .profile-logout {
   margin-top: 6px;

@@ -18,10 +18,10 @@
         <select name="selectedCategory" [(ngModel)]="selectedCategory"
           class="w-full border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded-lg px-4 py-3 outline-none focus:border-brand-400">
 
-          <option value="">Select Option</option>
+          <option [ngValue] = "null">Select Option</option>
 
           @for (c of categories; track c.cateId) {
-          <option [value]="c.cateId">
+          <option [ngValue]="c.cateId">
             {{ c.name }}
           </option>
           }
@@ -175,6 +175,19 @@
                   </svg>
                 </div>
                 <p class="text-gray-500 mt-1">Datum und Uhrzeit</p>
+              </div>
+
+              <div (click)="copyToClipboard('{SALUTATION}')"
+                class="bg-white rounded-md px-3 py-2 border border-blue-100 cursor-pointer hover:bg-blue-50 hover:border-blue-300 transition select-none group">
+                <div class="flex items-center justify-between">
+                  <span class="font-semibold text-blue-700">{{'{'}}SALUTATION{{'}'}}</span>
+                  <svg class="w-3.5 h-3.5 text-blue-300 group-hover:text-blue-500 transition" fill="none"
+                    stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-4 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <p class="text-gray-500 mt-1">Anrede</p>
               </div>
 
             </div>

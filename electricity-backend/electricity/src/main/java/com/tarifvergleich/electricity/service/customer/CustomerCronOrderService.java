@@ -18,6 +18,7 @@ import com.tarifvergleich.electricity.dto.ServiceRequestEmailEvent.ServiceRespon
 import com.tarifvergleich.electricity.model.Customer;
 import com.tarifvergleich.electricity.model.CustomerDelivery;
 import com.tarifvergleich.electricity.model.CustomerOrder;
+import com.tarifvergleich.electricity.model.CustomerOrderStatusRecord;
 import com.tarifvergleich.electricity.model.CustomerSelectedProvider;
 import com.tarifvergleich.electricity.repository.CustomerOrderRepository;
 import com.tarifvergleich.electricity.service.EnergyService;
@@ -49,7 +50,17 @@ public class CustomerCronOrderService {
 		if (order.getIsExpired() || order.getIsCancelled())
 			return;
 
+		if (order.getOrderId() == null || order.getOrderId() <= 0)
+			return;
+
 		EgonOrderStatusResponse egonStatusResponse = energyService.checkOrderStatus(order.getOrderId().toString());
+
+		CustomerOrderStatusRecord orderStatusRecord = CustomerOrderStatusRecord.builder()
+				.status(egonStatusResponse.status()).message(egonStatusResponse.statusDescription()).build();
+
+		order.addOrderStatus(orderStatusRecord);
+
+		customerOrderRepo.save(order);
 
 		if (!egonStatusResponse.status().equals(2000))
 			return;

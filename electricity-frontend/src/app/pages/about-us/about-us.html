@@ -2,18 +2,46 @@
   <div class="container-header">Das sind wir</div>
   <div class="container-details">
     <div class="image">
-      <img src="assets/images/Manuel_Markovic.png" alt="Familienbetrieb">
+      <img [src]="aboutData?.contentUrl ? contentService.getImageUrl(aboutData.contentUrl) : 'assets/images/Manuel_Markovic.png'" 
+           alt="Familienbetrieb">
     </div>
     <div class="about-text">
-      <span class="about-header"><strong>Familienbetrieb</strong></span><br>
-      <span class="details">Wir setzen auf langfristige Partnerschaften statt auf das schnelle Geschäf. Bie uns laden
-        Sie keinem Callcenter, sondern bei Menschen, die Ihre Namen Kennen. </span><br>
-      <span class="details">
-        <p class="details-para">Wir wollen Ihnen nicht einfach irgendeinen Vertrag verkaufen, sondern Sie langfristig
-          betreuen. Wir setzen auf ehrliche Kommunikation,
-          direkte Ansprechpartner, persönlichen Kontakt, maßgeschneiderte lösungen und Handschlagqualität.
-        </p>
+      <!-- Name -->
+      <span class="about-name text-lg font-medium text-gray-700 block mb-2" *ngIf="aboutData?.contactName">
+        {{ aboutData.contactName }}
       </span>
+
+      <!-- Heading -->
+      <span class="about-header">
+        <strong>{{ aboutData?.heading || 'Familienbetrieb' }}</strong>
+      </span><br>
+      
+      <!-- Contact Info -->
+      <div class="contact-info mt-3 mb-4" *ngIf="aboutData?.contactNumber || aboutData?.contactEmail">
+        <span class="block text-gray-600 mb-1" *ngIf="aboutData?.contactNumber">
+          <strong>Telefon:</strong> {{ aboutData.contactNumber }}
+        </span>
+        <span class="block text-gray-600" *ngIf="aboutData?.contactEmail">
+          <strong>E-Mail:</strong> {{ aboutData.contactEmail }}
+        </span>
+      </div>
+
+      <!-- Description -->
+      <ng-container *ngIf="aboutData?.subHeading; else fallbackDescription">
+        <span class="details block whitespace-pre-line">{{ aboutData.subHeading }}</span>
+      </ng-container>
+
+      <ng-template #fallbackDescription>
+        <span class="details">Wir setzen auf langfristige Partnerschaften statt auf das schnelle Geschäf. Bie uns laden
+          Sie keinem Callcenter, sondern bei Menschen, die Ihre Namen Kennen. </span><br>
+        <span class="details">
+          <p class="details-para">Wir wollen Ihnen nicht einfach irgendeinen Vertrag verkaufen, sondern Sie langfristig
+            betreuen. Wir setzen auf ehrliche Kommunikation,
+            direkte Ansprechpartner, persönlichen Kontakt, maßgeschneiderte lösungen und Handschlagqualität.
+          </p>
+        </span>
+      </ng-template>
+
     </div>
   </div>
 </div>

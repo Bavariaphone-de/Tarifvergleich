@@ -1,10 +1,15 @@
 package com.tarifvergleich.electricity.service.admin;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeParseException;
+import java.time.temporal.ChronoUnit;
 import java.util.Map;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionSynchronization;
@@ -23,15 +28,18 @@ import com.tarifvergleich.electricity.dto.CustomerPaymentRequestDto.PaymentDto;
 import com.tarifvergleich.electricity.dto.EgonFileSignatureResponse;
 import com.tarifvergleich.electricity.dto.EgonFileSignatureResponse.EgonDocumentDto;
 import com.tarifvergleich.electricity.dto.EgonFileSignatureResponse.EgonFileSignatureRequest;
+import com.tarifvergleich.electricity.dto.ServiceRequestEmailEvent.ServiceResponseEmailEvent;
 import com.tarifvergleich.electricity.dto.EgonOrderStatusResponse;
 import com.tarifvergleich.electricity.dto.EnergyRateDto;
 import com.tarifvergleich.electricity.exception.InternalServerException;
 import com.tarifvergleich.electricity.model.AdminSignature;
+import com.tarifvergleich.electricity.model.Customer;
 import com.tarifvergleich.electricity.model.CustomerBookingDocument;
 import com.tarifvergleich.electricity.model.CustomerConnect;
 import com.tarifvergleich.electricity.model.CustomerContractSignature;
 import com.tarifvergleich.electricity.model.CustomerDelivery;
 import com.tarifvergleich.electricity.model.CustomerOrder;
+import com.tarifvergleich.electricity.model.CustomerOrderStatusRecord;
 import com.tarifvergleich.electricity.model.CustomerPayment;
 import com.tarifvergleich.electricity.model.CustomerSelectedProvider;
 import com.tarifvergleich.electricity.repository.AdminSignatureRepository;
@@ -64,6 +72,7 @@ public class AdminCustomerDeliveryManagementService {
 	private final CustomerBookingDocumentRepository customerBookingDocumentRepo;
 	private final AdminSignatureRepository adminSignatureRepo;
 	private final AsyncServiceAdmin asyncServiceAdmin;
+	private final ApplicationEventPublisher eventPublisher;
 
 	@Transactional
 	public Map<String, Object> editDeliveryDetailsByAdmin(AdminEditCustomerDeliveryRelated deliveryDetails) {
@@ -523,6 +532,7 @@ public class AdminCustomerDeliveryManagementService {
 		return Map.of("res", true, "message", "Email for signature contract send successfully");
 	}
 
+	@Transactional
 	public Map<String, Object> checkOrderStatus(CustomerOrderDto orderDto) {
 
 		if (orderDto.getAdminId() == null || orderDto.getAdminId() <= 0)
@@ -530,7 +540,8 @@ public class AdminCustomerDeliveryManagementService {
 		if (orderDto.getCustomerOrderId() == null || orderDto.getCustomerOrderId() <= 0)
 			throw new InternalServerException("Customer order id missing", HttpStatus.OK);
 
-		CustomerOrder order = customerOrderRepo.findByIdAndAdminAdminId(orderDto.getCustomerOrderId(), orderDto.getAdminId())
+		CustomerOrder order = customerOrderRepo
+				.findByIdAndAdminAdminId(orderDto.getCustomerOrderId(), orderDto.getAdminId())
 				.orElseThrow(() -> new InternalServerException("Customer order not found with this credential",
 						HttpStatus.OK));
 
@@ -538,6 +549,72 @@ public class AdminCustomerDeliveryManagementService {
 			throw new InternalServerException("Customer order not placed", HttpStatus.OK);
 
 		EgonOrderStatusResponse orderStatusResponse = energyService.checkOrderStatus(order.getOrderId().toString());
+
+		CustomerOrderStatusRecord orderStatusRecord = CustomerOrderStatusRecord.builder()
+				.status(orderStatusResponse.status()).message(orderStatusResponse.statusDescription()).build();
+
+		order.addOrderStatus(orderStatusRecord);
+
+		customerOrderRepo.save(order);
+
+		if (orderStatusResponse.status().equals(2000) && order.getExpiryOn() == null
+				&& order.getCancelledOn() == null) {
+
+			CustomerDelivery delivery = order.getDelivery();
+
+			CustomerSelectedProvider provider = delivery.getCustomerProvider();
+
+			Customer customer = order.getCustomer();
+
+			LocalDate expiry;
+			BigInteger totalTerm;
+
+			try {
+				expiry = helper.flexibleDateParser(provider.getRaw().get("optTerm").asText())
+						.atStartOfDay(ZoneId.of("Europe/Berlin")).minusDays(1).toLocalDate();
+			} catch (DateTimeParseException | IllegalArgumentException e) {
+				Long expireDuration = provider.getRaw().get("optTerm").asLong();
+				expiry = LocalDate.now().atStartOfDay().atZone(ZoneId.of("Europe/Berlin")).plusMonths(expireDuration)
+						.minusDays(1).toLocalDate();
+			}
+
+			totalTerm = BigInteger.valueOf(ChronoUnit.SECONDS.between(ZonedDateTime.now(ZoneId.of("Europe/Berlin")),
+					expiry.atStartOfDay(ZoneId.of("Europe/Berlin"))));
+
+			BigInteger cancelTime = BigInteger.valueOf(0);
+			if (provider.getRaw().path("cancel") != null && provider.getRaw().path("cancelType") != null) {
+				Integer cancel = provider.getRaw().path("cancel").asInt();
+				Integer cancelType = provider.getRaw().path("cancelType").asInt();
+				BigInteger expiryBigInt = helper.toGermamUnixTimestamp(expiry);
+
+				if (cancelType.equals(0))
+					cancelTime = expiryBigInt.subtract(helper.getSecondValueOfDuration(0, 0, 0, 0, 0, 0));
+				else if (cancelType.equals(1))
+					cancelTime = expiryBigInt.subtract(helper.getSecondValueOfDuration(0, 0, cancel, 0, 0, 0));
+				else if (cancelType.equals(2))
+					cancelTime = expiryBigInt.subtract(helper.getSecondValueOfDuration(0, 0, cancel * 7, 0, 0, 0));
+				else if (cancelType.equals(3))
+					cancelTime = expiryBigInt.subtract(helper.getSecondValueOfDuration(0, cancel, 0, 0, 0, 0));
+			}
+
+			order.setExpiryOn(helper.toGermamUnixTimestamp(expiry));
+			order.setLastDateOfCancellation(cancelTime);
+			order.setOperationPeriod(totalTerm);
+
+			delivery.setExpiryOn(helper.toGermamUnixTimestamp(expiry));
+			delivery.setLastDateOfCancellation(cancelTime);
+
+			order.setDelivery(delivery);
+
+			customerOrderRepo.save(order);
+
+			String emailBody = "";
+
+			ServiceResponseEmailEvent mailEvent = new ServiceResponseEmailEvent(customer.getEmail(),
+					"Contract Confirmation (Contract Number: " + order.getId() + ")", emailBody);
+
+			eventPublisher.publishEvent(mailEvent);
+		}
 
 		return Map.of("res", true, "data", orderStatusResponse);
 	}

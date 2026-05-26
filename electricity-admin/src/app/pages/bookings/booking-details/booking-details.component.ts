@@ -146,6 +146,7 @@ type OrderInfo = {
   operationPeriod?: number | null;
   doc?: DocInfo | null;
   bookingDocId?: number | null;
+  customerSignatureSet?: boolean | null;
 };
 
 /** Full shape of a single delivery record returned by the API */
@@ -232,6 +233,58 @@ export class BookingDetailComponent implements OnInit {
   isUpdatingMeter = false;
   meterUpdateMessage = "";
   meterUpdateError = "";
+
+  // ── Send Contract Signature Link ─────────────────────────────────────────
+  isSignatureLinkConfirmOpen = false;
+  isSendingSignatureLink = false;
+  signatureLinkMessage = "";
+  signatureLinkError = "";
+
+  // Derived from booking data — adjust the path to match your booking model
+  get customerSignatureSet(): boolean {
+    return !!this.booking?.order?.customerSignatureSet;
+  }
+
+  openSendSignatureLinkConfirm(): void {
+    this.signatureLinkMessage = "";
+    this.signatureLinkError = "";
+    this.isSignatureLinkConfirmOpen = true;
+  }
+
+  closeSendSignatureLinkConfirm(): void {
+    if (this.isSendingSignatureLink) return;
+    this.isSignatureLinkConfirmOpen = false;
+    this.signatureLinkMessage = "";
+    this.signatureLinkError = "";
+  }
+
+  sendSignatureLink(): void {
+    if (this.isSendingSignatureLink) return;
+
+    this.isSendingSignatureLink = true;
+    this.signatureLinkError = "";
+    this.signatureLinkMessage = "";
+
+    this.api
+      .post("admin/resend-signing-order", {
+        customerOrderId: this.booking?.order?.customerOrderId,
+        adminId: 1,
+      })
+      .subscribe({
+        next: (res: any) => {
+          this.isSendingSignatureLink = false;
+          this.signatureLinkMessage =
+            "Der Vertragslink wurde erfolgreich an den Kunden gesendet.";
+        },
+        error: (err) => {
+          this.isSendingSignatureLink = false;
+          this.signatureLinkError =
+            err?.error?.message ??
+            "Der Link konnte nicht gesendet werden. Bitte erneut versuchen.";
+          console.error("Signature link send error:", err);
+        },
+      });
+  }
 
   readonly dayLabels: Record<string, string> = {
     MONDAY: "Montag",
@@ -440,12 +493,15 @@ export class BookingDetailComponent implements OnInit {
           this.fetchBooking(this.booking!.deliveryId ?? 0);
         } else {
           this.createOrderError =
-            res?.errMessage ?? res?.message ?? "Unbekannter Fehler beim Erstellen des Auftrags.";
+            res?.errMessage ??
+            res?.message ??
+            "Unbekannter Fehler beim Erstellen des Auftrags.";
         }
       },
       error: (err) => {
         this.isCreatingOrder = false;
-        this.createOrderError = err?.error?.errMessage || "Fehler beim Erstellen des Auftrags.";
+        this.createOrderError =
+          err?.error?.errMessage || "Fehler beim Erstellen des Auftrags.";
         console.error("Create order error:", err);
       },
     });
@@ -650,27 +706,25 @@ export class BookingDetailComponent implements OnInit {
       meterNumber: this.meterNumberInput.trim(),
     };
 
-    this.api
-      .post("admin/update-meter-number", payload)
-      .subscribe({
-        next: (res: any) => {
-          this.isUpdatingMeter = false;
-          if (res?.res) {
-            this.meterUpdateMessage =
-              res.message ?? "Zählernummer erfolgreich aktualisiert.";
-            this.fetchBooking(this.booking!.deliveryId ?? 0);
-            setTimeout(() => this.closeMeterModal(), 1500);
-          } else {
-            this.meterUpdateError =
-              res?.message ?? "Fehler beim Aktualisieren der Zählernummer.";
-          }
-        },
-        error: (err) => {
-          this.isUpdatingMeter = false;
-          this.meterUpdateError = "Fehler beim Aktualisieren.";
-          console.error("Meter update error:", err);
-        },
-      });
+    this.api.post("admin/update-meter-number", payload).subscribe({
+      next: (res: any) => {
+        this.isUpdatingMeter = false;
+        if (res?.res) {
+          this.meterUpdateMessage =
+            res.message ?? "Zählernummer erfolgreich aktualisiert.";
+          this.fetchBooking(this.booking!.deliveryId ?? 0);
+          setTimeout(() => this.closeMeterModal(), 1500);
+        } else {
+          this.meterUpdateError =
+            res?.message ?? "Fehler beim Aktualisieren der Zählernummer.";
+        }
+      },
+      error: (err) => {
+        this.isUpdatingMeter = false;
+        this.meterUpdateError = "Fehler beim Aktualisieren.";
+        console.error("Meter update error:", err);
+      },
+    });
   }
 
   // ── Navigation ────────────────────────────────────────────────────────────

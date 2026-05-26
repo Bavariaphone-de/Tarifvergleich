@@ -12,7 +12,7 @@ import { ContactPerson } from '../../layout/contact-person/contact-person';
 import { NeedSupport } from '../../layout/need-support/need-support';
 import { ActivatedRoute } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-const API_BASE = 'http://localhost:8080';
+const API_BASE = 'http://192.168.0.155:8080';
 @Component({
   selector: 'app-order-signature',
   standalone: true,
@@ -84,9 +84,12 @@ export class OrderSignature {
         next: (res) => {
           console.log('Contract Details:', res);
           this.contractDetails = res.data;
-          this.adminSignaturePath = res.adminSignaturePath;
+          this.adminSignaturePath = res.adminSignaturePath
+            ? `${API_BASE}/assets/super-admin/${res.adminSignaturePath}`
+            : '';
           this.submitted = res.submitted;
           console.log('Contract Details:', this.contractDetails);
+          console.log('Admin Signature Path:', this.adminSignaturePath);
           this.cdr.detectChanges();
         },
         error: (err) => {
@@ -96,8 +99,13 @@ export class OrderSignature {
   }
 
   navigateToMainStep(step: number): void {
-    if (step < 0 || step > 4) return;
+    // invalid step
+    if (step < 1 || step > 4) return;
 
+    // prevent forward navigation
+    if (step > this.currentStep) return;
+
+    // allow only backward/current step
     this.currentStep = step;
 
     window.scrollTo({
@@ -155,12 +163,8 @@ export class OrderSignature {
 
     // STEP 3
     if (this.currentStep === 3 && this.storedSignatures.step3) {
-      if (this.storedSignatures.step3.partnerSignature && this.signaturePads[0]) {
-        this.signaturePads[0].fromDataURL(this.storedSignatures.step3.partnerSignature);
-      }
-
-      if (this.storedSignatures.step3.customerSignature && this.signaturePads[1]) {
-        this.signaturePads[1].fromDataURL(this.storedSignatures.step3.customerSignature);
+      if (this.storedSignatures.step3.customerSignature && this.signaturePads[0]) {
+        this.signaturePads[0].fromDataURL(this.storedSignatures.step3.customerSignature);
       }
     }
 
@@ -232,8 +236,8 @@ export class OrderSignature {
       }
 
       this.storedSignatures.step3 = {
-        partnerSignature: this.signaturePads[0].toDataURL(),
-        customerSignature: this.signaturePads[1].toDataURL(),
+        // partnerSignature: this.signaturePads[0].toDataURL(),
+        customerSignature: this.signaturePads[0].toDataURL(),
       };
     }
 
@@ -389,17 +393,17 @@ export class OrderSignature {
     let isValid = true;
 
     // Vertriebspartner signature
-    const partnerPad = this.signaturePads[0];
+    // const partnerPad = this.signaturePads[0];
 
-    if (!partnerPad || partnerPad.isEmpty()) {
-      this.fieldErrors['step3PartnerSignature'] = 'Bitte Vertriebspartner-Unterschrift hinzufügen.';
-      isValid = false;
-    } else {
-      delete this.fieldErrors['step3PartnerSignature'];
-    }
+    // if (!partnerPad || partnerPad.isEmpty()) {
+    //   this.fieldErrors['step3PartnerSignature'] = 'Bitte Vertriebspartner-Unterschrift hinzufügen.';
+    //   isValid = false;
+    // } else {
+    //   delete this.fieldErrors['step3PartnerSignature'];
+    // }
 
     // Customer signature
-    const customerPad = this.signaturePads[1];
+    const customerPad = this.signaturePads[0];
 
     if (!customerPad || customerPad.isEmpty()) {
       this.fieldErrors['step3CustomerSignature'] = 'Bitte Kunden-Unterschrift hinzufügen.';

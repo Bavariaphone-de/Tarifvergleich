@@ -16,6 +16,7 @@ import com.tarifvergleich.electricity.dto.AdminAssetDto;
 import com.tarifvergleich.electricity.dto.AdminAssetDto.AdminAssetSuffleDto;
 import com.tarifvergleich.electricity.dto.AdminServiceMenuDto;
 import com.tarifvergleich.electricity.dto.AdminSignatureDto;
+import com.tarifvergleich.electricity.dto.CustomerServicesDto;
 import com.tarifvergleich.electricity.dto.ManageAdminDocumentDto;
 import com.tarifvergleich.electricity.service.admin.AdminAssetService;
 import com.tarifvergleich.electricity.service.admin.ViewService;
@@ -24,9 +25,9 @@ import lombok.RequiredArgsConstructor;
 import tools.jackson.databind.ObjectMapper;
 
 @RestController
-@RequiredArgsConstructor
 @CrossOrigin(origins = "*")
 @RequestMapping("/admin")
+@RequiredArgsConstructor
 public class AdminAssetController {
 
 	private final AdminAssetService adminAssetService;
@@ -114,4 +115,5 @@ public class AdminAssetController {
 	public ResponseEntity<?> fetchAdminSignature(@RequestBody AdminSignatureDto adminSignatureDto) {
 		return ResponseEntity.ok(adminAssetService.fetchAdminSignature(adminSignatureDto));
 	}
+	
 }

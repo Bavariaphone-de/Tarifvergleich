@@ -35,7 +35,7 @@ export class CustomerServiceFormComponent implements OnInit {
     }
   }
 
-  // 🔍 Fetch data for edit
+  // Fetch data for edit
   fetchServiceDetails(): void {
     this.isLoading = true;
 
@@ -51,7 +51,7 @@ export class CustomerServiceFormComponent implements OnInit {
         if (res?.res) {
           this.serviceName = res.data?.serviceName || '';
         } else {
-          this.errorMessage = res.message || 'Failed to load service';
+          this.errorMessage = res.errMessage || res.message || 'Failed to load service';
         }
       },
       error: () => {
@@ -78,7 +78,7 @@ export class CustomerServiceFormComponent implements OnInit {
       adminId: this.authService.getUserId()
     };
 
-    // ✅ Only add serviceId if editing
+    // Only add serviceId if editing
     if (this.serviceId) {
       payload.serviceId = this.serviceId;
     }
@@ -94,7 +94,7 @@ export class CustomerServiceFormComponent implements OnInit {
             this.resetForm();
           }
         } else {
-          this.errorMessage = res.message || 'Something went wrong';
+          this.errorMessage = res.errMessage || res.message || 'Something went wrong';
         }
       },
       error: () => {
