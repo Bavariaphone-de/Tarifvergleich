@@ -152,35 +152,41 @@ export class ContactQueryComponent implements OnInit, OnDestroy {
     this.errorMessage = "";
     this.closeSidebar();
 
-    this.api
-      .post("fetch-customer-queries", payload)
-      .subscribe({
-        next: (res: any) => {
-          this.isLoading = false;
-          const newData = this.extractList(res);
-          this.queries = newData;
-          this.hasMoreData = newData.length === this.PAGE_LIMIT;
+    this.api.post("fetch-customer-queries", payload).subscribe({
+      next: (res: any) => {
+        this.isLoading = false;
+        const newData = this.extractList(res);
+        this.queries = newData;
+        this.hasMoreData = newData.length === this.PAGE_LIMIT;
 
-          const total = res?.total ?? res?.data?.total ?? res?.totalElements ?? res?.data?.totalElements ?? res?.totalRecords ?? res?.data?.totalRecords ?? res?.count ?? res?.data?.count;
+        const total =
+          res?.total ??
+          res?.data?.total ??
+          res?.totalElements ??
+          res?.data?.totalElements ??
+          res?.totalRecords ??
+          res?.data?.totalRecords ??
+          res?.count ??
+          res?.data?.count;
 
-          if (typeof total === "number") {
-            this.totalCount = total;
-          } else {
-            this.totalCount = this.hasMoreData
-              ? this.currentPage * this.PAGE_LIMIT + 1
-              : (this.currentPage - 1) * this.PAGE_LIMIT + newData.length;
-          }
-          this.totalPages = Math.max(
-            1,
-            Math.ceil(this.totalCount / this.PAGE_LIMIT),
-          );
-        },
-        error: (err) => {
-          this.isLoading = false;
-          this.errorMessage = "Fehler beim Laden der Kontaktanfragen.";
-          console.error("Kontaktanfragen fetch error:", err);
-        },
-      });
+        if (typeof total === "number") {
+          this.totalCount = total;
+        } else {
+          this.totalCount = this.hasMoreData
+            ? this.currentPage * this.PAGE_LIMIT + 1
+            : (this.currentPage - 1) * this.PAGE_LIMIT + newData.length;
+        }
+        this.totalPages = Math.max(
+          1,
+          Math.ceil(this.totalCount / this.PAGE_LIMIT),
+        );
+      },
+      error: (err) => {
+        this.isLoading = false;
+        this.errorMessage = "Fehler beim Laden der Kontaktanfragen.";
+        console.error("Kontaktanfragen fetch error:", err);
+      },
+    });
   }
 
   nextPage(): void {
@@ -208,8 +214,6 @@ export class ContactQueryComponent implements OnInit, OnDestroy {
     this.customerSearchTerm = "";
     this.customerSearchResults = [];
     setTimeout(() => this.searchInputRef?.nativeElement.blur(), 50);
-
-
   }
   // ── Sidebar ───────────────────────────────────────────────────
 
@@ -336,18 +340,16 @@ export class ContactQueryComponent implements OnInit, OnDestroy {
       limit: 10,
     };
 
-    this.api
-      .post("admin/fetch-customer-details", payload)
-      .subscribe({
-        next: (res: any) => {
-          this.isSearchingCustomers = false;
-          this.customerSearchResults = this.extractCustomerList(res);
-        },
-        error: () => {
-          this.isSearchingCustomers = false;
-          this.customerSearchResults = [];
-        },
-      });
+    this.api.post("admin/fetch-customer-details", payload).subscribe({
+      next: (res: any) => {
+        this.isSearchingCustomers = false;
+        this.customerSearchResults = this.extractCustomerList(res);
+      },
+      error: () => {
+        this.isSearchingCustomers = false;
+        this.customerSearchResults = [];
+      },
+    });
   }
 
   // ── Link (submit) ─────────────────────────────────────────────
@@ -365,33 +367,31 @@ export class ContactQueryComponent implements OnInit, OnDestroy {
       customerIds: this.selectedCustomers.map((c) => c.id),
     };
 
-    this.api
-      .post("link-customer-query", payload)
-      .subscribe({
-        next: () => {
-          this.isLinking = false;
-          this.linkSuccessMessage = `${this.selectedCustomers.length} Kunde${this.selectedCustomers.length !== 1 ? "n" : ""} erfolgreich verknüpft!`;
-          // Update the row locally — store first selected as primary customer
-          const idx = this.queries.findIndex(
-            (q) =>
-              q.customerQueryContactId ===
-              this.modalEntry!.customerQueryContactId,
-          );
-          if (idx !== -1) {
-            this.queries[idx] = {
-              ...this.queries[idx],
-              customer: this.selectedCustomers[0] || null,
-              customers: [...this.selectedCustomers],
-            };
-          }
-          setTimeout(() => this.closeLinkModal(), 1500);
-        },
-        error: (err) => {
-          this.isLinking = false;
-          this.linkErrorMessage = "Fehler beim Verknüpfen des Kunden.";
-          console.error("Link customer error:", err);
-        },
-      });
+    this.api.post("link-customer-query", payload).subscribe({
+      next: () => {
+        this.isLinking = false;
+        this.linkSuccessMessage = `${this.selectedCustomers.length} Kunde${this.selectedCustomers.length !== 1 ? "n" : ""} erfolgreich verknüpft!`;
+        // Update the row locally — store first selected as primary customer
+        const idx = this.queries.findIndex(
+          (q) =>
+            q.customerQueryContactId ===
+            this.modalEntry!.customerQueryContactId,
+        );
+        if (idx !== -1) {
+          this.queries[idx] = {
+            ...this.queries[idx],
+            customer: this.selectedCustomers[0] || null,
+            customers: [...this.selectedCustomers],
+          };
+        }
+        setTimeout(() => this.closeLinkModal(), 1500);
+      },
+      error: (err) => {
+        this.isLinking = false;
+        this.linkErrorMessage = "Fehler beim Verknüpfen des Kunden.";
+        console.error("Link customer error:", err);
+      },
+    });
   }
 
   // ── Customer helpers ──────────────────────────────────────────

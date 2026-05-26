@@ -18,6 +18,7 @@ import { environment } from '../../environments/environment';
 
 const API_BASE = 'http://192.168.0.155:8080';
 
+
 @Component({
   selector: 'app-register',
   standalone: true,

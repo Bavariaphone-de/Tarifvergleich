@@ -221,6 +221,9 @@ export class BookingListComponent implements OnInit {
   currentPage = 1;
   private readonly PAGE_LIMIT = 20;
 
+  totalRecord = 0;
+  totalComplete = 0;
+
   filterOptions = [
     { value: 0, label: "Alle" },
     { value: 1, label: "Unvollständig" },
@@ -280,6 +283,9 @@ export class BookingListComponent implements OnInit {
         const newData = this.extractList(res);
         this.bookings = newData;
         this.hasMoreData = newData.length === this.PAGE_LIMIT;
+
+        this.totalRecord = res?.totalRecord || 0;
+        this.totalComplete = res?.totalComplete || 0;
       },
       error: (err) => {
         this.isLoading = false;
