@@ -778,9 +778,9 @@
               </div>
 
             </div>
-            <div class="error-text" *ngIf="fieldErrors['step3PartnerSignature']">
+            <!-- <div class="error-text" *ngIf="fieldErrors['step3PartnerSignature']">
               {{ fieldErrors['step3PartnerSignature'] }}
-            </div>
+            </div> -->
           </div>
 
           <!-- SIGNATURE 2 -->
@@ -795,7 +795,7 @@
               <canvas #canvas class="signature-canvas"></canvas>
 
               <div class="signature-actions">
-                <button type="button" class="btn-clear-signature" (click)="clearSignature(1)">
+                <button type="button" class="btn-clear-signature" (click)="clearSignature(0)">
                   Unterschrift löschen
                 </button>
               </div>

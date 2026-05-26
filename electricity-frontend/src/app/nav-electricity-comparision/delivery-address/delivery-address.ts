@@ -153,6 +153,10 @@ export class DeliveryAddress implements OnInit, OnDestroy {
             this.deliveryLastName = data.lastName || '';
             this.deliveryMobile = data.phone || '';
             this.salutation = data.salutation || '';
+            // this.deliveryPLZ = data?.address?.zip || '';
+            // this.deliveryOrt = data?.address?.city || '';
+            // this.deliveryStreet = data?.address?.street || '';
+            // this.deliveryHouseNumber = data?.address?.houseNumber || '';
 
             console.log('Customer data:', data);
 
