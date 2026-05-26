@@ -50,7 +50,7 @@ public class AdminEmailManagement {
     @Column(name = "created_date")
     private BigInteger createdDate;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "cate_id")
 //    @JsonIgnore
     private AdminEmailRequestCategory category;
