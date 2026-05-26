@@ -258,25 +258,42 @@ export class SelectProvider implements OnInit {
 
     console.log('Received:', data);
 
-    if (data && data.zip && data.city && data.street) {
+    if (data && data.zip && data.city && data.street && data.route === 'electricity') {
       this.zip = data.zip;
       this.city = data.city;
       this.street = data.street;
       this.houseNumber = data.houseNumber;
-      this.consum = data.consumption;
-      this.selectedPersons = data.persons;
+      this.consum = data.consumption ?? this.consum;
+      this.selectedPersons = data.persons ?? this.selectedPersons;
       this.hasAddress = true;
       // this.isOpen = true;
       // this.isOpen = false;
       // this.toggleDiv();
     } else {
-      this.hasAddress = false;
+      if (this.isLoggedIn()) {
+        this.authService.fetchCustomer();
+
+        this.authService.getCustomerData().subscribe((data) => {
+          if (!data) return;
+
+          this.zip = data.address?.zip;
+          this.city = data.address?.city;
+          this.street = data.address?.street;
+          this.houseNumber = data.address?.houseNumber;
+          this.consum = this.consum;
+          this.selectedPersons = this.selectedPersons;
+          this.hasAddress = true;
+          this.cdr.detectChanges();
+          console.log('Customer data updated in DeliveryAddress:', data);
+        });
+      } else {
+        this.hasAddress = false;
+      }
     }
     this.isOpen = false;
     this.addressForm = this.fb.group({
       postalCode: ['', [Validators.required, Validators.pattern(/^\d{5}$/)]],
 
-      // city: [{ value: '', disabled: true }, Validators.required],
       city: [{ value: null, disabled: true }, Validators.required],
 
       street: [{ value: null, disabled: true }, Validators.required],
@@ -292,87 +309,103 @@ export class SelectProvider implements OnInit {
     this.handleCityChanges();
     this.handleStreetChanges();
 
-    // if (this.isLoggedIn()) {
-    //   this.authService.fetchCustomer();
-    // }
-
-    // this.authService.getCustomerData().subscribe((data) => {
-
-    //   if (!data?.address) return;
-    //   this.hasAddress = true;
-    //   this.isOpen = false;
-    //   // this.toggleDiv();
     //   const saved = data.address;
-    const saved = this.authService.getAddressData();
-    if (saved) {
-      console.log('Prefill Address:', saved);
+    // const saved = this.authService.getAddressData();
+    // if (saved) {
+    const localData = this.authService.getAddressData();
 
-      this.isRestoring = true;
+    if (localData?.route === 'electricity') {
+      // USE ELECTRICITY FLOW LOCAL DATA
+      this.prefillAddress(localData);
+    } else if (this.isLoggedIn()) {
+      // USE CUSTOMER API DATA
+      this.authService.fetchCustomer();
 
-      this.addressForm.patchValue({
-        postalCode: saved.zip,
-        consum: saved.consumption,
-      });
+      this.authService.getCustomerData().subscribe((data) => {
+        if (!data?.address) return;
 
-      // this.selectedPersons = saved.persons;
-      // this.consum = saved.consumption;
+        const apiData = {
+          zip: data.address?.zip,
+          city: data.address?.city,
+          street: data.address?.street,
+          houseNumber: data.address?.houseNumber,
+          consumption: this.consum,
+          persons: this.selectedPersons,
+        };
 
-      this.addressService.getCitiesByZip(saved.zip).subscribe((cities) => {
-        this.cityOptions = cities;
-        this.filteredCityOptions = [...cities];
-
-        this.addressForm.get('city')?.enable();
-
-        const matchedCity = cities.find((c) => c.city === saved.city);
-
-        if (!matchedCity) {
-          this.isRestoring = false;
-          return;
-        }
-
-        this.citySearch = matchedCity.city;
-        this.lastValidCity = matchedCity;
-
-        this.addressForm.get('city')?.setValue(matchedCity.city_id);
-
-        this.isStreetLoading = true;
-        this.addressForm.get('street')?.enable();
-
-        this.addressService.getStreetsByCity(saved.zip, matchedCity.city).subscribe((streets) => {
-          this.streetOptions = streets;
-          this.filteredStreetOptions = [...streets];
-
-          this.addressForm.get('street')?.enable();
-
-          const matchedStreet = streets.find(
-            (s) => s.street.trim().toLowerCase() === (saved.street ?? '').trim().toLowerCase(),
-          );
-
-          if (matchedStreet) {
-            this.streetSearch = matchedStreet.street;
-            this.lastValidStreet = matchedStreet.street;
-
-            this.addressForm.get('street')?.setValue(matchedStreet.street, {
-              emitEvent: false,
-            });
-            this.isStreetLoading = false;
-          }
-
-          this.addressForm.get('houseNumber')?.enable();
-
-          this.addressForm.patchValue(
-            {
-              houseNumber: saved.houseNumber,
-            },
-            { emitEvent: false },
-          );
-          this.isRestoring = false;
-        });
-        this.showCityDropdown = false;
-        this.showDropdown = false;
+        this.prefillAddress(apiData);
       });
     }
-    // });
+  }
+
+  prefillAddress(saved: any) {
+    console.log('Prefill Address:', saved);
+    console.log('Prefill Address:', saved);
+
+    this.isRestoring = true;
+
+    this.addressForm.patchValue({
+      postalCode: saved.zip,
+      consum: saved.consumption,
+    });
+
+    // this.selectedPersons = saved.persons;
+    // this.consum = saved.consumption;
+
+    this.addressService.getCitiesByZip(saved.zip).subscribe((cities) => {
+      this.cityOptions = cities;
+      this.filteredCityOptions = [...cities];
+
+      this.addressForm.get('city')?.enable();
+
+      const matchedCity = cities.find((c) => c.city === saved.city);
+
+      if (!matchedCity) {
+        this.isRestoring = false;
+        return;
+      }
+
+      this.citySearch = matchedCity.city;
+      this.lastValidCity = matchedCity;
+
+      this.addressForm.get('city')?.setValue(matchedCity.city_id);
+
+      this.isStreetLoading = true;
+      this.addressForm.get('street')?.enable();
+
+      this.addressService.getStreetsByCity(saved.zip, matchedCity.city).subscribe((streets) => {
+        this.streetOptions = streets;
+        this.filteredStreetOptions = [...streets];
+
+        this.addressForm.get('street')?.enable();
+
+        const matchedStreet = streets.find(
+          (s) => s.street.trim().toLowerCase() === (saved.street ?? '').trim().toLowerCase(),
+        );
+
+        if (matchedStreet) {
+          this.streetSearch = matchedStreet.street;
+          this.lastValidStreet = matchedStreet.street;
+
+          this.addressForm.get('street')?.setValue(matchedStreet.street, {
+            emitEvent: false,
+          });
+          this.isStreetLoading = false;
+        }
+
+        this.addressForm.get('houseNumber')?.enable();
+
+        this.addressForm.patchValue(
+          {
+            houseNumber: saved.houseNumber,
+          },
+          { emitEvent: false },
+        );
+        this.isRestoring = false;
+      });
+      this.showCityDropdown = false;
+      this.showDropdown = false;
+    });
   }
 
   onCityInput(event: any) {
@@ -463,6 +496,7 @@ export class SelectProvider implements OnInit {
 
     this.authService.setAddressData(data);
     this.hasAddress = true;
+    this.isOpen = false;
     this.cdr.detectChanges();
     console.log('Address Data Set:', data);
     // this.fetchRates();
@@ -704,7 +738,7 @@ export class SelectProvider implements OnInit {
         const rates = res.rates?.result || [];
         const total = res.rates?.total || rates.length;
         const baseProviderData = res.baseProvider?.result?.[0] || null;
-        this.tax = res.tax?? 1.19 ;
+        this.tax = res.tax ?? 1.19;
 
         this.allRates = rates
           .map((rate: Rate) => ({
@@ -821,12 +855,37 @@ export class SelectProvider implements OnInit {
       this.baseRate.basePriceMonth = Number((this.editableBasePrice / 12).toFixed(2));
     }
 
-    // ABSCHLAG
-    if (this.activeTab === 'abschlag') {
-      this.baseRate.totalPriceMonth = Number(this.editableMonthlyPrice.toFixed(2));
+    /* =========================================
+      ALWAYS RECALCULATE TOTAL PRICE
+    ========================================= */
 
-      this.baseRate.totalPrice = Number((this.editableMonthlyPrice * 12).toFixed(2));
+    const yearlyTotal = this.getPopupYearlyPrice();
+
+    console.log('Yearly Total:', yearlyTotal);
+
+    this.baseRate.totalPrice = Number(yearlyTotal.toFixed(2));
+
+    if (this.activeTab === 'abschlag') {
+      console.log('Using manual monthly price:', this.editableMonthlyPrice);
+      // user manually edited abschlag
+      this.baseRate.totalPriceMonth = Number(this.editableMonthlyPrice.toFixed(2));
+    } else {
+      console.log(
+        'Calculating monthly price from yearly total:',
+        yearlyTotal,
+        'with abschlag count:',
+        this.abschlagCount,
+      );
+      // calculate from yearly total + selected abschlag count
+      this.baseRate.totalPriceMonth = Number((yearlyTotal / 12).toFixed(2));
     }
+
+    // ABSCHLAG
+    // if (this.activeTab === 'abschlag') {
+    //   this.baseRate.totalPriceMonth = Number(this.editableMonthlyPrice.toFixed(2));
+
+    //   this.baseRate.totalPrice = Number((this.editableMonthlyPrice * 12).toFixed(2));
+    // }
 
     // refresh ui
     this.baseRate = {
@@ -890,6 +949,7 @@ export class SelectProvider implements OnInit {
 
     return Number(yearlyTotal.toFixed(2));
   }
+
   // ======================
   // RATE CHANGE
   // ======================
@@ -1053,6 +1113,17 @@ export class SelectProvider implements OnInit {
   openPage(selectedRate: Rate): void {
     this.authService.setSelectedProvider(selectedRate);
     this.authService.setAllProviders(this.allRates);
+
+    const data = {
+      zip: this.zip,
+      city: this.city,
+      street: this.street,
+      houseNumber: this.houseNumber,
+      persons: this.selectedPersons,
+      consumption: this.consum,
+    };
+
+    this.authService.setAddressData(data);
 
     this.router.navigate(['register'], { relativeTo: this.route });
     this.cdr.detectChanges();
@@ -1223,22 +1294,15 @@ export class SelectProvider implements OnInit {
 
   getSavingPerYear(rate: Rate): number {
     if (!rate) return 0;
+
     const commissionTotalYearly = this.getCommissionTotal(rate) * 12;
 
     const baseYearly =
-      this.adjustedBaseYearlyPrice > 0
-        ? this.adjustedBaseYearlyPrice
-        : this.getYearlyPrice(this.baseRate);
+      this.baseRate?.totalPrice > 0 ? this.baseRate.totalPrice : this.getYearlyPrice(this.baseRate);
 
-    console.log(
-      'Base Yearly:',
-      baseYearly,
-      'Rate Yearly:',
-      this.getYearlyPrice(rate),
-      'Commission:',
-      commissionTotalYearly,
-    );
-
+      console.log('Base Yearly:', baseYearly);
+      console.log('Selected Rate Yearly:', this.getYearlyPrice(rate));
+      console.log('Commission Total Yearly:', commissionTotalYearly);
     return Number((baseYearly - (this.getYearlyPrice(rate) + commissionTotalYearly)).toFixed(2));
   }
 

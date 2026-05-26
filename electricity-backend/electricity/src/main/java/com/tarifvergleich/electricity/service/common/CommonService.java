@@ -56,6 +56,9 @@ public class CommonService {
                         "Category not found with id: " + dto.getCategoryId()));
 
         Customer customer = null;
+        
+        System.out.println("CustomerId:" + dto.getCustomerId());
+        
         if (dto.getCustomerId() != null && dto.getCustomerId() > 0)
             customer = customerRepository
                     .findById(dto.getCustomerId())

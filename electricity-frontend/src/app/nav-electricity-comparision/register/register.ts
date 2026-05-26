@@ -1,4 +1,4 @@
-import { Component, ChangeDetectorRef, NgZone, ViewChild } from '@angular/core';
+import { Component, ChangeDetectorRef, NgZone, ViewChild, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Router, NavigationEnd } from '@angular/router';
@@ -15,6 +15,7 @@ import {
   CountdownComponent,
 } from 'ngx-countdown';
 import { environment } from '../../environments/environment';
+import { AddressService } from '../../services/address.service';
 
 const API_BASE = 'http://192.168.0.155:8080';
 
@@ -121,6 +122,7 @@ export class Register {
     private authService: AuthService,
     private router: Router,
     private zone: NgZone,
+    private addressService: AddressService,
   ) {}
 
   @ViewChild('countdown', { static: false }) private countdown!: CountdownComponent;
@@ -384,7 +386,204 @@ AUTH MODE
     4: '/electricity-comparision/payment-method', // replace with actual path
     5: '/electricity-comparision/checkout', // replace with actual path
   };
+  // =========================
+  // ADDRESS DROPDOWN VARIABLES
+  // =========================
 
+  cityOptions: { city: string; city_id: string }[] = [];
+  streetOptions: { street: string; street_id: string }[] = [];
+
+  filteredCityOptions: any[] = [];
+  filteredStreetOptions: any[] = [];
+
+  citySearch = '';
+  streetSearch = '';
+
+  showCityDropdown = false;
+  showStreetDropdown = false;
+
+  isStreetLoading = false;
+
+  lastValidCity: { city: string; city_id: string } | null = null;
+  lastValidStreet: string | null = null;
+
+  // =========================
+  // POSTAL CODE INPUT
+  // =========================
+
+  onPostalCodeInput(event: any) {
+    const value = event.target.value;
+
+    this.formData.postalCode = value;
+
+    if (!/^\d{5}$/.test(value)) {
+      this.resetCity();
+      this.resetStreet();
+      this.resetHouseNumber();
+      return;
+    }
+
+    this.addressService.getCitiesByZip(value).subscribe((cities: any[]) => {
+      this.cityOptions = cities;
+      this.filteredCityOptions = cities;
+
+      // AUTO SELECT IF ONLY 1 CITY
+      if (cities.length === 1) {
+        const city = cities[0];
+
+        this.citySearch = city.city;
+
+        this.formData.city = city.city;
+
+        this.lastValidCity = city;
+
+        this.filteredCityOptions = cities;
+
+        this.showCityDropdown = false;
+
+        this.loadStreetData();
+
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  // =========================
+  // CITY INPUT
+  // =========================
+
+  onCityInput(event: any) {
+    const value = event.target.value.trim().toLowerCase();
+
+    this.citySearch = event.target.value;
+
+    this.filteredCityOptions = this.cityOptions.filter((c) => c.city.toLowerCase().includes(value));
+
+    this.showCityDropdown = true;
+  }
+
+  // =========================
+  // SELECT CITY
+  // =========================
+
+  selectCity(city: any) {
+    this.citySearch = city.city;
+
+    this.formData.city = city.city;
+
+    this.lastValidCity = city;
+
+    this.showCityDropdown = false;
+
+    this.resetStreet();
+    this.resetHouseNumber();
+
+    this.loadStreetData();
+  }
+
+  // =========================
+  // LOAD STREETS
+  // =========================
+
+  loadStreetData() {
+    if (!this.formData.postalCode || !this.formData.city) {
+      return;
+    }
+
+    this.isStreetLoading = true;
+
+    this.addressService
+      .getStreetsByCity(this.formData.postalCode, this.formData.city)
+      .subscribe((streets: any[]) => {
+        this.streetOptions = streets;
+        this.filteredStreetOptions = streets;
+
+        this.isStreetLoading = false;
+
+        this.showStreetDropdown = true;
+      });
+  }
+
+  // =========================
+  // STREET INPUT
+  // =========================
+
+  onStreetInput(event: any) {
+    const value = event.target.value.trim().toLowerCase();
+
+    this.streetSearch = event.target.value;
+
+    this.filteredStreetOptions = this.streetOptions.filter((s) =>
+      (s.street ?? '').toLowerCase().includes(value),
+    );
+
+    this.showStreetDropdown = true;
+  }
+
+  // =========================
+  // SELECT STREET
+  // =========================
+
+  selectStreet(street: any) {
+    this.streetSearch = street.street;
+
+    this.formData.street = street.street;
+
+    this.lastValidStreet = street.street;
+
+    this.showStreetDropdown = false;
+  }
+
+  // =========================
+  // CLOSE DROPDOWNS
+  // =========================
+
+  closeAllDropdowns() {
+    this.showCityDropdown = false;
+    this.showStreetDropdown = false;
+  }
+
+  // =========================
+  // RESET CITY
+  // =========================
+
+  resetCity() {
+    this.cityOptions = [];
+    this.filteredCityOptions = [];
+
+    this.citySearch = '';
+
+    this.formData.city = '';
+
+    this.showCityDropdown = false;
+
+    this.lastValidCity = null;
+  }
+
+  // =========================
+  // RESET STREET
+  // =========================
+
+  resetStreet() {
+    this.streetOptions = [];
+    this.filteredStreetOptions = [];
+
+    this.streetSearch = '';
+
+    this.formData.street = '';
+
+    this.showStreetDropdown = false;
+
+    this.lastValidStreet = null;
+  }
+
+  private resetHouseNumber() {
+    this.formData.houseNumber = '';
+  }
+  @HostListener('document:click')
+  onDocumentClick() {
+    this.closeAllDropdowns();
+  }
   navigateToMainStep(step: number) {
     if (step > this.maxAccessibleStep) {
       return;

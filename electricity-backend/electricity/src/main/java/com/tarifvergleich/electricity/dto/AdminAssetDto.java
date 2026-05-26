@@ -26,6 +26,9 @@ public class AdminAssetDto {
 	private String savingDetail;
 	private String popupContent2;
 	private String popupContent3;
+	
+	private String contactName;
+	private String contactEmail;
 
 	@Data
 	@NoArgsConstructor
