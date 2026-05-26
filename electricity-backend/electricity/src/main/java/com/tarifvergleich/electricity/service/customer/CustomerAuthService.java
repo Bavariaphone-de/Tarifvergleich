@@ -663,7 +663,8 @@ public class CustomerAuthService {
 		return Map.of("res", true, "message", "Password reset successfully");
 	}
 
-//	public Map<String, Object> sendMail(Integer id) {
+	@Transactional
+	public Map<String, Object> sendMail(Integer id) {
 //		CustomerAttorny attorny = customerAttornyRepo.findById(1).orElseThrow(() -> new InternalServerException("Something went wrong", HttpStatus.OK));
 //		
 //		String pdfContent = pdfGenerator.generateVollmachtDocument(attorny);
@@ -671,7 +672,21 @@ public class CustomerAuthService {
 //		String emailBody = customEmailTemplate.generateEmailHtml("Test", "Test", "This is test email to check pdf generation");
 //		
 //		mailService.sendEmailWithBase64Attachment("syntnpddr@gmail.com", emailBody, pdfContent, "Attorny_contract.pdf");
-//
-//		return Map.of("res", true);
-//	}
+
+		Customer customer = customerRepo.findById(1).orElse(null);
+
+		String encodedId = Base64.getEncoder().encodeToString(customer.getCustomerId().toString().getBytes());
+
+//		String mailBody = customEmailTemplate.generateEmailHtml("Bestätigen Sie den Empfang Ihres Kontos", "", emailTemplate.createCustomerConsentEmailBody(customer.getSalutation(),
+//				customer.getLastName(), encodedId));
+
+		String consentUrl = "http://192.168.0.155:8080/auth/mark-acknowledgement?token=" + encodedId;
+		String mailBody = emailRender.conscent365AdvisorBody(consentUrl, customer);
+
+		ServiceAttachmentMailOfAcknowledgement mailRes = new ServiceAttachmentMailOfAcknowledgement(customer.getEmail(),
+				"Action Required: Bestätigen Sie den Empfang Ihres Kontos", mailBody, customer.getAdmin().getAdminId());
+
+		eventPublisher.publishEvent(mailRes);
+		return Map.of("res", true);
+	}
 }

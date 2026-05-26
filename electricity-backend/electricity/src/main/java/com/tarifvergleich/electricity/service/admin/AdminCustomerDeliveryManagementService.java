@@ -9,7 +9,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
-import org.springframework.web.multipart.MultipartFile;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tarifvergleich.electricity.dto.AdminCreateOrderEgonDto;
@@ -24,6 +23,7 @@ import com.tarifvergleich.electricity.dto.CustomerPaymentRequestDto.PaymentDto;
 import com.tarifvergleich.electricity.dto.EgonFileSignatureResponse;
 import com.tarifvergleich.electricity.dto.EgonFileSignatureResponse.EgonDocumentDto;
 import com.tarifvergleich.electricity.dto.EgonFileSignatureResponse.EgonFileSignatureRequest;
+import com.tarifvergleich.electricity.dto.EgonOrderStatusResponse;
 import com.tarifvergleich.electricity.dto.EnergyRateDto;
 import com.tarifvergleich.electricity.exception.InternalServerException;
 import com.tarifvergleich.electricity.model.AdminSignature;
@@ -502,41 +502,6 @@ public class AdminCustomerDeliveryManagementService {
 		return Map.of("res", true, "message", "Meter number updated successfully");
 	}
 
-	@Transactional
-	public Map<String, Object> uploadSignedPdf(CustomerOrderDto customerOrderDto, MultipartFile file) {
-
-		if (customerOrderDto.getAdminId() == null || customerOrderDto.getAdminId() <= 0)
-			throw new InternalServerException("Admin id missing", HttpStatus.OK);
-		if (customerOrderDto.getCustomerOrderId() == null || customerOrderDto.getCustomerOrderId() <= 0)
-			throw new InternalServerException("Customer order id missing", HttpStatus.OK);
-
-		if (file == null)
-			throw new InternalServerException("File missing", HttpStatus.OK);
-
-		CustomerOrder order = customerOrderRepo
-				.findByIdAndAdminAdminId(customerOrderDto.getCustomerOrderId(), customerOrderDto.getAdminId())
-				.orElseThrow(() -> new InternalServerException("Customer order not found with this credential",
-						HttpStatus.OK));
-		if (order.getCustomerBookingDocument() == null)
-			throw new InternalServerException("Previous record of unsigned document not found", HttpStatus.OK);
-
-		CustomerBookingDocument bookingDocument = order.getCustomerBookingDocument();
-
-		String base64File = helper.convertToBase64(file);
-
-		String filePath = fileServiceCustomer.saveFile(file, "customer-signed-documents");
-
-		if (filePath == null)
-			throw new InternalServerException("Error in saving document", HttpStatus.OK);
-
-		bookingDocument.setSignedDocumentSubmitted(true);
-		bookingDocument.setSignedFileUrl(filePath);
-		bookingDocument.setSignedFileUrl(file.getOriginalFilename());
-
-		customerBookingDocumentRepo.save(bookingDocument);
-		return Map.of("res", true, "message", "Customer signed document uploaded successfully");
-	}
-
 	public Map<String, Object> resendSigningContractMail(CustomerOrderDto orderDto) {
 
 		if (orderDto.getAdminId() == null || orderDto.getAdminId() <= 0)
@@ -556,5 +521,24 @@ public class AdminCustomerDeliveryManagementService {
 		asyncServiceAdmin.sendMailToCustomerForSignatures(orderDto.getCustomerOrderId());
 
 		return Map.of("res", true, "message", "Email for signature contract send successfully");
+	}
+
+	public Map<String, Object> checkOrderStatus(CustomerOrderDto orderDto) {
+
+		if (orderDto.getAdminId() == null || orderDto.getAdminId() <= 0)
+			throw new InternalServerException("Admin id missing", HttpStatus.OK);
+		if (orderDto.getCustomerOrderId() == null || orderDto.getCustomerOrderId() <= 0)
+			throw new InternalServerException("Customer order id missing", HttpStatus.OK);
+
+		CustomerOrder order = customerOrderRepo.findByIdAndAdminAdminId(orderDto.getCustomerOrderId(), orderDto.getAdminId())
+				.orElseThrow(() -> new InternalServerException("Customer order not found with this credential",
+						HttpStatus.OK));
+
+		if (!order.getAdminPlacedOrder() || order.getOrderId() == null)
+			throw new InternalServerException("Customer order not placed", HttpStatus.OK);
+
+		EgonOrderStatusResponse orderStatusResponse = energyService.checkOrderStatus(order.getOrderId().toString());
+
+		return Map.of("res", true, "data", orderStatusResponse);
 	}
 }
