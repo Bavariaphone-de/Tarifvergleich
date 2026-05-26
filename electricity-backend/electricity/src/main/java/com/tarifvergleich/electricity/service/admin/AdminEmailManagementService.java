@@ -1,6 +1,7 @@
 package com.tarifvergleich.electricity.service.admin;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -51,6 +52,19 @@ public class AdminEmailManagementService {
 
 		if (request.getCateId() == null)
 			throw new InternalServerException("Category must be selected", HttpStatus.OK);
+		
+		System.out.println("Category id =" +  request.getCateId());
+		boolean exists = repository.existsByCategoryCateIdAndAdminAdminId(
+			    request.getCateId(),
+			    request.getAdminId()
+			);
+		System.out.println("EXISTS = " + exists);
+			if (exists) {
+			    throw new InternalServerException(
+			        "Template already exists for this category",
+			        HttpStatus.OK
+			    );
+			}
 
 		AdminUser admin = adminUserRepo.findById(request.getAdminId())
 				.orElseThrow(() -> new InternalServerException("Admin not found with this credential", HttpStatus.OK));
@@ -99,9 +113,17 @@ public class AdminEmailManagementService {
 		return emailManagementResponse;
 	}
 
-	public AdminEmailManagement getById(Long id) {
+	public AdminEmailRequestDto.AdminEmailResponseDto getById(Long id) {
 
-		return repository.findById(id).orElse(null);
+	    AdminEmailManagement email = repository.findById(id)
+	        .orElseThrow(() ->
+	            new InternalServerException(
+	                "Email template not found",
+	                HttpStatus.OK
+	            )
+	        );
+
+	    return AdminEmailRequestDto.mapResponseForAdmin(email);
 	}
 	
 	@Transactional
@@ -122,6 +144,18 @@ public class AdminEmailManagementService {
 	    		.findByCateIdAndAdminAdminId(request.getCateId(), request.getAdminId()).orElseThrow(() ->
 	                new InternalServerException("Category not found",HttpStatus.OK));
 
+	    Optional<AdminEmailManagement> existingTemplate =
+	    	    repository.findByCategoryCateId(request.getCateId());
+
+	    	if (existingTemplate.isPresent()
+	    	        && !existingTemplate.get().getId().equals(id)) {
+
+	    	    throw new InternalServerException(
+	    	        "Template already exists for this category",
+	    	        HttpStatus.OK
+	    	    );
+	    	}
+	    
 	    email.setTitle(request.getTitle());
 	    email.setSubtitle(request.getSubtitle());
 	    email.setEmailContent(request.getEmailContent());

@@ -24,7 +24,7 @@ export class EmailTemplateViewComponent {
     const id = this.route.snapshot.paramMap.get('id');
 
     this.http.get(
-      `http://localhost:8080/email-management/${id}`
+      `http://192.168.0.155:8080/admin/email-management/${id}`
     ).subscribe({
 
       next: (res: any) => {

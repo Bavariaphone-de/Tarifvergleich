@@ -88,8 +88,7 @@
                     <td class="px-4 py-4">
                         <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium"
                             [ngClass]="getCategoryClass(item.category?.categorySlug)">
-                            <span class="w-1.5 h-1.5 rounded-full"
-                                [ngClass]="getCategoryDotClass(item.category?.categorySlug)"></span>
+                            <span class="w-bg-blue-500"></span>
                             {{ item.category?.name?.trim() || '—' }}
                         </span>
                     </td>
@@ -121,14 +120,14 @@
                                 </span>
                             </div>
                             <span class="text-gray-600 dark:text-gray-300 text-xs truncate max-w-[80px]">
-                                {{ item.createdBy || 'Admin' }}
+                                <!-- {{ item.createdBy || 'Admin' }} -->
                             </span>
                         </div>
                     </td>
 
                     <!-- DATE -->
                     <td class="px-4 py-4 text-xs text-gray-400 dark:text-gray-500 whitespace-nowrap">
-                        {{ item.createdDate || '—' }}
+                        {{ formatUnixDate(item.createdDate) || '—' }}
                     </td>
 
                     <!-- ACTIONS -->
@@ -137,8 +136,9 @@
                             class="flex items-center justify-end gap-1 opacity-70 group-hover:opacity-100 transition-opacity">
 
                             <!-- VIEW -->
-                            <a [routerLink]="['/email-template-view', item.id]"
                             
+                            <a [routerLink]="['/email-template-view', item.id]"
+                                (click)="test(item)"
                                 class="p-1.5 text-gray-500 hover:text-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition"
                                 title="Vorschau">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

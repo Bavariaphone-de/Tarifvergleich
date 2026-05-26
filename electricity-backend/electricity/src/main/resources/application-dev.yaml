@@ -39,6 +39,9 @@ api:
   geoapify:
     url: https://api.geoapify.com
     apikey: 71d6d1808c1d408ca74773b616b93824
+  gCaptcha:
+    secretKey: 6LfjDPcsAAAAADwMeJ-uRKJ1yZHAe8VhYS7YbYjx
+    minScore: 0.5
 
 server:
   address: 0.0.0.0
