@@ -2,8 +2,10 @@
   <div class="card-header" style="background-color:#003366; text-align: center; ">
     Ihr persönlicher Ansprechpartner
   </div>
-  <div class=" partner-photo-wrap">
-    <img [src]="aboutData?.contentUrl ? contentService.getImageUrl(aboutData.contentUrl) : 'assets/images/MM.png'" alt="Ansprechpartner">
+  <div class="partner-photo-wrap">
+    <img
+      [src]="(contactPerson$ | async)?.contentUrl ? 'http://192.168.0.155:8080/assets/super-admin/' + (contactPerson$ | async)?.contentUrl : 'assets/images/MM.png'"
+      alt="Familienbetrieb">
   </div>
   <div class="partner-info">
     <div class="partner-name">{{ (contactPerson$ | async)?.name ?? 'Manuel Markovic' }}</div>

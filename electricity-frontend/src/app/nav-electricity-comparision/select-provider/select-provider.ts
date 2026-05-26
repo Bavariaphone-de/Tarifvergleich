@@ -401,7 +401,7 @@ export class SelectProvider implements OnInit {
           },
           { emitEvent: false },
         );
-        this.isRestoring = false;
+        // this.isRestoring = false;
       });
       this.showCityDropdown = false;
       this.showDropdown = false;
@@ -410,8 +410,8 @@ export class SelectProvider implements OnInit {
 
   onCityInput(event: any) {
     if (this.addressForm.get('city')?.disabled) return;
-    this.closeAllDropdowns();
-    const value = event.target.value.trim().toLowerCase();
+    this.showDropdown = false;
+    const value = event.target.value.trim();
     this.citySearch = value;
 
     this.filteredCityOptions = this.cityOptions.filter((c) => c.city.toLowerCase().includes(value));
@@ -650,7 +650,9 @@ export class SelectProvider implements OnInit {
             }
             this.streetSearch = '';
 
-            this.showDropdown = true;
+            // if (!this.isRestoring) {
+            //   this.showDropdown = true;
+            // }
             this.isRestoring = false;
             this.cdr.detectChanges();
           });
@@ -1300,9 +1302,9 @@ export class SelectProvider implements OnInit {
     const baseYearly =
       this.baseRate?.totalPrice > 0 ? this.baseRate.totalPrice : this.getYearlyPrice(this.baseRate);
 
-      console.log('Base Yearly:', baseYearly);
-      console.log('Selected Rate Yearly:', this.getYearlyPrice(rate));
-      console.log('Commission Total Yearly:', commissionTotalYearly);
+    console.log('Base Yearly:', baseYearly);
+    console.log('Selected Rate Yearly:', this.getYearlyPrice(rate));
+    console.log('Commission Total Yearly:', commissionTotalYearly);
     return Number((baseYearly - (this.getYearlyPrice(rate) + commissionTotalYearly)).toFixed(2));
   }
 
