@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8" />
+<title>Vollmacht für Privatkunden</title>
+<style>
+    *, *::before, *::after { 
+        box-sizing: border-box; 
+    }
+    
+    @page {
+        size: A4;
+        margin: 18mm 16mm;
+    }
+
+    body {
+        font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
+        color: #1a1a1a;
+        font-size: 13px;
+        line-height: 1.5;
+        margin: 0;
+        padding: 0;
+        background-color: #ffffff;
+    }
+
+    h2 {
+        font-size: 22px;
+        margin: 0 0 4px 0;
+        color: #000000;
+        font-weight: bold;
+    }
+
+    .sub-heading {
+        font-size: 15px;
+        font-weight: normal;
+        margin-bottom: 22px;
+        color: #333333;
+    }
+
+    /* Form Grid layout using Tables for robust cross-platform PDF rendering */
+    .form-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0 10px;
+        margin-bottom: 2px;
+    }
+
+    .form-group {
+        background-color: #b0b5b8;
+        border-radius: 5px;
+        padding: 7px 12px;
+        position: relative;
+        vertical-align: top;
+    }
+
+    .form-group label {
+        display: block;
+        font-size: 11px;
+        color: #444444;
+        font-weight: 600;
+        margin-bottom: 3px;
+    }
+
+    .form-group .value {
+        font-size: 14px;
+        font-weight: bold;
+        color: #000000;
+        min-height: 18px;
+    }
+
+    .lock-icon {
+        position: absolute;
+        right: 12px;
+        top: 16px;
+        font-size: 12px;
+        color: #444444;
+    }
+
+    .spacer-col {
+        width: 2%;
+    }
+
+    /* Parties Section */
+    .parties-container {
+        margin: 22px 0;
+        font-size: 13px;
+    }
+
+    .party-role {
+        font-weight: bold;
+        margin: 15px 0 4px 0;
+    }
+
+    .party-details {
+        padding-left: 0px;
+        color: #1a1a1a;
+        line-height: 1.45;
+    }
+
+    .intro-text {
+        margin-top: 12px;
+        margin-bottom: 20px;
+        text-align: justify;
+    }
+
+    /* Checklist clauses */
+    .clause-title {
+        font-weight: bold;
+        margin: 20px 0 12px 0;
+        font-size: 14px;
+    }
+
+    .clause-item {
+        margin-bottom: 10px;
+        position: relative;
+        padding-left: 26px;
+        font-size: 13px;
+        text-align: justify;
+    }
+
+    .checkbox-svg {
+        position: absolute;
+        left: 0;
+        top: 1px;
+        width: 16px;
+        height: 16px;
+        color: #2e7d32;
+        font-weight: bold;
+    }
+
+    .legal-footer-text {
+        font-size: 12px;
+        margin-top: 12px;
+        text-align: justify;
+        color: #222222;
+        line-height: 1.45;
+    }
+
+    /* Signatures Layout Box */
+    .signature-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 15px 0;
+        margin-top: 30px;
+    }
+
+    .sig-box {
+        border: 1px solid #777777;
+        border-radius: 6px;
+        height: 110px;
+        padding: 10px;
+        vertical-align: top;
+        width: 50%;
+    }
+
+    .sig-label {
+        font-size: 11px;
+        color: #555555;
+        border-bottom: 1px dashed #aaaaaa;
+        padding-bottom: 4px;
+        margin-bottom: 8px;
+        font-weight: 500;
+    }
+
+    .sig-value-text {
+        font-size: 14px;
+        font-weight: bold;
+        padding-top: 12px;
+        color: #000000;
+    }
+
+    .sig-image-container {
+        text-align: center;
+        max-height: 75px;
+    }
+
+    .sig-image-container img {
+        max-height: 70px;
+    }
+</style>
+</head>
+<body>
+
+    <h2>Vollmacht für Privatkunden</h2>
+    <div class="sub-heading">Hiermit bevollmächtigt</div>
+
+    <table class="form-table">
+        <tr>
+            <td class="form-group" style="width: 49%;">
+                <label>Anrede</label>
+                <div class="value" th:text="${customerAttorny.salutation}"></div>
+                <span class="lock-icon">🔒</span>
+            </td>
+            <td class="spacer-col"></td>
+            <td class="form-group" style="width: 49%;">
+                <label>Titel</label>
+                <div class="value" th:text="${customerAttorny.title != null and !customerAttorny.title.empty ? customerAttorny.title : '-'}"></div>
+                <span class="lock-icon">🔒</span>
+            </td>
+        </tr>
+    </table>
+
+    <table class="form-table">
+        <tr>
+            <td class="form-group" style="width: 49%;">
+                <label>Vorname</label>
+                <div class="value" th:text="${customerAttorny.firstName}"></div>
+                <span class="lock-icon">🔒</span>
+            </td>
+            <td class="spacer-col"></td>
+            <td class="form-group" style="width: 49%;">
+                <label>Nachname</label>
+                <div class="value" th:text="${customerAttorny.lastName}"></div>
+                <span class="lock-icon">🔒</span>
+            </td>
+        </tr>
+    </table>
+
+    <table class="form-table">
+        <tr>
+            <td class="form-group" style="width: 29%;">
+                <label>Ihre PLZ</label>
+                <div class="value" th:text="${customerAttorny.zip}"></div>
+                <span class="lock-icon">🔒</span>
+            </td>
+            <td class="spacer-col"></td>
+            <td class="form-group" style="width: 69%;">
+                <label>Ort</label>
+                <div class="value" th:text="${customerAttorny.city}"></div>
+                <span class="lock-icon">🔒</span>
+            </td>
+        </tr>
+    </table>
+
+    <table class="form-table">
+        <tr>
+            <td class="form-group" style="width: 79%;">
+                <label>Ihre Straße</label>
+                <div class="value" th:text="${customerAttorny.street}"></div>
+                <span class="lock-icon">🔒</span>
+            </td>
+            <td class="spacer-col"></td>
+            <td class="form-group" style="width: 19%;">
+                <label>Hausnummer</label>
+                <div class="value" th:text="${customerAttorny.houseNumber}"></div>
+                <span class="lock-icon">🔒</span>
+            </td>
+        </tr>
+    </table>
+    
+    <table class="form-table" th:if="${customerAttorny.companyName != null and !customerAttorny.companyName.empty}">
+        <tr>
+            <td class="form-group" style="width: 100%;">
+                <label>Firma</label>
+                <div class="value" th:text="${customerAttorny.companyName}"></div>
+                <span class="lock-icon">🔒</span>
+            </td>
+        </tr>
+    </table>
+
+    <table class="form-table">
+        <tr>
+            <td class="form-group" style="width: 49%;">
+                <label th:text="${customerAttorny.companyName != null and !customerAttorny.companyName.empty} ? 'Vorname des gesetzlichen Vertreters' : 'Vorname'"></label>
+                <div class="value" th:text="${customerAttorny.legalRepresentativeFirstName != null ? customerAttorny.legalRepresentativeFirstName : customerAttorny.firstName}"></div>
+                <span class="lock-icon">🔒</span>
+            </td>
+            <td class="spacer-col"></td>
+            <td class="form-group" style="width: 49%;">
+                <label th:text="${customerAttorny.companyName != null and !customerAttorny.companyName.empty} ? 'Nachname des gesetzlichen Vertreters' : 'Nachname'"></label>
+                <div class="value" th:text="${customerAttorny.legalRepresentativeLastName != null ? customerAttorny.legalRepresentativeLastName : customerAttorny.lastName}"></div>
+                <span class="lock-icon">🔒</span>
+            </td>
+        </tr>
+    </table>
+
+    <table class="form-table">
+        <tr>
+            <td class="form-group" style="width: 100%;">
+                <label>Kundennummer / Telefonnummer</label>
+                <div class="value" th:text="${customerAttorny.customer.mobileNumber}"></div>
+                <span class="lock-icon">🔒</span>
+            </td>
+        </tr>
+    </table>
+
+    <div class="parties-container">
+        <div class="party-role">- nachfolgend Kunde -</div>
+
+        <div class="party-role">die</div>
+        <div class="party-details">
+            Bavariaphone24 Vertrieb &amp; Service GmbH<br />
+            c/o tarifvergleich-deutschland.de<br />
+            Bahnhofstraße 19<br />
+            87724 Ottobeuren
+        </div>
+
+        <div class="party-role">- nachfolgend „tarifvergleich-deutschland.de“ -</div>
+
+        <div class="intro-text">
+            zur Vertretung in den nachfolgend genannten Angelegenheiten gegenüber Strom- und Gasanbietern, sowie entsprechender Vermittlungsplattformen - nachfolgend zusammengefasst „Gesellschaften“ genannt.
+        </div>
+    </div>
+
+    <div class="clause-title">Diese Vollmacht umfasst insbesondere:</div>
+
+    <div class="clause-item">
+        <span class="checkbox-svg">✔</span> die uneingeschränkte aktive und passive Vertretung des Kunden gegenüber den jeweiligen Gesellschaften, einschließlich der Abgabe aller die Verträge betreffenden Willenserklärungen, die Kündigung und Änderung bestehender und den Abschluss neuer Verträge sowie die Übernahme bestehender Verträge;
+    </div>
+
+    <div class="clause-item">
+        <span class="checkbox-svg">✔</span> die Einholung von Auskünften von den Gesellschaften im Namen des Kunden;
+    </div>
+
+    <div class="clause-item">
+        <span class="checkbox-svg">✔</span> die Entgegennahme der dem Kunden durch das jeweilige Unternehmen vor Vertragserklärung zu übergebenden vertragsbezogenen Unterlagen (insbesondere Allgemeine und Besondere Vertragsbedingungen, Produktinformationsblätter, Verbraucherinformationen sowie gesetzlich vorgeschriebene vorvertraglich bereit zu stellende Unterlagen);
+    </div>
+
+    <div class="clause-item">
+        <span class="checkbox-svg">✔</span> die Geltendmachung von Ansprüchen aus den von tarifvergleich-deutschland.de vermittelten oder in die Verwaltung durch tarifvergleich-deutschland.de übernommenen Verträgen;
+    </div>
+
+    <div class="clause-item">
+        <span class="checkbox-svg">✔</span> die Erteilung von Untervollmachten an Subunternehmer der tarifvergleich-deutschland.de und Dritte, die von Berufswegen zur Verschwiegenheit verpflichtet sind oder die datenschutzrechtlich zur Verschwiegenheit verpflichtet wurden;
+    </div>
+
+    <div class="clause-item">
+        <span class="checkbox-svg">✔</span> die Ermächtigung zur außergerichtlichen und gerichtlichen Geltendmachung der Ansprüche des Kunden gegenüber den Gesellschaften zum jeweiligen Vertrag im Namen des Kunden;
+    </div>
+
+    <div class="clause-item">
+        <span class="checkbox-svg">✔</span> die Erteilung von SEPA-Lastschriftaufträgen zu Lasten des Kontos des Kunden gegenüber Gesellschaften zur Abbuchung von Entgelten.
+    </div>
+
+    <div class="legal-footer-text">Beim Abschluss von Verträgen mit Gesellschaften ist die tarifvergleich-deutschland.de von den Beschränkungen des § 181 BGB befreit.</div>
+    <div class="legal-footer-text">Der Kunde erklärt sich explizit damit einverstanden, dass die tarifvergleich-deutschland.de die Vollmacht im Rahmen Ihrer Tätigkeit für den Kunden den Gesellschaften und sonstigen Dritten zum Nachweis der Vertretungsberechtigung vorlegen darf.</div>
+    <div class="legal-footer-text">Die vorliegend erteilte Vollmacht gilt auf unbestimmte Zeit, jedoch kann der Kunde die Vollmacht unabhängig des bestehenden Rahmenvertrags jederzeit durch Erklärung in Textform gegenüber der tarifvergleich-deutschland.de für die Zukunft widerrufen.</div>
+
+    <table class="signature-table">
+        <tr>
+            <td class="sig-box">
+                <div class="sig-label">Ort, Datum</div>
+                <div class="sig-value-text" th:text="${customerAttorny.placeAndDate}"></div>
+            </td>
+            <td class="sig-box">
+                <div class="sig-label">Unterschrift</div>
+                <div class="sig-image-container">
+                    <img th:if="${customerAttorny.customerSignaturePath != null}"
+                         th:src="@{|http://192.168.0.155:8080/assets/customers/${customerAttorny.customerSignaturePath}|}"
+                         alt="Signature" />
+                </div>
+            </td>
+        </tr>
+    </table>
+
+</body>
+</html>
