@@ -761,53 +761,53 @@ public class CustomerDetailService {
 
 	public Map<String, Object> fetchCustomerContractPageDetails(String token) {
 
-		if (token == null || token.isEmpty())
-			throw new InternalServerException("Security token missing", HttpStatus.OK);
+			if (token == null || token.isEmpty())
+				throw new InternalServerException("Security token missing", HttpStatus.OK);
 
-		Integer customerOrderId = 0;
-		try {
-			String tokenId = aesEncryptionService.decrypt(token);
+			Integer customerOrderId = 0;
+			try {
+				String tokenId = aesEncryptionService.decrypt(token);
 
-			TokenManagement validToken = contractTokenRespo.findByToken(tokenId)
-					.orElseThrow(() -> new InternalServerException("Invalid token", HttpStatus.OK));
+				TokenManagement validToken = contractTokenRespo.findByToken(tokenId)
+						.orElseThrow(() -> new InternalServerException("Invalid token", HttpStatus.OK));
 
-			if (validToken.getUsed())
-				return Map.of("res", true, "submitted", true);
+				if (validToken.getUsed())
+					return Map.of("res", true, "submitted", true);
 
-//			if (validToken.getExpiryDate().compareTo(Helper.getCurrentTimeBerlin()) < 0)
-//				throw new InternalServerException("Token expired", HttpStatus.OK);
+//				if (validToken.getExpiryDate().compareTo(Helper.getCurrentTimeBerlin()) < 0)
+//					throw new InternalServerException("Token expired", HttpStatus.OK);
 
-			customerOrderId = validToken.getOrderId();
+				customerOrderId = validToken.getOrderId();
 
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new InternalServerException("Invalid token", HttpStatus.OK);
+			} catch (Exception e) {
+				e.printStackTrace();
+				throw new InternalServerException("Invalid token", HttpStatus.OK);
+			}
+
+			if (customerOrderId == null || customerOrderId <= 0)
+				throw new InternalServerException("Invalid token, order details not found", HttpStatus.OK);
+
+			CustomerOrder order = customerOrderRepo.findById(customerOrderId).orElseThrow(
+					() -> new InternalServerException("Customer order not found with this credential", HttpStatus.OK));
+
+			CustomerDelivery delivery = order.getDelivery();
+
+			CustomerDeliveryResponseAll resp = CustomerDeliveryResponseDto.getDeliveryResponse(delivery);
+
+			String adminSignaturePath = null;
+			AdminSignature adminSignature = null;
+
+			if (delivery != null && delivery.getAdmin() != null) {
+
+				Integer adminId = delivery.getAdmin().getAdminId();
+
+				adminSignature = adminSignatureRepository.findByAdminAdminId(adminId).orElse(null);
+
+				if (adminSignature != null)
+					adminSignaturePath = adminSignature.getFilePath();
+			}
+
+			return Map.of("res", true, "data", resp, "adminSignaturePath", adminSignaturePath);
 		}
-
-		if (customerOrderId == null || customerOrderId <= 0)
-			throw new InternalServerException("Invalid token, order details not found", HttpStatus.OK);
-
-		CustomerOrder order = customerOrderRepo.findById(customerOrderId).orElseThrow(
-				() -> new InternalServerException("Customer order not found with this credential", HttpStatus.OK));
-
-		CustomerDelivery delivery = order.getDelivery();
-
-		CustomerDeliveryResponseAll resp = CustomerDeliveryResponseDto.getDeliveryResponse(delivery);
-
-		String adminSignaturePath = null;
-		AdminSignature adminSignature = null;
-
-		if (delivery != null && delivery.getAdmin() != null) {
-
-			Integer adminId = delivery.getAdmin().getAdminId();
-
-			adminSignature = adminSignatureRepository.findByAdminAdminId(adminId).orElse(null);
-
-			if (adminSignature != null)
-				adminSignaturePath = adminSignature.getFilePath();
-		}
-
-		return Map.of("res", true, "data", resp, "adminSignaturePath", adminSignaturePath);
-	}
 
 }

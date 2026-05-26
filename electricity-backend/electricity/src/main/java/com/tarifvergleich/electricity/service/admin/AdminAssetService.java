@@ -74,6 +74,16 @@ public class AdminAssetService {
             contentType = "about-us";
 
         if (file != null) {
+        	long maxSize = 5 * 1024 * 1024; // Default 5MB
+            if (type == 4) {
+                maxSize = 2 * 1024 * 1024; // 2MB for About Us
+            }
+
+            if (file.getSize() > maxSize) {
+                String sizeStr = (maxSize / (1024 * 1024)) + "MB";
+                throw new InternalServerException("File size must be less than " + sizeStr, HttpStatus.BAD_REQUEST);
+            }
+            
             fileUrl = fileUtil.saveFile(file, contentType);
 
             if (fileUrl == null || fileUrl.isEmpty())
@@ -103,6 +113,8 @@ public class AdminAssetService {
             adminAsset.setPopupContent2(assetDto.getPopupContent2());
             adminAsset.setPopupContent3(assetDto.getPopupContent3());
             adminAsset.setContactNumber(assetDto.getContact());
+            adminAsset.setContactName(assetDto.getContactName());
+            adminAsset.setContactEmail(assetDto.getContactEmail());
 
             AdminAsset updateAsset = adminAssetRepo.save(adminAsset);
 
@@ -134,7 +146,8 @@ public class AdminAssetService {
 
                 adminAsset.setPopupContent2(assetDto.getPopupContent2());
                 adminAsset.setPopupContent3(assetDto.getPopupContent3());
-
+                adminAsset.setContactName(assetDto.getContactName());
+                adminAsset.setContactEmail(assetDto.getContactEmail());
                 adminAsset.setContactNumber(assetDto.getContact());
                 AdminAsset updateAsset = adminAssetRepo.save(adminAsset);
 
@@ -155,6 +168,9 @@ public class AdminAssetService {
                 .subHeading(assetDto.getSubHeading()).type(type).contentUrl(fileUrl).saving(assetDto.getSaving())
                 .savingPriceDetail(assetDto.getSavingDetail()).popupContent2(assetDto.getPopupContent2())
                 .popupContent3(assetDto.getPopupContent3()).contactNumber(assetDto.getContact()).order(order)
+                .popupContent3(assetDto.getPopupContent3())
+                .contactName(assetDto.getContactName()).contactEmail(assetDto.getContactEmail())
+                .contactNumber(assetDto.getContact()).order(order)
                 .originalFileName(file != null ? file.getOriginalFilename() : null).build();
 
         adminUser.addAdminAsset(asset);
