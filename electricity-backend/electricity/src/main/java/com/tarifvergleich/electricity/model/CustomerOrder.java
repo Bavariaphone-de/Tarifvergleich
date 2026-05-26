@@ -1,8 +1,11 @@
 package com.tarifvergleich.electricity.model;
 
 import java.math.BigInteger;
+import java.util.LinkedList;
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.tarifvergleich.electricity.util.Helper;
 
 import jakarta.persistence.CascadeType;
@@ -14,6 +17,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
@@ -41,7 +45,6 @@ public class CustomerOrder {
 
 	@Column(name = "admin_placed_order")
 	private Boolean adminPlacedOrder;
-	
 
 	@Column(name = "order_id", unique = true)
 	private Long orderId;
@@ -51,38 +54,37 @@ public class CustomerOrder {
 
 	@Column(name = "created_on")
 	private BigInteger createdOn;
-	
+
 	@Column(name = "is_expired")
 	private Boolean isExpired;
-	
+
 	@Column(name = "email_send_to_customer_for_signature")
 	private Boolean emailSendToCustomerForSignature;
-	
+
 	@Column(name = "expiry_on")
 	private BigInteger expiryOn;
-	
+
 	@Column(name = "operation_period")
 	private BigInteger operationPeriod;
-	
+
 	@Column(name = "last_date_of_cancellation")
 	private BigInteger lastDateOfCancellation;
-	
+
 	@Column(name = "is_cancelled")
 	private Boolean isCancelled;
-	
+
 	@Column(name = "cancelled_on")
 	private Boolean cancelledOn;
 
-	@OneToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+	@OneToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
 	@JoinColumn(name = "customer_delivery_id")
 	private CustomerDelivery delivery;
 
-	
-	@OneToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, orphanRemoval = true, fetch = FetchType.LAZY)
+	@OneToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE }, orphanRemoval = true, fetch = FetchType.LAZY)
 	@JoinColumn(name = "customer_doc_id")
 	private CustomerBookingDocument customerBookingDocument;
-	
-	@OneToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, orphanRemoval = true, fetch = FetchType.LAZY)
+
+	@OneToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE }, orphanRemoval = true, fetch = FetchType.LAZY)
 	@JoinColumn(name = "customer_contract_id")
 	private CustomerContractSignature customerContractSignature;
 
@@ -96,6 +98,10 @@ public class CustomerOrder {
 	@JsonIgnore
 	private AdminUser admin;
 
+	@OneToMany(mappedBy = "customerOrder", cascade = { CascadeType.PERSIST, CascadeType.MERGE })
+	@JsonIgnoreProperties("customerOrder")
+	private List<CustomerOrderStatusRecord> customerOrderStatusRecords;
+
 	@PrePersist
 	protected void onCreate() {
 		createdOn = Helper.getCurrentTimeBerlin();
@@ -104,6 +110,13 @@ public class CustomerOrder {
 		isCancelled = false;
 		isExpired = false;
 		emailSendToCustomerForSignature = false;
+	}
+
+	public void addOrderStatus(CustomerOrderStatusRecord orderStatus) {
+		if (customerOrderStatusRecords == null)
+			customerOrderStatusRecords = new LinkedList<CustomerOrderStatusRecord>();
+		orderStatus.setCustomerOrder(this);
+		customerOrderStatusRecords.add(orderStatus);
 	}
 
 }

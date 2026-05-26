@@ -19,6 +19,10 @@ public interface CustomerRepository extends JpaRepository<Customer, Integer> {
 	boolean existsByEmail(String email);
 
 	Optional<Customer> findByEmail(String email);
+	
+	long countByAdminAdminId(Integer adminId);
+
+	long countByAdminAdminIdAndIsVerifiedTrue(Integer adminId);
 
 	@Query("SELECT c.customerId AS id, c.firstName AS firstName, c.lastName AS lastName, c.email AS email"
 			+ " FROM Customer c WHERE c.admin.adminId = :adminId AND c.isAcknowledged = true ORDER BY c.firstName ASC")

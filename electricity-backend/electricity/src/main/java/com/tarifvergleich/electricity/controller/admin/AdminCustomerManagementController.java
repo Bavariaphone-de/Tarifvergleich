@@ -2,23 +2,23 @@ package com.tarifvergleich.electricity.controller.admin;
 
 import java.util.Map;
 
-import com.tarifvergleich.electricity.dto.*;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
-import com.tarifvergleich.electricity.dto.CustomerDetailsContactHistoryDto;
-import com.tarifvergleich.electricity.dto.CustomerDto.UpdateGdprContactStatusDto;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.tarifvergleich.electricity.dto.CustomerAttornyDto;
+import com.tarifvergleich.electricity.dto.CustomerConnectionRequestDto;
+import com.tarifvergleich.electricity.dto.CustomerDeliveryDto;
 import com.tarifvergleich.electricity.dto.CustomerDeliveryRequestWrapper.AdminEditCustomerDeliveryRelated;
-import com.tarifvergleich.electricity.exception.InternalServerException;
+import com.tarifvergleich.electricity.dto.CustomerDetailsContactHistoryDto;
+import com.tarifvergleich.electricity.dto.CustomerDto;
+import com.tarifvergleich.electricity.dto.CustomerNoteDto;
+import com.tarifvergleich.electricity.dto.CustomerOrderDto;
+import com.tarifvergleich.electricity.dto.CustomerServiceRequestDto;
+import com.tarifvergleich.electricity.dto.CustomerServicesDto;
 import com.tarifvergleich.electricity.service.admin.AdminCustomerDeliveryManagementService;
 import com.tarifvergleich.electricity.service.admin.AdminCustomerManagementService;
 import com.tarifvergleich.electricity.service.admin.AdminServicePointManagementService;
@@ -39,7 +39,6 @@ public class AdminCustomerManagementController {
 	private final AdminServicePointManagementService servicePointManagementService;
 	private final CustomerDetailService customerDetailService;
 	private final AdminCustomerDeliveryManagementService adminCustomerDeliveryManagementService;
-	private final ObjectMapper objectMapper;
 
 	@Operation(summary = "Fetch customer", description = "Returns a list of customer with there details")
 	@PostMapping("/fetch-customer-details")
@@ -163,18 +162,6 @@ public class AdminCustomerManagementController {
 				connectionDto.getDeliveryId(), connectionDto.getMeterNumber()));
 	}
 
-	@PostMapping("/upload-signed-doc")
-	public ResponseEntity<?> uploadSignedPdf(@RequestPart("data") String payload,
-			@RequestPart("file") MultipartFile file) {
-		try {
-			CustomerOrderDto customerOrderDto = objectMapper.readValue(payload, CustomerOrderDto.class);
-			return ResponseEntity.ok(adminCustomerDeliveryManagementService.uploadSignedPdf(customerOrderDto, file));
-		} catch (JsonProcessingException e) {
-			e.printStackTrace();
-			throw new InternalServerException("Data format error", HttpStatus.OK);
-		}
-	}
-
 	@PostMapping("/add-lexoffice-number")
 	public ResponseEntity<?> addLexofficeNumber(@RequestBody CustomerDto customerDto) {
 		return ResponseEntity.ok(adminCustomerManagementService.addLexofficeNumberForCustomer(customerDto));
@@ -187,7 +174,11 @@ public class AdminCustomerManagementController {
 
 	@PostMapping("/resend-signing-order")
 	public ResponseEntity<?> resendSigningContractMail(@RequestBody CustomerOrderDto customerOrderDto) {
-
 		return ResponseEntity.ok(adminCustomerDeliveryManagementService.resendSigningContractMail(customerOrderDto));
+	}
+
+	@PostMapping("/check-order-status")
+	public ResponseEntity<?> checkOrderStatus(@RequestBody CustomerOrderDto customerOrderDto) {
+		return ResponseEntity.ok(adminCustomerDeliveryManagementService.checkOrderStatus(customerOrderDto));
 	}
 }

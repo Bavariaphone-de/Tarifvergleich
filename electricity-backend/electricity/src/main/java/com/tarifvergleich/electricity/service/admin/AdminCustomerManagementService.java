@@ -43,6 +43,7 @@ import com.tarifvergleich.electricity.repository.CustomerAttornyRepository;
 import com.tarifvergleich.electricity.repository.CustomerComparingEnergyRepository;
 import com.tarifvergleich.electricity.repository.CustomerDeliveryRepository;
 import com.tarifvergleich.electricity.repository.CustomerDetailsContactHistoryRepository;
+import com.tarifvergleich.electricity.repository.CustomerOrderRepository;
 import com.tarifvergleich.electricity.repository.CustomerRepository;
 import com.tarifvergleich.electricity.repository.CustomerServiceRequestRepository;
 import com.tarifvergleich.electricity.service.customer.CustomerAuthService;
@@ -65,6 +66,7 @@ public class AdminCustomerManagementService {
 	private final EmailBodyRender emailBodyRender;
 	private final CustomerAuthService customerAuthService;
 	private final ObjectMapper objectMapper;
+	private final CustomerOrderRepository customerOrderRepository;
 	private final CustomerDetailsContactHistoryRepository customerDetailsContactHistoryRepo;
 
 	public Map<String, Object> getCustomers(CustomerDto customerReq) {
@@ -114,9 +116,17 @@ public class AdminCustomerManagementService {
 
 			Page<AdminCustomerResponse> customerRes = customers.map(CustomerDto::getCustomerDtoResponseForAdmin);
 
-			return Map.of("res", true, "data", customerRes.getContent(), "page",
-					customerRes.getPageable().getPageNumber() + 1, "totalPage", customerRes.getTotalPages());
+			long totalCustomers = customerRepo.countByAdminAdminId(adminId);
+			long totalVerifiedCustomers = customerRepo.countByAdminAdminIdAndIsVerifiedTrue(adminId);
 
+			return Map.of(
+					"res", true,
+					"data", customerRes.getContent(),
+					"page", customerRes.getPageable().getPageNumber() + 1,
+					"totalPage", customerRes.getTotalPages(),
+					"totalRecords", totalCustomers,
+					"totalConsluded", totalVerifiedCustomers
+			);
 		}
 
 		List<Customer> customers = customerRepo.findAllByAdminAdminIdOrderByJoinedOnDesc(customerReq.getAdminId());
@@ -135,7 +145,7 @@ public class AdminCustomerManagementService {
 
 		if (deliveryReq.getDeliveryId() != null && deliveryReq.getDeliveryId() > 0) {
 
-			CustomerDelivery delivery = customerDeliveryRepo.findById(deliveryReq.getDeliveryId()).orElseThrow(
+			CustomerDelivery delivery = customerDeliveryRepo.findByIdAndAdminAdminId(deliveryReq.getDeliveryId(), deliveryReq.getAdminId()).orElseThrow(
 					() -> new InternalServerException("Resource not found with this credential", HttpStatus.OK));
 
 			Boolean isCustomerSignedContract = false;
@@ -193,12 +203,17 @@ public class AdminCustomerManagementService {
 
 			Page<CustomerDeliveryResponseAll> customerDeliveryResponse = customerDeliveries
 					.map(CustomerDeliveryResponseDto::getDeliveryResponse);
+			
+
+			long totalDeliveries = customerDeliveryRepo.countByAdminAdminId(deliveryReq.getAdminId());
+			long totalCompleted = customerOrderRepository.countOrderCreatedStatus(deliveryReq.getAdminId());
+			
+
 
 			return Map.of("res", true, "data", customerDeliveryResponse.getContent(), "page",
 					customerDeliveryResponse.getPageable().getPageNumber() + 1, "totalPage",
 					customerDeliveryResponse.getTotalPages(), "totalRecord",
-					customerDeliveryResponse.getTotalElements());
-
+					totalDeliveries, "totalComplete", totalCompleted);
 		}
 
 		List<CustomerDelivery> customerDeliveries = customerDeliveryRepo
