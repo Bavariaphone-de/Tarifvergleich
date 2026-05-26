@@ -135,7 +135,7 @@ public class AdminCustomerManagementService {
 
 		if (deliveryReq.getDeliveryId() != null && deliveryReq.getDeliveryId() > 0) {
 
-			CustomerDelivery delivery = customerDeliveryRepo.findById(deliveryReq.getDeliveryId()).orElseThrow(
+			CustomerDelivery delivery = customerDeliveryRepo.findByIdAndAdminAdminId(deliveryReq.getDeliveryId(), deliveryReq.getAdminId()).orElseThrow(
 					() -> new InternalServerException("Resource not found with this credential", HttpStatus.OK));
 
 			Boolean isCustomerSignedContract = false;

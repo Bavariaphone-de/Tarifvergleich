@@ -181,4 +181,9 @@ public class AdminCustomerManagementController {
 	public ResponseEntity<?> checkOrderStatus(@RequestBody CustomerOrderDto customerOrderDto) {
 		return ResponseEntity.ok(adminCustomerDeliveryManagementService.checkOrderStatus(customerOrderDto));
 	}
+
+	@PostMapping("/send-signed-contract-customer")
+	public ResponseEntity<?> sendSignedContractToCustomer(@RequestBody CustomerOrderDto orderDto) {
+		return ResponseEntity.ok(adminCustomerDeliveryManagementService.sendSignedPdfToCustomer(orderDto));
+	}
 }

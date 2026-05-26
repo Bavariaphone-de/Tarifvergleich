@@ -154,7 +154,37 @@ public class EmailBodyRender {
 		tempEmailBody = tempEmailBody.replace("{CUSTOMER_NAME}", order.getCustomer().getLastName());
 		tempEmailBody = tempEmailBody.replace("{DATE_TIME}", formattedDateTime);
 		tempEmailBody = tempEmailBody.replace("{CUSTOMER_EMAIL}", order.getCustomer().getEmail());
-		tempEmailBody = tempEmailBody.replace("{ORDER_NUMBER}", order.getId().toString());
+		tempEmailBody = tempEmailBody.replace("{ORDER_NUMBER}", order.getOrderId().toString());
+
+		String emailBody = customEmailTemplate.generateEmailHtml(title, adminEmailManagement.getSubtitle(),
+				tempEmailBody);
+
+		return emailBody;
+	}
+
+	public String contractAttachmentBody(CustomerOrder order) {
+		if (order == null)
+			throw new InternalServerException("Error creating email body", HttpStatus.OK);
+
+		Map<String, Object> dateTimeMap = Helper.getLocalDateTimeFromBigInteger(order.getAdminPlacedOrderOn());
+
+		String formattedDateTime = dateTimeMap.get("monthName").toString() + " " + dateTimeMap.get("date").toString()
+				+ " " + dateTimeMap.get("year").toString() + ", at " + dateTimeMap.get("hour").toString() + ":"
+				+ dateTimeMap.get("minute").toString() + " " + dateTimeMap.get("amPm").toString();
+
+		AdminEmailManagement adminEmailManagement = adminEmailManagementRepo
+				.findByCategoryCategorySlugLike("%CONTRACT_ATTACHMENT%")
+				.orElseThrow(() -> new InternalServerException("Error finding Email body", HttpStatus.OK));
+
+		String title = adminEmailManagement.getTitle().replace("{ORDER_NUMBER}", order.getId().toString());
+
+		String tempEmailBody = adminEmailManagement.getEmailContent();
+
+		tempEmailBody = tempEmailBody.replace("{SALUTATION}", order.getCustomer().getSalutation());
+		tempEmailBody = tempEmailBody.replace("{CUSTOMER_NAME}", order.getCustomer().getLastName());
+		tempEmailBody = tempEmailBody.replace("{DATE_TIME}", formattedDateTime);
+		tempEmailBody = tempEmailBody.replace("{CUSTOMER_EMAIL}", order.getCustomer().getEmail());
+		tempEmailBody = tempEmailBody.replace("{ORDER_NUMBER}", order.getOrderId().toString());
 
 		String emailBody = customEmailTemplate.generateEmailHtml(title, adminEmailManagement.getSubtitle(),
 				tempEmailBody);

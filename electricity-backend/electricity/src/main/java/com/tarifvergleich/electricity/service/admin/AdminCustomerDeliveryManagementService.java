@@ -29,6 +29,7 @@ import com.tarifvergleich.electricity.dto.EgonFileSignatureResponse;
 import com.tarifvergleich.electricity.dto.EgonFileSignatureResponse.EgonDocumentDto;
 import com.tarifvergleich.electricity.dto.EgonFileSignatureResponse.EgonFileSignatureRequest;
 import com.tarifvergleich.electricity.dto.ServiceRequestEmailEvent.ServiceResponseEmailEvent;
+import com.tarifvergleich.electricity.dto.email.ContractMailDto;
 import com.tarifvergleich.electricity.dto.EgonOrderStatusResponse;
 import com.tarifvergleich.electricity.dto.EnergyRateDto;
 import com.tarifvergleich.electricity.exception.InternalServerException;
@@ -49,6 +50,7 @@ import com.tarifvergleich.electricity.repository.CustomerOrderRepository;
 import com.tarifvergleich.electricity.service.ElectricityComparisonService;
 import com.tarifvergleich.electricity.service.EnergyService;
 import com.tarifvergleich.electricity.service.customer.CustomerBookingService;
+import com.tarifvergleich.electricity.util.EmailBodyRender;
 import com.tarifvergleich.electricity.util.FileServiceCustomer;
 import com.tarifvergleich.electricity.util.FileServiceSuperAdmin;
 import com.tarifvergleich.electricity.util.Helper;
@@ -73,6 +75,7 @@ public class AdminCustomerDeliveryManagementService {
 	private final AdminSignatureRepository adminSignatureRepo;
 	private final AsyncServiceAdmin asyncServiceAdmin;
 	private final ApplicationEventPublisher eventPublisher;
+	private final EmailBodyRender emailBodyRender;
 
 	@Transactional
 	public Map<String, Object> editDeliveryDetailsByAdmin(AdminEditCustomerDeliveryRelated deliveryDetails) {
@@ -618,4 +621,35 @@ public class AdminCustomerDeliveryManagementService {
 
 		return Map.of("res", true, "data", orderStatusResponse);
 	}
+
+	public Map<String, Object> sendSignedPdfToCustomer(CustomerOrderDto orderDto) {
+		if (orderDto.getAdminId() == null || orderDto.getAdminId() <= 0)
+			throw new InternalServerException("Admin id missing", HttpStatus.OK);
+		if (orderDto.getCustomerOrderId() == null || orderDto.getCustomerOrderId() <= 0)
+			throw new InternalServerException("Customer order id missing", HttpStatus.OK);
+
+		CustomerOrder order = customerOrderRepo
+				.findByIdAndAdminAdminId(orderDto.getCustomerOrderId(), orderDto.getAdminId())
+				.orElseThrow(() -> new InternalServerException("Customer order not found with this credential",
+						HttpStatus.OK));
+
+		if (order.getCustomerBookingDocument() == null
+				|| !order.getCustomerBookingDocument().getSignedDocumentSubmitted())
+			throw new InternalServerException("Customer booking document not submitted", HttpStatus.OK);
+
+		CustomerBookingDocument contractDocument = order.getCustomerBookingDocument();
+		Customer customer = order.getCustomer();
+
+		String absolutePath = fileServiceCustomer.getAbsolutePath(contractDocument.getSignedFileUrl());
+
+		String emailBody = emailBodyRender.contractAttachmentBody(order);
+
+		ContractMailDto mailEvent = new ContractMailDto(customer.getEmail(),
+				order.getOrderId() + " | Unterzeichneter Vertrag", emailBody, absolutePath);
+
+		eventPublisher.publishEvent(mailEvent);
+
+		return Map.of("res", true, "message", "Contract Mail send successfully");
+	}
+
 }
