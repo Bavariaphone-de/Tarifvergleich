@@ -29,10 +29,10 @@ import com.tarifvergleich.electricity.dto.CustomerServicesDto.CustomerListOfServ
 import com.tarifvergleich.electricity.dto.ReportMeterReadingDto;
 import com.tarifvergleich.electricity.dto.ServiceRequestEmailEvent;
 import com.tarifvergleich.electricity.dto.ServiceRequestEmailEvent.ServiceResponseEmailEvent;
+import com.tarifvergleich.electricity.dto.email.AttornyEmailDto;
 import com.tarifvergleich.electricity.exception.InternalServerException;
 import com.tarifvergleich.electricity.model.AdminSignature;
 import com.tarifvergleich.electricity.model.AdminUser;
-import com.tarifvergleich.electricity.model.TokenManagement;
 import com.tarifvergleich.electricity.model.Customer;
 import com.tarifvergleich.electricity.model.CustomerAddress;
 import com.tarifvergleich.electricity.model.CustomerAttorny;
@@ -44,9 +44,9 @@ import com.tarifvergleich.electricity.model.CustomerServiceRequest;
 import com.tarifvergleich.electricity.model.CustomerServiceRequestMessages;
 import com.tarifvergleich.electricity.model.CustomerServices;
 import com.tarifvergleich.electricity.model.ReportMeterReading;
+import com.tarifvergleich.electricity.model.TokenManagement;
 import com.tarifvergleich.electricity.repository.AdminSignatureRepository;
 import com.tarifvergleich.electricity.repository.AdminUserRepository;
-import com.tarifvergleich.electricity.repository.TokenManagementRespository;
 import com.tarifvergleich.electricity.repository.CustomerAddressRepository;
 import com.tarifvergleich.electricity.repository.CustomerAttornyRepository;
 import com.tarifvergleich.electricity.repository.CustomerDeliveryRepository;
@@ -56,18 +56,17 @@ import com.tarifvergleich.electricity.repository.CustomerRepository;
 import com.tarifvergleich.electricity.repository.CustomerServiceRequestRepository;
 import com.tarifvergleich.electricity.repository.CustomerServicesRepository;
 import com.tarifvergleich.electricity.repository.ReportMeterReadingRepository;
+import com.tarifvergleich.electricity.repository.TokenManagementRespository;
 import com.tarifvergleich.electricity.service.AesEncryptionService;
 import com.tarifvergleich.electricity.util.CustomEmailTemplate;
 import com.tarifvergleich.electricity.util.EmailBodyRender;
 import com.tarifvergleich.electricity.util.EmailTemplate;
 import com.tarifvergleich.electricity.util.FileServiceCustomer;
 import com.tarifvergleich.electricity.util.Helper;
+import com.tarifvergleich.electricity.util.PdfGenerator;
+
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import java.util.List;
-import java.util.Map;
-import java.util.ArrayList;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -83,6 +82,7 @@ public class CustomerDetailService {
 	private final CustomerServiceRequestRepository customerServiceRequestRepo;
 	private final EmailTemplate emailTemplate;
 	private final EmailBodyRender emailBodyRender;
+	private final PdfGenerator pdfGenerator;
 	private final ApplicationEventPublisher eventPublisher;
 	private final CustomerOrderRepository customerOrderRepo;
 	private final AesEncryptionService aesEncryptionService;
@@ -199,6 +199,13 @@ public class CustomerDetailService {
 			attornyEntity.setLegalRepresentativeFirstName(attornyDto.getLegalRepresentativeFirstName());
 			attornyEntity.setLegalRepresentativeLastName(attornyDto.getLegalRepresentativeLastName());
 		}
+
+		String emailBody = emailBodyRender.beratervollmachtBody(customerAttorny);
+		String base64PdfContent = pdfGenerator.generateVollmachtDocument(customerAttorny);
+
+		AttornyEmailDto mailEvent = new AttornyEmailDto(customer.getEmail(), emailBody, base64PdfContent,
+				"BERATERVOLLMACHT.pdf");
+		eventPublisher.publishEvent(mailEvent);
 
 		customerAttornyRepo.save(attornyEntity);
 
@@ -440,7 +447,7 @@ public class CustomerDetailService {
 		String adminBody = "";
 		String customerSubject = "";
 		String adminSubject = "";
-		Map<String, Object> dateTimeMap = Helper.getLocalDateTimeFromBigInteger(customerServiceRequest.getCreatedOn());
+//		Map<String, Object> dateTimeMap = Helper.getLocalDateTimeFromBigInteger(customerServiceRequest.getCreatedOn());
 
 //		String formattedDateTime = dateTimeMap.get("monthName").toString() + " " + dateTimeMap.get("date").toString()
 //				+ " " + dateTimeMap.get("year").toString() + ", at " + dateTimeMap.get("hour").toString() + ":"
@@ -635,7 +642,7 @@ public class CustomerDetailService {
 			throw new InternalServerException("Notification value missing", HttpStatus.OK);
 
 		Customer customer = customerRepo.findByCustomerIdAndAdminAdminId(customerId, adminId).orElseThrow(
-				() -> new InternalServerException("Customer not found wiyth this credential", HttpStatus.OK));
+				() -> new InternalServerException("Customer not found with this credential", HttpStatus.OK));
 
 		customer.setIsNotificationEnabled(isNotificationEnabled);
 

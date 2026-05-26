@@ -542,7 +542,7 @@ public class AdminCustomerManagementService {
 
 		customerRepo.save(customer);
 
-		return Map.of("res", true, "mesage", "lexoffice_Number added successfully");
+		return Map.of("res", true, "message", "lexoffice_Number added successfully");
 	}
 
 }

@@ -24,6 +24,7 @@ import { Registration } from '../../layout/registration/registration';
   styleUrl: './home.css',
 })
 export class Home implements OnInit, AfterViewInit {
+  aboutData: any = null;
   @ViewChild('electricityRow') electricityRow!: ElementRef<HTMLElement>;
 
   sidebarItems: any[] = [];
@@ -94,6 +95,9 @@ export class Home implements OnInit, AfterViewInit {
         }
         if (data.menu?.about) {
           this.aboutItems = [...data.menu.about].sort((a, b) => a.order - b.order);
+          if (this.aboutItems.length > 0) {
+            this.aboutData = this.aboutItems[0];
+          }
         }
         this.isLoading = false;
         this.cdr.detectChanges();

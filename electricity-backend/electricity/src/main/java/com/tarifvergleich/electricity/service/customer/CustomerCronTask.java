@@ -3,27 +3,37 @@ package com.tarifvergleich.electricity.service.customer;
 import java.math.BigInteger;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executor;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import com.tarifvergleich.electricity.dto.ServiceRequestEmailEvent.ServiceResponseEmailEvent;
 import com.tarifvergleich.electricity.model.Customer;
 import com.tarifvergleich.electricity.model.CustomerDelivery;
+import com.tarifvergleich.electricity.model.CustomerOrder;
 import com.tarifvergleich.electricity.repository.CustomerDeliveryRepository;
+import com.tarifvergleich.electricity.repository.CustomerOrderRepository;
 import com.tarifvergleich.electricity.util.EmailTemplate;
 import com.tarifvergleich.electricity.util.Helper;
 
 import lombok.RequiredArgsConstructor;
 
 @Service
-@RequiredArgsConstructor
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class CustomerCronTask {
 
 	private final CustomerDeliveryRepository customerDeliveryRepo;
 	private final Helper helper;
 	private final ApplicationEventPublisher eventPublisher;
 	private final EmailTemplate emailTemplate;
+	private final CustomerOrderRepository customerOrderRepo;
+
+	@Qualifier("orderStatusCronExecutor")
+	private final Executor orderStatusCronExecutor;
 
 	public Map<String, Object> sendExpiryNotification() {
 
@@ -61,4 +71,15 @@ public class CustomerCronTask {
 
 		return Map.of("res", true, "message", "Notification send successfully to customer");
 	}
+
+	@Scheduled(cron = "0 0 1 * * ?")
+	public void checkOrderStatus() {
+
+		List<Integer> orderIds = customerOrderRepo.findIdsByAdminPlacedOrderAndIsExpiredAndIsCancelled(true, false, false);
+		
+		if(orderIds.isEmpty())
+			return;
+		
+	}
+
 }

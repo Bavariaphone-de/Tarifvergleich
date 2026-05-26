@@ -181,4 +181,34 @@ export class CustomerDetailsComponent implements OnInit {
     this.router.navigate(['/customers']);
   }
 
+  isTogglingGdpr = false;
+
+  toggleGdprStatus(): void {
+    if (!this.customer || this.isTogglingGdpr) return;
+    
+    this.isTogglingGdpr = true;
+    const currentStatus = this.customer.isNotificationEnabled;
+    const newStatus = !currentStatus;
+
+    const payload = {
+      adminId: this.authService.getUserId(),
+      customerId: this.customer.id,
+      gdprContactAllowed: newStatus
+    };
+
+    this.api.post('admin/update-gdpr-contact-status', payload).subscribe({
+      next: (res: any) => {
+        if (res?.res) {
+          this.customer.isNotificationEnabled = newStatus;
+        } else {
+          alert(res.errMessage || res.message || 'Fehler beim Aktualisieren des GDPR-Status');
+        }
+        this.isTogglingGdpr = false;
+      },
+      error: () => {
+        alert('Serverfehler beim Aktualisieren des GDPR-Status');
+        this.isTogglingGdpr = false;
+      }
+    });
+  }
 }

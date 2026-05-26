@@ -50,6 +50,8 @@ export class NightHeaters {
   <br/>
   <p>Bei einigen älteren Nachtspeicherheizungen wird Haushaltsstrom und Heizstrom noch gemeinsam gemessen, es gibt also nur einen Stromzähler für beide Arten von Verbräuchen.</p>`;
 
+  singleDoubleMeterHtml: string | null = null;
+
   constructor(public dialog: MatDialog, private contentService: ContentService) {}
 
   ngOnInit() {
@@ -64,10 +66,9 @@ export class NightHeaters {
           this.nightStorageHeaters.description2 = ''; // Hide default second paragraph
         }
         
-        // Connect Admin popupContent3 to the Single/Double Meter popup
+        // If they provide a single HTML block via popupContent3, use it directly
         if (item.popupContent3) {
-          this.singleDoubleMeter.singleDescription = item.popupContent3;
-          this.singleDoubleMeter.doubleDescription = ''; // Hide default second paragraph
+          this.singleDoubleMeterHtml = item.popupContent3;
         }
       }
     });
@@ -128,7 +129,10 @@ export class NightHeaters {
     this.selectedTariff = type;
   }
 
+  isSingleDoubleMeterPopup = false;
+
   openNightStorage(template: any) {
+    this.isSingleDoubleMeterPopup = false;
     this.currentDialogData = [
       {
         description: this.nightStorageHeaters.description1,
@@ -142,6 +146,7 @@ export class NightHeaters {
 
 
   openSingleDoubleMeter(template: any) {
+    this.isSingleDoubleMeterPopup = true;
     this.currentDialogData = [
       {
         title: this.singleDoubleMeter.singleTariff,
@@ -158,6 +163,7 @@ export class NightHeaters {
   }
 
   openDiscountInfo(template: any) {
+    this.isSingleDoubleMeterPopup = false;
     this.currentDialogData = [
       {
         description: this.discountInfo.description,
@@ -169,6 +175,7 @@ export class NightHeaters {
   currentDialogText = '';
 
   openInfo(template: any, text: string) {
+    this.isSingleDoubleMeterPopup = false;
     this.currentDialogData = [
       {
         description: text,

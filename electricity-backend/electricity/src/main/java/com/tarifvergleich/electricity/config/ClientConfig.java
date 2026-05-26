@@ -1,5 +1,6 @@
 package com.tarifvergleich.electricity.config;
 
+import java.net.http.HttpClient;
 import java.time.Duration;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -19,7 +20,10 @@ public class ClientConfig {
 	@Bean
 	public RestClient energyApiClient(RestClient.Builder builder, @Value("${api.energy.url}") String url,
 			@Value("${api.energy.apikey}") String token) {
-		JdkClientHttpRequestFactory factory = new JdkClientHttpRequestFactory();
+
+		HttpClient httpClient = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(15)).build();
+
+		JdkClientHttpRequestFactory factory = new JdkClientHttpRequestFactory(httpClient);
 		factory.setReadTimeout(Duration.ofSeconds(15));
 
 		return builder.baseUrl(url).requestFactory(factory).defaultHeader("Accept", "application/json")

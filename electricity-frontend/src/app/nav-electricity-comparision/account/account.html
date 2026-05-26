@@ -18,7 +18,7 @@
             <span class="container-services">
               <img src="assets/icons/Telefonhörer_Weiss.png" class="icon-telephone" alt="telephone">
             </span>
-            <span class="btn-text">08157 / 999 42-0</span>
+            <span class="btn-text">{{ aboutData?.contactNumber || '08157 / 999 42-0' }}</span>
           </button>
           <button class="main-btn partner-btn">
             <span class="container-services">
@@ -41,7 +41,8 @@
                 <span class="container-services">
                   <img src="assets/icons/Telefonhörer_Weiss.png" class="icon-telephone" alt="telephone">
                 </span>
-                <span class="btn-text">08157 / 999 42-0</span>
+                <!-- <span class="btn-text">{{ aboutData?.contactNumber || '08157 / 999 42-0' }}</span> -->
+                <span class="btn-text">{{ aboutData?.contactNumber || '08157 / 999 42-0' }}</span>
               </button>
               <button class="main-btn">
                 <span class="container-services">

@@ -4,7 +4,7 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/electricity
     username: postgres
-    password: root
+    password: 2026
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
@@ -31,6 +31,7 @@ spring:
           connectiontimeout: 15000
           timeout: 15000
           writetimeout: 15000
+
 api:
   energy:
     url: https://gateway.eg-on.com
@@ -61,6 +62,8 @@ app:
   secrets:
     aesKey: "3[SQ$l4}m:PcA8R|"
     aes-expiry: 1
+  order-status-check:
+    cron-expression: "0 0 1 * * ?"
 
 springdoc:
   packages-to-scan: com.tarifvergleich.electricity

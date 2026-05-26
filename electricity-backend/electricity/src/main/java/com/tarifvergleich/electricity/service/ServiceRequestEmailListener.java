@@ -14,10 +14,10 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 import com.tarifvergleich.electricity.dto.ServiceRequestEmailEvent;
 import com.tarifvergleich.electricity.dto.ServiceRequestEmailEvent.ServiceAttachmentMailOfAcknowledgement;
 import com.tarifvergleich.electricity.dto.ServiceRequestEmailEvent.ServiceResponseEmailEvent;
+import com.tarifvergleich.electricity.dto.email.AttornyEmailDto;
 import com.tarifvergleich.electricity.dto.email.VerifyOtpEmail;
 import com.tarifvergleich.electricity.model.ManageAdminDocument;
 import com.tarifvergleich.electricity.repository.ManageAdminDocumentRepository;
-import com.tarifvergleich.electricity.util.CustomEmailTemplate;
 import com.tarifvergleich.electricity.util.FileServiceSuperAdmin;
 
 import lombok.RequiredArgsConstructor;
@@ -29,7 +29,6 @@ public class ServiceRequestEmailListener {
 	private final MailService mailService;
 	private final ManageAdminDocumentRepository adminDocumentRepo;
 	private final FileServiceSuperAdmin fileServiceSuperAdmin;
-	private final CustomEmailTemplate customEmailTemplate;
 
 	@Async
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
@@ -41,7 +40,7 @@ public class ServiceRequestEmailListener {
 	@Async
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
 	public void handleServiceResponseEmail(ServiceResponseEmailEvent event) {
-		String emailContent = customEmailTemplate.generateEmailHtml(event.customerSub(), "", event.customerBody());
+		String emailContent = event.customerBody();
 		mailService.sendMail(event.customerMail(), event.customerSub(), emailContent);
 	}
 
@@ -79,5 +78,11 @@ public class ServiceRequestEmailListener {
 			System.err.println("Hello from non-transaction");
 			mailService.sendMail(verifyEmail.to(), verifyEmail.subject(), verifyEmail.body());
 		}
+	}
+
+	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+	public void sendPowerOfAttorny(AttornyEmailDto attornyEmailDto) {
+		mailService.sendEmailWithBase64Attachment(attornyEmailDto.to(), attornyEmailDto.body(),
+				attornyEmailDto.base64pdf(), attornyEmailDto.pdfName());
 	}
 }

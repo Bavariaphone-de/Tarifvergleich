@@ -256,6 +256,21 @@
   object-fit: cover;
 }
 
+/* ── reCAPTCHA ── */
+.recaptcha-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+/* Disabled submit button while reCAPTCHA not solved */
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 /* ══════════════════════════════════════════════
    MOBILE ≤768px
 ══════════════════════════════════════════════ */
@@ -579,5 +594,13 @@
   .form-row .form-group {
     width: 100%;
     max-width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  /* Scale down reCAPTCHA on very small screens */
+  .recaptcha-row re-captcha > div {
+    transform: scale(0.88);
+    transform-origin: left top;
   }
 }

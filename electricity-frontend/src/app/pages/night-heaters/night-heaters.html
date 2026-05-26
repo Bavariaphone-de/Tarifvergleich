@@ -3,20 +3,23 @@
     <div class="dialog-header">
       <mat-icon (click)="dialog.closeAll()">close</mat-icon>
     </div>
-    <div class="dialog-item" *ngFor="let item of currentDialogData">
-      <!-- 👇 show LEFT only if image OR title exists -->
-      <div class="left" *ngIf="item.image || item.title">
-        <img *ngIf="item.image" [src]="item.image" class="dialog-image" alt="Image" />
-        <p *ngIf="item.title" class="dialog-title" [innerHtml]="item.title">
-        </p>
-      </div>
+    <div class="dialog-content custom-html-content" *ngIf="singleDoubleMeterHtml && isSingleDoubleMeterPopup" [innerHTML]="singleDoubleMeterHtml"></div>
 
-      <!-- 👇 RIGHT takes full width if left is missing -->
-      <div class="right" [class.full]="!(item.image || item.title)" [innerHtml]="item.description">
-        <p></p>
-      </div>
+    <ng-container *ngIf="!(singleDoubleMeterHtml && isSingleDoubleMeterPopup)">
+      <div class="dialog-item" *ngFor="let item of currentDialogData">
+        <!-- show LEFT only if image OR title exists -->
+        <div class="left" *ngIf="item.image || item.title">
+          <img *ngIf="item.image" [src]="item.image" class="dialog-image" alt="Image" />
+          <p *ngIf="item.title" class="dialog-title" [innerHtml]="item.title">
+          </p>
+        </div>
 
-    </div>
+        <!-- RIGHT takes full width if left is missing -->
+        <div class="right" [class.full]="!(item.image || item.title)" [innerHtml]="item.description">
+          <p></p>
+        </div>
+      </div>
+    </ng-container>
   </div>
 </ng-template>
 

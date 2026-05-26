@@ -47,6 +47,11 @@ export class ContentService {
     return this.data$.pipe(map((res) => res?.menu?.banner || []));
   }
 
+  // ABOUT US
+  getAbout(): Observable<any[]> {
+    return this.data$.pipe(map((res) => res?.menu?.about || []));
+  }
+
   // IMAGE URL HELPER
   getImageUrl(contentUrl: string | null): string {
     if (!contentUrl) return '';
