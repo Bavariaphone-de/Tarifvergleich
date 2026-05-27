@@ -112,8 +112,9 @@ export class ComparisonListComponent implements OnInit, OnDestroy {
   // ── Pagination ──────────────────────────────────────────────
   hasMoreData = true;
   currentPage = 1;
-  totalCount = 0;      // total records from API
-  totalPages = 1;      // computed from totalCount / PAGE_LIMIT
+  totalCount = 0; // total records from API
+  totalPages = 1; // computed from totalCount / PAGE_LIMIT
+  totalComparisons = 0; // total comparisons (if different from totalCount)
   private readonly PAGE_LIMIT = 20;
 
   // ── Search ──────────────────────────────────────────────────
@@ -125,7 +126,7 @@ export class ComparisonListComponent implements OnInit, OnDestroy {
     private api: ApiService,
     private authService: AuthService,
     private router: Router,
-  ) { }
+  ) {}
 
   ngOnInit(): void {
     // Debounce search input: wait 350 ms after last keystroke, skip unchanged values
@@ -172,17 +173,26 @@ export class ComparisonListComponent implements OnInit, OnDestroy {
         this.hasMoreData = newData.length === this.PAGE_LIMIT;
 
         // Prefer explicit total from API; fall back to estimating from current page
-        if (typeof res?.total === "number") {
+        if (typeof res?.totalRecords === "number") {
+          this.totalCount = res.totalRecords;
+          this.totalComparisons = res.totalRecords;
+        } else if (typeof res?.total === "number") {
           this.totalCount = res.total;
+          this.totalComparisons = res.total;
         } else if (typeof res?.data?.total === "number") {
           this.totalCount = res.data.total;
+          this.totalComparisons = res.data.total;
         } else {
           // Conservative fallback: known pages so far
           this.totalCount = this.hasMoreData
-            ? this.currentPage * this.PAGE_LIMIT + 1   // at least one more page
+            ? this.currentPage * this.PAGE_LIMIT + 1 // at least one more page
             : (this.currentPage - 1) * this.PAGE_LIMIT + newData.length;
+          this.totalComparisons = this.totalCount;
         }
-        this.totalPages = Math.max(1, Math.ceil(this.totalCount / this.PAGE_LIMIT));
+        this.totalPages = Math.max(
+          1,
+          Math.ceil(this.totalCount / this.PAGE_LIMIT),
+        );
       },
       error: (err) => {
         this.isLoading = false;
@@ -264,7 +274,10 @@ export class ComparisonListComponent implements OnInit, OnDestroy {
 
   customerFullName(c?: ComparisonCustomer | null): string {
     if (!c) return "Gast";
-    return [c.title, c.firstName, c.lastName].filter(Boolean).join(" ").trim() || "Gast";
+    return (
+      [c.title, c.firstName, c.lastName].filter(Boolean).join(" ").trim() ||
+      "Gast"
+    );
   }
 
   customerInitials(c?: ComparisonCustomer | null): string {
@@ -278,14 +291,21 @@ export class ComparisonListComponent implements OnInit, OnDestroy {
 
   parseDevice(raw?: string | null): string {
     if (!raw) return "—";
-    return raw.replace(/[{}]/g, "").split(",").map(p => p.split("=")[1]?.trim()).filter(Boolean).join(" · ");
+    return raw
+      .replace(/[{}]/g, "")
+      .split(",")
+      .map((p) => p.split("=")[1]?.trim())
+      .filter(Boolean)
+      .join(" · ");
   }
 
   // ── Address helpers ──────────────────────────────────────────
 
   formatAddress(entry: ComparisonEntry): string {
     const parts = [
-      entry.street && entry.houseNumber ? `${entry.street} ${entry.houseNumber}` : entry.street,
+      entry.street && entry.houseNumber
+        ? `${entry.street} ${entry.houseNumber}`
+        : entry.street,
       entry.zip && entry.city ? `${entry.zip} ${entry.city}` : entry.city,
     ].filter(Boolean);
     return parts.join(", ") || "—";
@@ -302,19 +322,29 @@ export class ComparisonListComponent implements OnInit, OnDestroy {
   }
 
   rateCount(entry: ComparisonEntry): number {
-    return entry.energyRateResponse?.total ?? entry.energyRateResponse?.result?.length ?? 0;
+    return (
+      entry.energyRateResponse?.total ??
+      entry.energyRateResponse?.result?.length ??
+      0
+    );
   }
 
   bestRate(entry: ComparisonEntry): EnergyRate | null {
     const rates = this.energyRates(entry);
     if (!rates.length) return null;
-    return [...rates].sort((a, b) => (a.totalPrice ?? 9999) - (b.totalPrice ?? 9999))[0];
+    return [...rates].sort(
+      (a, b) => (a.totalPrice ?? 9999) - (b.totalPrice ?? 9999),
+    )[0];
   }
 
   rateChangeTypeLabel(types?: string[] | null): string {
     if (!types?.length) return "—";
-    const map: Record<string, string> = { NEW: "Neu", CHANGE: "Wechsel", MODIFICATION: "Änderung" };
-    return types.map(t => map[t] ?? t).join(", ");
+    const map: Record<string, string> = {
+      NEW: "Neu",
+      CHANGE: "Wechsel",
+      MODIFICATION: "Änderung",
+    };
+    return types.map((t) => map[t] ?? t).join(", ");
   }
 
   // ── Date helpers ─────────────────────────────────────────────
@@ -325,7 +355,9 @@ export class ComparisonListComponent implements OnInit, OnDestroy {
     if (Number.isNaN(num)) return String(value);
     const ms = num < 1_000_000_000_000 ? num * 1000 : num;
     return new Intl.DateTimeFormat("de-DE", {
-      day: "2-digit", month: "2-digit", year: "numeric",
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
     }).format(new Date(ms));
   }
 
@@ -335,8 +367,11 @@ export class ComparisonListComponent implements OnInit, OnDestroy {
     if (Number.isNaN(num)) return String(value);
     const ms = num < 1_000_000_000_000 ? num * 1000 : num;
     return new Intl.DateTimeFormat("de-DE", {
-      day: "2-digit", month: "2-digit", year: "numeric",
-      hour: "2-digit", minute: "2-digit",
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     }).format(new Date(ms));
   }
 
