@@ -5,6 +5,8 @@ import { AuthService } from "../../../shared/services/auth.service";
 import { FormsModule } from "@angular/forms";
 import { RouterModule } from "@angular/router";
 import { Router } from "@angular/router";
+import { CKEditorModule } from "@ckeditor/ckeditor5-angular";
+import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 
 export interface PasswordHistory {
   email: string;
@@ -79,7 +81,7 @@ export type AdminCustomer = {
 @Component({
   selector: "app-customer-list",
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, CKEditorModule],
   templateUrl: "./customer-list.component.html",
   styleUrl: "./customer-list.component.css",
 })
@@ -92,6 +94,22 @@ export class CustomerListComponent implements OnInit {
   noteCustomer: AdminCustomer | null = null;
   noteText = "";
   isSavingNote = false;
+
+  //For Send email
+  isSendEmailModalOpen = false;
+  selectedEmailCustomer: AdminCustomer | null = null;
+
+  emailTitle = "";
+  emailSubtitle = "";
+  emailMessage = "";
+
+  Editor = ClassicEditor;
+  emailcontent: string = "";
+
+  selectedPdfId: number | null = null;
+  pdfList: any[] = [];
+  isPdfDropdownOpen = false;
+  selectedPdfIds: Set<number> = new Set();
 
   /** Stores multiple admin note per customer id */
   customerNotes: Record<string | number, any[]> = {};
@@ -136,6 +154,7 @@ export class CustomerListComponent implements OnInit {
 
   ngOnInit(): void {
     this.fetchCustomers();
+    this.fetchPdfList();
   }
 
   onFilterChange(): void {
@@ -228,6 +247,108 @@ export class CustomerListComponent implements OnInit {
     this.lexofficeCustomer = null;
     this.lexofficeInput = "";
     this.isSavingLexoffice = false;
+  }
+
+  /** For Send Email */
+  openSendEmailModal(customer: AdminCustomer): void {
+    console.log(customer);
+    
+    this.selectedEmailCustomer = customer;
+    this.isSendEmailModalOpen = true;
+    this.loadPdfs();
+  }
+  closeSendEmailModal(): void {
+    this.isSendEmailModalOpen = false;
+    this.selectedEmailCustomer = null;
+  }
+
+  fetchPdfList(): void {
+    this.api.post('admin/fetch-all-pdf', {}).subscribe({
+      next: (res: any) => {
+        this.pdfList = res?.data || [];
+        console.log(this.pdfList);
+        
+      },
+      error: (err) => {
+        // this.pdfList = [];
+        console.log(err);
+        
+      }
+    });
+  }
+
+  togglePdfDropdown(): void {
+    this.isPdfDropdownOpen = !this.isPdfDropdownOpen;
+  }
+
+  togglePdfSelection(pdfId: number): void {
+    if (this.selectedPdfIds.has(pdfId)) {
+      this.selectedPdfIds.delete(pdfId);
+    } else {
+      this.selectedPdfIds.add(pdfId);
+    }
+  }
+
+  loadPdfs(): void {
+      const payload = {
+        adminId: this.authService.getUserId(),
+        page: 0,
+        size: 100,
+      };
+
+      this.api
+        .post("admin/fetch-admin-documents", payload)
+        .subscribe({
+          next: (res: any) => {
+            console.log(res);
+            this.pdfList = res.data || res.content || res;
+          },
+          error: (err) => {
+            console.log(err);
+          },
+        });
+    }
+
+  isPdfSelected(pdfId: number): boolean {
+    return this.selectedPdfIds.has(pdfId);
+  }
+
+  get selectedPdfsLabel(): string {
+    const count = this.selectedPdfIds.size;
+    if (count === 0) return "Wählen dein PDF";
+    if (count === 1) {
+      const pdf = this.pdfList.find((p) =>
+        this.selectedPdfIds.has(p.adminDocId),
+      );
+      return pdf?.type || pdf?.documentType || "1 PDF ausgewählt";
+    }
+    return `${count} PDFs ausgewählt`;
+  }
+
+  submitSendEmail(): void {
+    if (!this.selectedEmailCustomer) return;
+
+    const payload = {
+      adminId: this.authService.getUserId(),
+      customerId: this.selectedEmailCustomer.id,
+      title: this.emailTitle,
+      subtitle: this.emailSubtitle,
+      emailContent: this.emailMessage,
+      pdfIds: Array.from(this.selectedPdfIds),
+    };
+
+    this.api.post("admin/send-customer-email", payload)
+      .subscribe({
+        next: () => {
+          alert("Email sent successfully");
+          this.closeSendEmailModal();
+        },
+
+        error: (err) => {
+          console.log(err);
+          alert("Failed to send email");
+        }
+      });
   }
 
   /** Save Lexoffice number for the selected customer */
