@@ -83,9 +83,9 @@ export class AboutUsComponent implements OnInit {
       return;
     }
 
-    // New 2MB Validation
-    if (file.size > 2 * 1024 * 1024) {
-      this.errorMessage = "Bild muss kleiner als 2MB sein";
+    // New 10MB Validation
+    if (file.size > 10 * 1024 * 1024) {
+      this.errorMessage = "Bild muss kleiner als 10MB sein";
       event.target.value = ""; // Clears the input
       return;
     }

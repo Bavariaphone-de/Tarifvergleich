@@ -66,8 +66,8 @@ export class BannersComponent implements OnInit {
       return;
     }
 
-    if (file.size > 5 * 1024 * 1024) {
-      this.errorMessage = "Bild muss kleiner als 5MB sein";
+    if (file.size > 10 * 1024 * 1024) {
+      this.errorMessage = "Bild muss kleiner als 10MB sein";
       return;
     }
 

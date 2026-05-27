@@ -168,7 +168,7 @@ export class CustomerQueriesComponent implements OnInit {
       size: this.PAGE_SIZE,
     };
 
-    this.http.post("http://localhost:8080/admin/fetch-service-requests", payload).subscribe({
+    this.http.post("http://192.168.0.234:8080/admin/fetch-service-requests", payload).subscribe({
       next: (res: any) => {
         this.isLoading = false;
         const data = res?.data;

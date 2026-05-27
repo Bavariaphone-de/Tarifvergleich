@@ -42,8 +42,8 @@ export class EmailRequestsComponent {
   ) {}
 
   ngOnInit(): void {
-    this.http
-      .post("http://192.168.0.155:8080/email-category/all", { adminId: 1 })
+    this.api
+      .post("email-category/all", { adminId: 1 })
       .subscribe((res: any) => {
         console.log(res);
         this.categories = res;
