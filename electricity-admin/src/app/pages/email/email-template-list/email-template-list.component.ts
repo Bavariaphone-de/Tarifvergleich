@@ -22,6 +22,9 @@ export class EmailTemplateListComponent implements OnInit {
     console.log(item);
   }
 
+  //Fpr CategoryName
+  categories: any[] = [];
+
   // Filters
   searchTerm = "";
   selectedCategory = "";
@@ -46,12 +49,28 @@ export class EmailTemplateListComponent implements OnInit {
 
   ngOnInit(): void {
     this.fetchTemplates();
+    this.loadCategories();
+  }
+
+  loadCategories(): void {
+    this.http
+      .post<any[]>("http://192.168.0.155:8080/email-category/all", {
+        adminId: 1
+      })
+      .subscribe({
+        next: (res) => {
+          this.categories = res || [];
+        },
+        error: (err) => {
+          console.log(err);
+        }
+      });
   }
 
   fetchTemplates(): void {
     this.isLoading = true;
     this.api
-      .post("/email-management/all", {
+      .post("admin/email-management/all", {
         adminId: 1,
       })
       .subscribe({
@@ -62,7 +81,7 @@ export class EmailTemplateListComponent implements OnInit {
           if(res.length > 0) {
             console.log("First Item", res[0]);
             console.log("Id value", res[0].id);
-            
+            console.log("CATEGORY", res[0].category);
           }
           
           this.emailList = res || [];
@@ -82,6 +101,13 @@ export class EmailTemplateListComponent implements OnInit {
       if (e.category?.name) cats.add(e.category.name.trim());
     });
     this.uniqueCategories = Array.from(cats).sort();
+  }
+
+  getCategoryName(cateId: number): string {
+    const found = this.categories.find(
+      c => c.cateId === cateId
+    );
+    return found?.name || '—';
   }
 
   applyFilters(): void {

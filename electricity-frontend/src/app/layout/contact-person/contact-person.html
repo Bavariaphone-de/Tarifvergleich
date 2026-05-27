@@ -7,6 +7,7 @@
       [src]="(contactPerson$ | async)?.contentUrl ? 'http://192.168.0.155:8080/assets/super-admin/' + (contactPerson$ | async)?.contentUrl : 'assets/images/MM.png'"
       alt="Familienbetrieb">
   </div>
+
   <div class="partner-info">
     <div class="partner-name">{{ (contactPerson$ | async)?.name ?? 'Manuel Markovic' }}</div>
     <div class="container-main-btn">

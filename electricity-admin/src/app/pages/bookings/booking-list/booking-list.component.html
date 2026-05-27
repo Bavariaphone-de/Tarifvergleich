@@ -1,3 +1,32 @@
+<div class="flex justify-start mt-4 mb-4">
+  <!-- STATS CARDS -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 my-6">
+    <!-- TOTAL REQUESTS -->
+    <div class="bg-white dark:bg-gray-900 rounded-2xl shadow p-5 border border-gray-100 dark:border-gray-800">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm text-gray-500 dark:text-gray-400">Gesamtbuchungen</p>
+          <h3 class="text-3xl font-bold text-gray-900 dark:text-white mt-1">
+            {{ totalRecord }}
+          </h3>
+        </div>
+      </div>
+    </div>
+
+    <!-- COMPLETED -->
+    <div class="bg-white dark:bg-gray-900 rounded-2xl shadow p-5 border border-gray-100 dark:border-gray-800">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm text-gray-500 dark:text-gray-400">Abgeschlossene Bestellungen</p>
+          <h3 class="text-3xl font-bold text-green-600 mt-1">
+            {{ totalComplete }}
+          </h3>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="bg-white dark:bg-gray-900 rounded-2xl shadow p-6">
   <h2 class="text-xl font-semibold text-gray-800 dark:text-white mb-4">Buchungsliste</h2>
 

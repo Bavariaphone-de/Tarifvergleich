@@ -44,7 +44,7 @@ export class CustomerServiceFormComponent implements OnInit {
       serviceId: this.serviceId
     };
 
-    this.api.post('admin/get-service-by-id', payload).subscribe({
+    this.api.post('admin/fetch-services', payload).subscribe({
       next: (res: any) => {
         this.isLoading = false;
 
