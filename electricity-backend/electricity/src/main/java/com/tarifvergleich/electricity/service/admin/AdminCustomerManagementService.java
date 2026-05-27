@@ -1,8 +1,11 @@
 package com.tarifvergleich.electricity.service.admin;
 
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.context.ApplicationEventPublisher;
@@ -40,6 +43,7 @@ import com.tarifvergleich.electricity.model.CustomerNote;
 import com.tarifvergleich.electricity.model.CustomerOrder;
 import com.tarifvergleich.electricity.model.CustomerServiceRequest;
 import com.tarifvergleich.electricity.model.CustomerServiceRequestMessages;
+import com.tarifvergleich.electricity.model.ManageAdminDocument;
 import com.tarifvergleich.electricity.repository.CustomerAttornyRepository;
 import com.tarifvergleich.electricity.repository.CustomerComparingEnergyRepository;
 import com.tarifvergleich.electricity.repository.CustomerDeliveryRepository;
@@ -49,8 +53,8 @@ import com.tarifvergleich.electricity.repository.CustomerRepository;
 import com.tarifvergleich.electricity.repository.CustomerServiceRequestRepository;
 import com.tarifvergleich.electricity.service.customer.CustomerAuthService;
 import com.tarifvergleich.electricity.util.EmailBodyRender;
-import com.tarifvergleich.electricity.util.FileServiceCustomer;
 import com.tarifvergleich.electricity.util.Helper;
+import com.tarifvergleich.electricity.util.PdfGenerator;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -64,14 +68,13 @@ public class AdminCustomerManagementService {
 	private final CustomerComparingEnergyRepository customerComparingEnergyRepo;
 	private final CustomerServiceRequestRepository customerServiceRequestRepo;
 	private final CustomerAttornyRepository customerAttornyRepo;
-	private final CustomerOrderRepository customerOrderRepo;
 	private final ApplicationEventPublisher eventPublisher;
 	private final EmailBodyRender emailBodyRender;
 	private final CustomerAuthService customerAuthService;
 	private final ObjectMapper objectMapper;
 	private final CustomerOrderRepository customerOrderRepository;
 	private final CustomerDetailsContactHistoryRepository customerDetailsContactHistoryRepo;
-	private final FileServiceCustomer fileServiceCustomer;
+	private final PdfGenerator pdfGenerator;
 
 	public Map<String, Object> getCustomers(CustomerDto customerReq) {
 
@@ -79,14 +82,16 @@ public class AdminCustomerManagementService {
 			throw new InternalServerException("Admin id missing", HttpStatus.OK);
 
 		if (customerReq.getId() != null && customerReq.getId() > 0) {
-			Customer customer = customerRepo.findById(customerReq.getId()).orElseThrow(
-					() -> new InternalServerException("Customer not found with this credential", HttpStatus.OK));
+			Customer customer = customerRepo
+					.findByCustomerIdAndAdminAdminId(customerReq.getId(), customerReq.getAdminId())
+					.orElseThrow(() -> new InternalServerException("Customer not found with this credential",
+							HttpStatus.OK));
 
 			if (customer.getAdmin().getAdminId() != customerReq.getAdminId())
 				throw new InternalServerException("Not authorised to access customer details", HttpStatus.OK);
 
-			SingleCustomerResponseDeliveryForAdmin customerRes = CustomerDto
-					.getAdminSingleCustomerResponseDto(customer);
+			SingleCustomerResponseDeliveryForAdmin customerRes = CustomerDto.getAdminSingleCustomerResponseDto(customer,
+					pdfGenerator);
 
 			return Map.of("res", true, "data", customerRes);
 
@@ -123,14 +128,9 @@ public class AdminCustomerManagementService {
 			long totalCustomers = customerRepo.countByAdminAdminId(adminId);
 			long totalVerifiedCustomers = customerRepo.countByAdminAdminIdAndIsVerifiedTrue(adminId);
 
-			return Map.of(
-					"res", true,
-					"data", customerRes.getContent(),
-					"page", customerRes.getPageable().getPageNumber() + 1,
-					"totalPage", customerRes.getTotalPages(),
-					"totalRecords", totalCustomers,
-					"totalConsluded", totalVerifiedCustomers
-			);
+			return Map.of("res", true, "data", customerRes.getContent(), "page",
+					customerRes.getPageable().getPageNumber() + 1, "totalPage", customerRes.getTotalPages(),
+					"totalRecords", totalCustomers, "totalConsluded", totalVerifiedCustomers);
 
 		}
 
@@ -210,18 +210,14 @@ public class AdminCustomerManagementService {
 
 			Page<CustomerDeliveryResponseAll> customerDeliveryResponse = customerDeliveries
 					.map(CustomerDeliveryResponseDto::getDeliveryResponse);
-			
 
 			long totalDeliveries = customerDeliveryRepo.countByAdminAdminId(deliveryReq.getAdminId());
 			long totalCompleted = customerOrderRepository.countOrderCreatedStatus(deliveryReq.getAdminId());
-			
 
-
-			
 			return Map.of("res", true, "data", customerDeliveryResponse.getContent(), "page",
 					customerDeliveryResponse.getPageable().getPageNumber() + 1, "totalPage",
-					customerDeliveryResponse.getTotalPages(), "totalRecord",
-					totalDeliveries, "totalComplete", totalCompleted);
+					customerDeliveryResponse.getTotalPages(), "totalRecord", totalDeliveries, "totalComplete",
+					totalCompleted);
 		}
 
 		List<CustomerDelivery> customerDeliveries = customerDeliveryRepo
@@ -312,8 +308,17 @@ public class AdminCustomerManagementService {
 
 		String subject = "Received  a  response  from  the  consultant on ticket-No. "
 				+ serviceRequest.getTicketNumber();
-		String body = emailBodyRender.serviceRequestResponseBody(serviceRequest);
-		ServiceResponseEmailEvent serviceEventData = new ServiceResponseEmailEvent(customer.getEmail(), subject, body);
+		Map<String, Object> emailTemplate = emailBodyRender.serviceRequestResponseBody(serviceRequest);
+		Set<ManageAdminDocument> docs = new HashSet<ManageAdminDocument>();
+		if (emailTemplate.get("docs") instanceof Collection<?> rawCollection) {
+			for (Object obj : rawCollection) {
+				if (obj instanceof ManageAdminDocument doc) {
+					docs.add(doc);
+				}
+			}
+		}
+		ServiceResponseEmailEvent serviceEventData = new ServiceResponseEmailEvent(customer.getEmail(), subject,
+				emailTemplate.get("body").toString(), docs);
 		eventPublisher.publishEvent(serviceEventData);
 
 		return Map.of("res", true, "ticketNo", serviceRequest.getTicketNumber(), "message",
@@ -568,7 +573,6 @@ public class AdminCustomerManagementService {
 		return Map.of("res", true, "message", "lexoffice_Number added successfully");
 	}
 
-
 	public Map<String, Object> fetchAllPdfOfCustomer(CustomerDto customerDto) {
 
 		if (customerDto.getAdminId() == null || customerDto.getAdminId() <= 0)
@@ -580,18 +584,34 @@ public class AdminCustomerManagementService {
 				.orElseThrow(
 						() -> new InternalServerException("Customer not found with this credential", HttpStatus.OK));
 
-		List<CustomerOrder> orders = customer.getCustomerOrders().stream()
-				.filter(order -> order.getCustomerBookingDocument() != null
-						&& order.getCustomerBookingDocument().getSignedDocumentSubmitted()
-						&& order.getCustomerBookingDocument().getSignedFileUrl() != null
-						&& !order.getCustomerBookingDocument().getSignedFileUrl().isEmpty())
-				.toList();
+		Map<Integer, String> orderDocs = new HashMap<Integer, String>();
+		if (customer.getCustomerOrders() != null) {
+			List<CustomerOrder> orders = customer.getCustomerOrders().stream()
+					.filter(order -> order.getCustomerBookingDocument() != null
+							&& order.getCustomerBookingDocument().getSignedDocumentSubmitted()
+							&& order.getCustomerBookingDocument().getSignedFileUrl() != null
+							&& !order.getCustomerBookingDocument().getSignedFileUrl().isEmpty())
+					.toList();
 
-		Map<Integer, String> orderDocs = orders.stream().collect(Collectors.toMap(CustomerOrder::getId,
-				order -> fileServiceCustomer.getAbsolutePath(order.getCustomerBookingDocument().getSignedFileUrl())));
-		
-		
+			orderDocs = orders.stream().collect(Collectors.toMap(CustomerOrder::getId,
+					order -> order.getCustomerBookingDocument().getSignedFileUrl()));
+		}
 
-		return Map.of("res", true, "data", Map.of("ContractSignedDocument", orderDocs));
+		String pdfUrl = "";
+		if (customer.getCustomerAttorny() != null) {
+			CustomerAttorny customerAttorny = customer.getCustomerAttorny().stream()
+					.filter(attorny -> !attorny.getApprovalStatus().equals(2) && !attorny.getIsRevoked())
+					.reduce((first, second) -> second).orElse(null);
+
+			if (customerAttorny != null) {
+				String base64String = pdfGenerator.generateVollmachtDocument(customerAttorny);
+
+				if (base64String != null && !base64String.isEmpty()) {
+					pdfUrl = "data:application/pdf;base64," + base64String;
+				}
+			}
+		}
+
+		return Map.of("res", true, "data", Map.of("ContractSignedDocument", orderDocs, "AttornyDoc", pdfUrl));
 	}
 }

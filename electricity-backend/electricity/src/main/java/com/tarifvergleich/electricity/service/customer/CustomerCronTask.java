@@ -1,8 +1,10 @@
 package com.tarifvergleich.electricity.service.customer;
 
 import java.math.BigInteger;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Executor;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +16,7 @@ import org.springframework.stereotype.Service;
 import com.tarifvergleich.electricity.dto.ServiceRequestEmailEvent.ServiceResponseEmailEvent;
 import com.tarifvergleich.electricity.model.Customer;
 import com.tarifvergleich.electricity.model.CustomerDelivery;
+import com.tarifvergleich.electricity.model.ManageAdminDocument;
 import com.tarifvergleich.electricity.repository.CustomerDeliveryRepository;
 import com.tarifvergleich.electricity.repository.CustomerOrderRepository;
 import com.tarifvergleich.electricity.util.EmailTemplate;
@@ -59,10 +62,19 @@ public class CustomerCronTask {
 						delivery.getLastName(), delivery.getFirstName(),
 						delivery.getCustomerProvider().getProviderName(), formattedDateTime);
 
-				ServiceResponseEmailEvent mailResp = new ServiceResponseEmailEvent(customer.getEmail(),
-						"Handlungsbedarf: Ihr Tarif bei " + delivery.getCustomerProvider().getProviderName()
-								+ " endet in Kürze",
-						emailBody);
+				Set<ManageAdminDocument> docs = new HashSet<ManageAdminDocument>();
+//				if (emailTemplate.get("docs") instanceof Collection<?> rawCollection) {
+//					for (Object obj : rawCollection) {
+//						if (obj instanceof ManageAdminDocument doc) {
+//							docs.add(doc);
+//						}
+//					}
+//				}
+
+				ServiceResponseEmailEvent mailResp = new ServiceResponseEmailEvent(
+						customer.getEmail(), "Handlungsbedarf: Ihr Tarif bei "
+								+ delivery.getCustomerProvider().getProviderName() + " endet in Kürze",
+						emailBody, docs);
 
 				eventPublisher.publishEvent(mailResp);
 			}

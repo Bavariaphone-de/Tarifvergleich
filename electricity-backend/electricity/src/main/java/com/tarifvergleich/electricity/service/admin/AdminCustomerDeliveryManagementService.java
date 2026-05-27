@@ -7,7 +7,10 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
@@ -28,10 +31,10 @@ import com.tarifvergleich.electricity.dto.CustomerPaymentRequestDto.PaymentDto;
 import com.tarifvergleich.electricity.dto.EgonFileSignatureResponse;
 import com.tarifvergleich.electricity.dto.EgonFileSignatureResponse.EgonDocumentDto;
 import com.tarifvergleich.electricity.dto.EgonFileSignatureResponse.EgonFileSignatureRequest;
-import com.tarifvergleich.electricity.dto.ServiceRequestEmailEvent.ServiceResponseEmailEvent;
-import com.tarifvergleich.electricity.dto.email.ContractMailDto;
 import com.tarifvergleich.electricity.dto.EgonOrderStatusResponse;
 import com.tarifvergleich.electricity.dto.EnergyRateDto;
+import com.tarifvergleich.electricity.dto.ServiceRequestEmailEvent.ServiceResponseEmailEvent;
+import com.tarifvergleich.electricity.dto.email.ContractMailDto;
 import com.tarifvergleich.electricity.exception.InternalServerException;
 import com.tarifvergleich.electricity.model.AdminSignature;
 import com.tarifvergleich.electricity.model.Customer;
@@ -43,6 +46,7 @@ import com.tarifvergleich.electricity.model.CustomerOrder;
 import com.tarifvergleich.electricity.model.CustomerOrderStatusRecord;
 import com.tarifvergleich.electricity.model.CustomerPayment;
 import com.tarifvergleich.electricity.model.CustomerSelectedProvider;
+import com.tarifvergleich.electricity.model.ManageAdminDocument;
 import com.tarifvergleich.electricity.repository.AdminSignatureRepository;
 import com.tarifvergleich.electricity.repository.CustomerBookingDocumentRepository;
 import com.tarifvergleich.electricity.repository.CustomerDeliveryRepository;
@@ -613,8 +617,10 @@ public class AdminCustomerDeliveryManagementService {
 
 			String emailBody = "";
 
+			Set<ManageAdminDocument> docs = new HashSet<ManageAdminDocument>();
+
 			ServiceResponseEmailEvent mailEvent = new ServiceResponseEmailEvent(customer.getEmail(),
-					"Contract Confirmation (Contract Number: " + order.getId() + ")", emailBody);
+					"Contract Confirmation (Contract Number: " + order.getId() + ")", emailBody, docs);
 
 			eventPublisher.publishEvent(mailEvent);
 		}
@@ -642,10 +648,19 @@ public class AdminCustomerDeliveryManagementService {
 
 		String absolutePath = fileServiceCustomer.getAbsolutePath(contractDocument.getSignedFileUrl());
 
-		String emailBody = emailBodyRender.contractAttachmentBody(order);
+		Map<String, Object> emailTemplate = emailBodyRender.signedContractNotificationBody(order);
 
-		ContractMailDto mailEvent = new ContractMailDto(customer.getEmail(),
-				order.getOrderId() + " | Unterzeichneter Vertrag", emailBody, absolutePath);
+		Set<ManageAdminDocument> docs = new HashSet<ManageAdminDocument>();
+		if (emailTemplate.get("docs") instanceof Collection<?> rawCollection) {
+			for (Object obj : rawCollection) {
+				if (obj instanceof ManageAdminDocument doc) {
+					docs.add(doc);
+				}
+			}
+		}
+
+		ContractMailDto mailEvent = new ContractMailDto(customer.getEmail(), emailTemplate.get("title").toString(),
+				emailTemplate.get("body").toString(), absolutePath, docs);
 
 		eventPublisher.publishEvent(mailEvent);
 

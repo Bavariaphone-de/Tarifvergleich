@@ -56,6 +56,10 @@ public class CustomerRequestCounselling {
 	@ManyToOne
 	@JoinColumn(name = "admin_id")
 	private AdminUser admin;
+	
+	@ManyToOne
+	@JoinColumn(name = "customer_order_id")
+	private CustomerOrder customerOrder;
 
 	@Column(name = "created_on")
 	private BigInteger createdOn;

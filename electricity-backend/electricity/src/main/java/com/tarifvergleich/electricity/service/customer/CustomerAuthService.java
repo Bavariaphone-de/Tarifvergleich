@@ -2,9 +2,12 @@ package com.tarifvergleich.electricity.service.customer;
 
 import java.math.BigInteger;
 import java.util.Base64;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
@@ -19,9 +22,9 @@ import com.tarifvergleich.electricity.model.AdminEmailManagement;
 import com.tarifvergleich.electricity.model.AdminUser;
 import com.tarifvergleich.electricity.model.Customer;
 import com.tarifvergleich.electricity.model.CustomerAddress;
-import com.tarifvergleich.electricity.model.CustomerAttorny;
 import com.tarifvergleich.electricity.model.CustomerChangePasswordHistory;
 import com.tarifvergleich.electricity.model.CustomerLoginHistory;
+import com.tarifvergleich.electricity.model.ManageAdminDocument;
 import com.tarifvergleich.electricity.model.TokenManagement;
 import com.tarifvergleich.electricity.repository.AdminEmailManagementRepository;
 import com.tarifvergleich.electricity.repository.AdminUserRepository;
@@ -118,12 +121,20 @@ public class CustomerAuthService {
 					String encodedId = Base64.getEncoder()
 							.encodeToString(customer.getCustomerId().toString().getBytes());
 
-					String mailBody = emailTemplate.createCustomerConsentEmailBody(customer.getSalutation(),
-							customer.getLastName(), encodedId);
+					Map<String, Object> emailTemplate = emailRender.conscent365AdvisorBody(encodedId, customer);
+
+					Set<ManageAdminDocument> docs = new HashSet<ManageAdminDocument>();
+					if (emailTemplate.get("docs") instanceof Collection<?> rawCollection) {
+						for (Object obj : rawCollection) {
+							if (obj instanceof ManageAdminDocument doc) {
+								docs.add(doc);
+							}
+						}
+					}
 
 					ServiceAttachmentMailOfAcknowledgement mailRes = new ServiceAttachmentMailOfAcknowledgement(
-							customer.getEmail(), "Action Required: Confirm your Energy Selection", mailBody,
-							customerDto.getAdminId());
+							customer.getEmail(), "Action Required: Confirm your Energy Selection",
+							emailTemplate.get("body").toString(), customerDto.getAdminId(), docs);
 
 					eventPublisher.publishEvent(mailRes);
 				}
@@ -170,9 +181,9 @@ public class CustomerAuthService {
 				customer.setOtp(otp);
 				customer.setOtpGeneratedOn(Helper.getCurrentTimeBerlin());
 				String subject = "Verify Your Account - Tarifvergleich Electricity";
-				String body = emailRender.verifyOtpBody(otp);
+				Map<String, Object> emailTemplate = emailRender.verifyOtpBody(otp);
 				if (customerDto.getIsVerified() == null || !customerDto.getIsVerified())
-					mailService.sendMail(customer.getEmail(), subject, body);
+					mailService.sendMail(customer.getEmail(), subject, emailTemplate.get("body").toString());
 
 				customerRepo.save(customer);
 				return Map.of("res", true, "data", Map.of("id", customer.getCustomerId(), "firstName",
@@ -215,9 +226,18 @@ public class CustomerAuthService {
 			if (customerDto.getIsVerified() == null || !customerDto.getIsVerified())
 				mailService.sendMail(savedCustomer.getEmail(), subject, body);
 		} else {
-			String emailBody = emailRender.verifyOtpBody(otp);
+			Map<String, Object> emailTemplate = emailRender.verifyOtpBody(otp);
+			Set<ManageAdminDocument> docs = new HashSet<ManageAdminDocument>();
+			if (emailTemplate.get("docs") instanceof Collection<?> rawCollection) {
+				for (Object obj : rawCollection) {
+					if (obj instanceof ManageAdminDocument doc) {
+						docs.add(doc);
+					}
+				}
+			}
+
 			ServiceResponseEmailEvent emailContent = new ServiceResponseEmailEvent(savedCustomer.getEmail(),
-					emailManagement.getTitle(), emailBody);
+					emailManagement.getTitle(), emailTemplate.get("body").toString(), docs);
 			eventPublisher.publishEvent(emailContent);
 		}
 
@@ -260,15 +280,21 @@ public class CustomerAuthService {
 			if (firstTimeVerification) {
 				String encodedId = Base64.getEncoder().encodeToString(customer.getCustomerId().toString().getBytes());
 
-//				String mailBody = customEmailTemplate.generateEmailHtml("Bestätigen Sie den Empfang Ihres Kontos", "", emailTemplate.createCustomerConsentEmailBody(customer.getSalutation(),
-//						customer.getLastName(), encodedId));
-
 				String consentUrl = "http://192.168.0.155:8080/auth/mark-acknowledgement?token=" + encodedId;
-				String mailBody = emailRender.conscent365AdvisorBody(consentUrl, customer);
+				Map<String, Object> emailTemplate = emailRender.conscent365AdvisorBody(consentUrl, customer);
+
+				Set<ManageAdminDocument> docs = new HashSet<ManageAdminDocument>();
+				if (emailTemplate.get("docs") instanceof Collection<?> rawCollection) {
+					for (Object obj : rawCollection) {
+						if (obj instanceof ManageAdminDocument doc) {
+							docs.add(doc);
+						}
+					}
+				}
 
 				ServiceAttachmentMailOfAcknowledgement mailRes = new ServiceAttachmentMailOfAcknowledgement(
-						customer.getEmail(), "Action Required: Bestätigen Sie den Empfang Ihres Kontos", mailBody,
-						customer.getAdmin().getAdminId());
+						customer.getEmail(), "Action Required: Bestätigen Sie den Empfang Ihres Kontos",
+						emailTemplate.get("body").toString(), customer.getAdmin().getAdminId(), docs);
 
 				eventPublisher.publishEvent(mailRes);
 			}
@@ -279,9 +305,9 @@ public class CustomerAuthService {
 			customer.setOtp(newOtp);
 			customer.setOtpGeneratedOn(Helper.getCurrentTimeBerlin());
 			String subject = "Verify Your Account - Tarifvergleich Electricity";
-			String body = emailRender.verifyOtpBody(newOtp);
+			Map<String, Object> emailTemplate = emailRender.verifyOtpBody(newOtp);
 
-			mailService.sendMail(customer.getEmail(), subject, body);
+			mailService.sendMail(customer.getEmail(), subject, emailTemplate.get("body").toString());
 
 			customerRepo.save(customer);
 			return Map.of("res", false, "newOtp", true, "message", "New otp generated");
@@ -461,10 +487,19 @@ public class CustomerAuthService {
 
 		customerRepo.save(customer);
 
-		String mailBody = emailRender.resetPasswordConfirmationBody(customer);
+		Map<String, Object> emailTemplate = emailRender.resetPasswordConfirmationBody(customer);
+
+		Set<ManageAdminDocument> docs = new HashSet<ManageAdminDocument>();
+		if (emailTemplate.get("docs") instanceof Collection<?> rawCollection) {
+			for (Object obj : rawCollection) {
+				if (obj instanceof ManageAdminDocument doc) {
+					docs.add(doc);
+				}
+			}
+		}
 
 		ServiceResponseEmailEvent mailEvent = new ServiceResponseEmailEvent(customer.getEmail(),
-				"Reset Password Successful", mailBody);
+				"Reset Password Successful", emailTemplate.get("body").toString(), docs);
 
 		eventPublisher.publishEvent(mailEvent);
 
@@ -605,10 +640,19 @@ public class CustomerAuthService {
 
 		tokenManagementRespo.save(manageToken);
 
-		String mailBody = emailRender.forgotPasswordBody(customer, encryptedToken);
+		Map<String, Object> emailTemplate = emailRender.forgotPasswordBody(customer, encryptedToken);
+
+		Set<ManageAdminDocument> docs = new HashSet<ManageAdminDocument>();
+		if (emailTemplate.get("docs") instanceof Collection<?> rawCollection) {
+			for (Object obj : rawCollection) {
+				if (obj instanceof ManageAdminDocument doc) {
+					docs.add(doc);
+				}
+			}
+		}
 
 		ServiceResponseEmailEvent mailEvent = new ServiceResponseEmailEvent(customer.getEmail(), "Reset Password",
-				mailBody);
+				emailTemplate.get("body").toString(), docs);
 
 		eventPublisher.publishEvent(mailEvent);
 
@@ -653,10 +697,19 @@ public class CustomerAuthService {
 
 		customerRepo.save(customer);
 
-		String mailBody = emailRender.resetPasswordConfirmationBody(customer);
+		Map<String, Object> emailTemplate = emailRender.resetPasswordConfirmationBody(customer);
+
+		Set<ManageAdminDocument> docs = new HashSet<ManageAdminDocument>();
+		if (emailTemplate.get("docs") instanceof Collection<?> rawCollection) {
+			for (Object obj : rawCollection) {
+				if (obj instanceof ManageAdminDocument doc) {
+					docs.add(doc);
+				}
+			}
+		}
 
 		ServiceResponseEmailEvent mailEvent = new ServiceResponseEmailEvent(customer.getEmail(),
-				"Reset Password Successful", mailBody);
+				"Reset Password Successful", emailTemplate.get("body").toString(), docs);
 
 		eventPublisher.publishEvent(mailEvent);
 

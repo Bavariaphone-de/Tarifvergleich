@@ -3,6 +3,10 @@ package com.tarifvergleich.electricity.service.admin;
 import java.math.BigInteger;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
@@ -14,6 +18,7 @@ import com.tarifvergleich.electricity.dto.ServiceRequestEmailEvent.ServiceRespon
 import com.tarifvergleich.electricity.exception.InternalServerException;
 import com.tarifvergleich.electricity.model.Customer;
 import com.tarifvergleich.electricity.model.CustomerOrder;
+import com.tarifvergleich.electricity.model.ManageAdminDocument;
 import com.tarifvergleich.electricity.model.TokenManagement;
 import com.tarifvergleich.electricity.repository.CustomerOrderRepository;
 import com.tarifvergleich.electricity.repository.TokenManagementRespository;
@@ -75,10 +80,20 @@ public class AsyncServiceAdmin {
 
 		customerOrderRepo.save(order);
 
-		String mailBody = emailBodyRender.orderSignatureBody(customer, securedToken, customerOrderId);
+		Map<String, Object> emailTemplate = emailBodyRender.orderSignatureBody(customer, securedToken, customerOrderId);
+
+		Set<ManageAdminDocument> docs = new HashSet<ManageAdminDocument>();
+		if (emailTemplate.get("docs") instanceof Collection<?> rawCollection) {
+			for (Object obj : rawCollection) {
+				if (obj instanceof ManageAdminDocument doc) {
+					docs.add(doc);
+				}
+			}
+		}
 
 		ServiceResponseEmailEvent emailEvent = new ServiceResponseEmailEvent(customer.getEmail(),
-				"Bitte unterschreiben Sie Ihren Vertrag: (Contract Number: " + order.getOrderId() + ")", mailBody);
+				"Bitte unterschreiben Sie Ihren Vertrag: (Contract Number: " + order.getOrderId() + ")",
+				emailTemplate.get("body").toString(), docs);
 
 //		ServiceResponseEmailEvent emailEvent = new ServiceResponseEmailEvent("syntnpddr@gmail.com",
 //				"Bitte unterschreiben Sie Ihren Vertrag: (Contract Number: " + customerOrderId + ")", mailBody);
