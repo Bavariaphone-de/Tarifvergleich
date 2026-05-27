@@ -44,6 +44,7 @@ import com.tarifvergleich.electricity.repository.CustomerAttornyRepository;
 import com.tarifvergleich.electricity.repository.CustomerComparingEnergyRepository;
 import com.tarifvergleich.electricity.repository.CustomerDeliveryRepository;
 import com.tarifvergleich.electricity.repository.CustomerDetailsContactHistoryRepository;
+import com.tarifvergleich.electricity.repository.CustomerOrderRepository;
 import com.tarifvergleich.electricity.repository.CustomerRepository;
 import com.tarifvergleich.electricity.repository.CustomerServiceRequestRepository;
 import com.tarifvergleich.electricity.service.customer.CustomerAuthService;
@@ -63,10 +64,12 @@ public class AdminCustomerManagementService {
 	private final CustomerComparingEnergyRepository customerComparingEnergyRepo;
 	private final CustomerServiceRequestRepository customerServiceRequestRepo;
 	private final CustomerAttornyRepository customerAttornyRepo;
+	private final CustomerOrderRepository customerOrderRepo;
 	private final ApplicationEventPublisher eventPublisher;
 	private final EmailBodyRender emailBodyRender;
 	private final CustomerAuthService customerAuthService;
 	private final ObjectMapper objectMapper;
+	private final CustomerOrderRepository customerOrderRepository;
 	private final CustomerDetailsContactHistoryRepository customerDetailsContactHistoryRepo;
 	private final FileServiceCustomer fileServiceCustomer;
 
@@ -117,8 +120,17 @@ public class AdminCustomerManagementService {
 
 			Page<AdminCustomerResponse> customerRes = customers.map(CustomerDto::getCustomerDtoResponseForAdmin);
 
-			return Map.of("res", true, "data", customerRes.getContent(), "page",
-					customerRes.getPageable().getPageNumber() + 1, "totalPage", customerRes.getTotalPages());
+			long totalCustomers = customerRepo.countByAdminAdminId(adminId);
+			long totalVerifiedCustomers = customerRepo.countByAdminAdminIdAndIsVerifiedTrue(adminId);
+
+			return Map.of(
+					"res", true,
+					"data", customerRes.getContent(),
+					"page", customerRes.getPageable().getPageNumber() + 1,
+					"totalPage", customerRes.getTotalPages(),
+					"totalRecords", totalCustomers,
+					"totalConsluded", totalVerifiedCustomers
+			);
 
 		}
 
@@ -198,12 +210,18 @@ public class AdminCustomerManagementService {
 
 			Page<CustomerDeliveryResponseAll> customerDeliveryResponse = customerDeliveries
 					.map(CustomerDeliveryResponseDto::getDeliveryResponse);
+			
 
+			long totalDeliveries = customerDeliveryRepo.countByAdminAdminId(deliveryReq.getAdminId());
+			long totalCompleted = customerOrderRepository.countOrderCreatedStatus(deliveryReq.getAdminId());
+			
+
+
+			
 			return Map.of("res", true, "data", customerDeliveryResponse.getContent(), "page",
 					customerDeliveryResponse.getPageable().getPageNumber() + 1, "totalPage",
 					customerDeliveryResponse.getTotalPages(), "totalRecord",
-					customerDeliveryResponse.getTotalElements());
-
+					totalDeliveries, "totalComplete", totalCompleted);
 		}
 
 		List<CustomerDelivery> customerDeliveries = customerDeliveryRepo
@@ -549,6 +567,7 @@ public class AdminCustomerManagementService {
 
 		return Map.of("res", true, "message", "lexoffice_Number added successfully");
 	}
+
 
 	public Map<String, Object> fetchAllPdfOfCustomer(CustomerDto customerDto) {
 

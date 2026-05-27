@@ -1,48 +1,48 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
-import { ApiService } from '../../../shared/services/api.service';
-import { AuthService } from '../../../shared/services/auth.service';
-
+import { Component, OnInit } from "@angular/core";
+import { CommonModule } from "@angular/common";
+import { FormsModule } from "@angular/forms";
+import { ActivatedRoute, Router } from "@angular/router";
+import { ApiService } from "../../../shared/services/api.service";
+import { AuthService } from "../../../shared/services/auth.service";
 
 @Component({
-  selector: 'app-customer-details',
+  selector: "app-customer-details",
   standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './customer-details.component.html',
-  styleUrl: './customer-details.component.css'
+  templateUrl: "./customer-details.component.html",
+  styleUrl: "./customer-details.component.css",
 })
 export class CustomerDetailsComponent implements OnInit {
-
   customer: any = null;
   isLoading = false;
-  errorMessage = '';
+  errorMessage = "";
 
   isNoteModalOpen = false;
-  noteCustomer: any= null;
+  noteCustomer: any = null;
   currentCustomerNotes: any[] = [];
-  noteText = '';
+  noteText = "";
   isSavingNote = false;
 
-
   isContactHistoryModalOpen = false;
-  contactHistoryText = '';
+  contactHistoryText = "";
   // currentContactHistory: any[] = [];
   isSavingContactHistory = false;
   contactHistoryCustomer: any = null;
   customerContactHistory: { [key: number]: any[] } = {};
 
+  isLexofficeModalOpen = false;
+  lexofficeInput = "";
+  isSavingLexoffice = false;
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private api: ApiService,
-    private authService: AuthService
+    private authService: AuthService,
   ) {}
 
   ngOnInit(): void {
-
-    const id = this.route.snapshot.paramMap.get('id');
+    const id = this.route.snapshot.paramMap.get("id");
 
     if (id) {
       this.fetchCustomerDetails(id);
@@ -50,52 +50,47 @@ export class CustomerDetailsComponent implements OnInit {
   }
 
   fetchCustomerDetails(id: string): void {
-
     this.isLoading = true;
 
     const payload = {
       adminId: this.authService.getUserId(),
-      id: Number(id)
+      id: Number(id),
     };
 
-    this.api.post('admin/fetch-customer-details', payload).subscribe({
-
+    this.api.post("admin/fetch-customer-details", payload).subscribe({
       next: (res: any) => {
-
         this.customer = res?.data || null;
-        console.log(this.customer);        
+        console.log(this.customer);
         this.isLoading = false;
       },
 
       error: () => {
-
-        this.errorMessage = 'Fehler beim Laden der Kundendetails';
+        this.errorMessage = "Fehler beim Laden der Kundendetails";
         this.isLoading = false;
-      }
+      },
     });
   }
 
   // NOTES
   openNoteModal(customer: any): void {
     this.noteCustomer = customer;
-    this.currentCustomerNotes = customer.notes || [] ;
+    this.currentCustomerNotes = customer.notes || [];
     this.isNoteModalOpen = true;
   }
 
   closeNoteModal(): void {
     this.isNoteModalOpen = false;
-    this.noteText = '';
+    this.noteText = "";
   }
 
-  saveCustomerNote() : void {
+  saveCustomerNote(): void {
     if (!this.noteText.trim()) return;
     const newNote = {
       note: this.noteText,
-      addedOn: new Date().toLocaleString()
+      addedOn: new Date().toLocaleString(),
     };
     this.currentCustomerNotes.unshift(newNote);
-    this.noteText = '';
-
+    this.noteText = "";
   }
 
   // CONTACT-HISTORY
@@ -113,7 +108,45 @@ export class CustomerDetailsComponent implements OnInit {
     this.isContactHistoryModalOpen = false;
     this.contactHistoryCustomer = null;
     this.contactHistoryText = "";
-    this.isSavingContactHistory = false;
+  }
+
+  // LEXOFFICE
+  openLexofficeModal(): void {
+    if (!this.customer) return;
+    this.lexofficeInput = this.customer.lexofficeNumber ?? "";
+    this.isLexofficeModalOpen = true;
+  }
+
+  closeLexofficeModal(): void {
+    this.isLexofficeModalOpen = false;
+    this.lexofficeInput = "";
+    this.isSavingLexoffice = false;
+  }
+
+  saveLexofficeNumber(): void {
+    if (!this.customer || this.isSavingLexoffice) return;
+
+    const trimmed = this.lexofficeInput.trim();
+    if (!trimmed) return;
+
+    this.isSavingLexoffice = true;
+
+    const payload = {
+      adminId: this.authService.getUserId(),
+      id: this.customer.id,
+      lexofficeNumber: trimmed,
+    };
+
+    this.api.post("admin/add-lexoffice-number", payload).subscribe({
+      next: () => {
+        this.customer.lexofficeNumber = trimmed;
+        this.closeLexofficeModal();
+      },
+      error: () => {
+        alert("Fehler beim Speichern der Lexoffice-Nummer");
+        this.isSavingLexoffice = false;
+      },
+    });
   }
 
   get currentContactHistory() {
@@ -132,83 +165,86 @@ export class CustomerDetailsComponent implements OnInit {
     const payload = {
       adminId: this.authService.getUserId(),
       customerId: this.contactHistoryCustomer.id,
-      note: trimmedHistory
+      note: trimmedHistory,
     };
 
     this.api.post("admin/add-contact-history", payload).subscribe({
       next: () => {
         this.customerContactHistory[this.contactHistoryCustomer!.id].push({
-            note: this.contactHistoryText,
-            addedOn: new Date().toLocaleString()
+          note: this.contactHistoryText,
+          addedOn: new Date().toLocaleString(),
         });
         this.contactHistoryText = "";
         this.isSavingContactHistory = false;
       },
       error: () => {
         this.isSavingContactHistory = false;
-      }
+      },
     });
   }
 
   formatDate(value?: number | string | null): string {
-    if (value === null || value === undefined || value === '') {
-      return '—';
+    if (value === null || value === undefined || value === "") {
+      return "—";
     }
 
-    const num = typeof value === 'number'
-      ? value
-      : Number(value);
+    const num = typeof value === "number" ? value : Number(value);
 
     if (Number.isNaN(num)) {
       return String(value);
     }
 
-    const ms = num < 1_000_000_000_000
-      ? num * 1000
-      : num;
+    const ms = num < 1_000_000_000_000 ? num * 1000 : num;
 
-    return new Intl.DateTimeFormat('de-DE', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false
+    return new Intl.DateTimeFormat("de-DE", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
     }).format(new Date(ms));
   }
 
   goBack(): void {
-    this.router.navigate(['/customers']);
+    this.router.navigate(["/customers"]);
   }
 
   isTogglingGdpr = false;
+  popupError = "";
+
+  closePopupError(): void {
+    this.popupError = "";
+  }
 
   toggleGdprStatus(): void {
     if (!this.customer || this.isTogglingGdpr) return;
-    
+
     this.isTogglingGdpr = true;
     const currentStatus = this.customer.isNotificationEnabled;
     const newStatus = !currentStatus;
 
     const payload = {
       adminId: this.authService.getUserId(),
-      customerId: this.customer.id,
-      gdprContactAllowed: newStatus
+      id: this.customer.id,
     };
 
-    this.api.post('admin/update-gdpr-contact-status', payload).subscribe({
+    this.api.post("admin/toggle-customer-notification", payload).subscribe({
       next: (res: any) => {
         if (res?.res) {
           this.customer.isNotificationEnabled = newStatus;
         } else {
-          alert(res.errMessage || res.message || 'Fehler beim Aktualisieren des GDPR-Status');
+          this.popupError =
+            res.errMessage ||
+            res.message ||
+            "Fehler beim Aktualisieren des GDPR-Status";
         }
         this.isTogglingGdpr = false;
       },
       error: () => {
-        alert('Serverfehler beim Aktualisieren des GDPR-Status');
+        this.popupError = "Serverfehler beim Aktualisieren des GDPR-Status";
         this.isTogglingGdpr = false;
-      }
+      },
     });
   }
 }

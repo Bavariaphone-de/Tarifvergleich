@@ -193,12 +193,14 @@
                         ></path>
                       </svg>
                     </button>
+
                     <button
                       (click)="openLinkModal($event, entry)"
+                      title="{{ entry.customer ? 'Kunde ändern' : 'Kunde verknüpfen' }}"
                       class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer bg-brand-50 text-brand-700 hover:bg-brand-100 dark:bg-brand-900/20 dark:text-brand-300 dark:hover:bg-brand-900/40"
                     >
                       <svg
-                        class="h-3.5 w-3.5 shrink-0"
+                        class="h-3 w-3"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
@@ -211,8 +213,26 @@
                          m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
                         />
                       </svg>
-                      {{ entry.customer ? "Kunde ändern" : "Kunde verknüpfen" }}
                     </button>
+
+                    <!-- <label class="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        class="sr-only peer"
+                        [checked]="entry.status"
+                        (change)="$event.stopPropagation()"
+                      />
+
+                      <div
+                        class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full
+                        peer dark:bg-gray-700 peer-checked:bg-green-500
+                        after:content-[''] after:absolute after:top-[2px]
+                        after:left-[2px] after:bg-white after:rounded-full
+                        after:h-5 after:w-5 after:transition-all
+                        peer-checked:after:translate-x-full"
+                      ></div>
+                    </label> -->
+
                   </div>
                 </td>
               </tr>

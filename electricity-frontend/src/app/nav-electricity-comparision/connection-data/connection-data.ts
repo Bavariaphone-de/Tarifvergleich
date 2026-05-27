@@ -233,6 +233,9 @@ export class ConnectionData implements OnInit, OnDestroy {
       } else if (/\s/.test(this.meterNumber)) {
         errors['meterNumber'] = 'Die Zählernummer darf keine Leerzeichen enthalten.';
         this.cdr.detectChanges();
+      } else if (this.meterNumber.trim().length !== 11) {
+        errors['meterNumber'] = 'Die Zählernummer muss genau 11 Zeichen lang sein.';
+        this.cdr.detectChanges();
       }
     }
     // Market Location ID (optional)
