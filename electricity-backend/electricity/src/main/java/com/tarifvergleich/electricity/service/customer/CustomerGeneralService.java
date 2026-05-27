@@ -18,9 +18,11 @@ import com.tarifvergleich.electricity.dto.CustomerRequestCounsellingDto;
 import com.tarifvergleich.electricity.exception.InternalServerException;
 import com.tarifvergleich.electricity.model.AdminUser;
 import com.tarifvergleich.electricity.model.Customer;
+import com.tarifvergleich.electricity.model.CustomerOrder;
 import com.tarifvergleich.electricity.model.CustomerRequestCounselling;
 import com.tarifvergleich.electricity.model.ListOfHolidays;
 import com.tarifvergleich.electricity.repository.AdminUserRepository;
+import com.tarifvergleich.electricity.repository.CustomerOrderRepository;
 import com.tarifvergleich.electricity.repository.CustomerRepository;
 import com.tarifvergleich.electricity.repository.CustomerRequestCounsellingRepository;
 import com.tarifvergleich.electricity.repository.ListOfHolidaysRepository;
@@ -37,6 +39,7 @@ public class CustomerGeneralService {
 
 	private final CustomerRequestCounsellingRepository customerRequestCounsellingRepo;
 	private final ListOfHolidaysRepository listOfHolidaysRepo;
+	private final CustomerOrderRepository customerOrderRepo;
 	private final CustomerRepository customerRepo;
 	private final AdminUserRepository adminUserRepo;
 	private final Helper helper;
@@ -168,6 +171,7 @@ public class CustomerGeneralService {
 
 		AdminUser admin;
 		Customer customer = null;
+		CustomerOrder order = null;
 		if (scheduleDto.getCustomerId() != null && scheduleDto.getCustomerId() > 0) {
 			customer = customerRepo
 					.findByCustomerIdAndAdminAdminId(scheduleDto.getCustomerId(), scheduleDto.getAdminId())
@@ -177,6 +181,13 @@ public class CustomerGeneralService {
 		} else {
 			admin = adminUserRepo.findById(scheduleDto.getAdminId()).orElseThrow(
 					() -> new InternalServerException("Admin not found with this credential", HttpStatus.OK));
+		}
+
+		if (scheduleDto.getEgonOrderId() != null && scheduleDto.getEgonOrderId() > 0) {
+			order = customerOrderRepo
+					.findByOrderIdAndAdminAdminId(scheduleDto.getEgonOrderId(), scheduleDto.getAdminId())
+					.orElseThrow(() -> new InternalServerException("Customer order not found with this credential",
+							HttpStatus.OK));
 		}
 
 		if (listOfHolidaysRepo.existsByAdminAdminIdAndStartDate(admin.getAdminId(),
@@ -189,7 +200,7 @@ public class CustomerGeneralService {
 				.mobileNumber(scheduleDto.getMobileNumber())
 				.weekDay(scheduleDto.getScheduleDate().atStartOfDay().atZone(ZoneId.of("Europe/Berlin")).getDayOfWeek()
 						.name())
-				.timeSlot(scheduleDto.getTimeSlot()).description(scheduleDto.getDescription())
+				.customerOrder(order).timeSlot(scheduleDto.getTimeSlot()).description(scheduleDto.getDescription())
 				.scheduleDate(helper.toGermanTimestampWithDynamicTime(scheduleDto.getScheduleDate(), 0, 0))
 				.customer(customer).admin(admin).build();
 
@@ -220,8 +231,8 @@ public class CustomerGeneralService {
 		Map<LocalDate, String> listOfWorkingDays = new LinkedHashMap<LocalDate, String>();
 
 		BigInteger startDate = helper.toGermamUnixTimestamp(LocalDate.now(ZoneId.of("Europe/Berlin")));
-		
-		if(LocalDateTime.now(ZoneId.of("Europe/Berlin")).getHour() > 15)
+
+		if (LocalDateTime.now(ZoneId.of("Europe/Berlin")).getHour() > 15)
 			startDate = helper.toGermamUnixTimestamp(helper.toGermalDateStamp(startDate).plusDays(1));
 
 		while (listOfWorkingDays.size() < 3) {
@@ -234,7 +245,7 @@ public class CustomerGeneralService {
 			if (holiday == null) {
 				listOfWorkingDays.put(helper.toGermalDateStamp(startDate), Instant.ofEpochSecond(startDate.longValue())
 						.atZone(ZoneId.of("Europe/Berlin")).getDayOfWeek().toString());
-				
+
 			} else {
 				String rangeId = holiday.getRangeId();
 				ListOfHolidays tempHoliday = listOfHolidaysRepo.findFirstByRangeIdOrderByIdDesc(rangeId)

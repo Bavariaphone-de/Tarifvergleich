@@ -1,9 +1,14 @@
+
+
 package com.tarifvergleich.electricity.dto;
 
 import java.math.BigInteger;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import com.tarifvergleich.electricity.dto.CustomerAttornyDto.CustomerAttornyForAdminCustomerList;
 import com.tarifvergleich.electricity.dto.CustomerBankAccountDto.CustomerBankAccountForProfileDto;
@@ -13,6 +18,8 @@ import com.tarifvergleich.electricity.dto.CustomerDeliveryResponseDto.CustomerDe
 import com.tarifvergleich.electricity.dto.CustomerNoteDto.CustomerNoteResponseDto;
 import com.tarifvergleich.electricity.model.Customer;
 //import com.tarifvergleich.electricity.dto.CustomerNoteDto;
+import com.tarifvergleich.electricity.model.CustomerAttorny;
+import com.tarifvergleich.electricity.util.PdfGenerator;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -164,6 +171,8 @@ public class CustomerDto {
 		private List<CustomerDeliveryResponseDto> deliveryDetails;
 		private List<CustomerNoteResponseDto> notes;
 		private String lexofficeNumber;
+		private Object customerContractOrderDoc;
+		private Object attornyPdfUrl;
 	}
 
 	@Data
@@ -227,7 +236,7 @@ public class CustomerDto {
 		private Integer customerId;
 		private Boolean gdprContactAllowed;
 	}
-	
+
 	@Data
 	@Builder
 	@NoArgsConstructor
@@ -263,8 +272,8 @@ public class CustomerDto {
 				.firstName(customer.getFirstName()).lastName(customer.getLastName())
 				.salutation(customer.getSalutation()).title(customer.getTitle()).userType(customer.getUserType())
 				.isNotificationEnabled(customer.getIsNotificationEnabled()).companyName(customer.getCompanyName())
-				.mobileNumber(customer.getMobileNumber()).telephone(customer.getTelephone()).status(customer.getStatus())
-				.isVerified(customer.getIsVerified()).joinedOn(customer.getJoinedOn())
+				.mobileNumber(customer.getMobileNumber()).telephone(customer.getTelephone())
+				.status(customer.getStatus()).isVerified(customer.getIsVerified()).joinedOn(customer.getJoinedOn())
 				.isAcknowledged(customer.getIsAcknowledged())
 				.address(CustomerAddressRes.builder().zip(customer.getZip()).city(customer.getCity())
 						.street(customer.getStreet()).houseNumber(customer.getHouseNumber()).build())
@@ -278,27 +287,31 @@ public class CustomerDto {
 				.firstName(customer.getFirstName()).lastName(customer.getLastName())
 				.salutation(customer.getSalutation()).title(customer.getTitle()).userType(customer.getUserType())
 				.isNotificationEnabled(customer.getIsNotificationEnabled()).companyName(customer.getCompanyName())
-				.mobileNumber(customer.getMobileNumber()).telephone(customer.getTelephone()).status(customer.getStatus())
-				.isVerified(customer.getIsVerified()).joinedOn(customer.getJoinedOn())
+				.mobileNumber(customer.getMobileNumber()).telephone(customer.getTelephone())
+				.status(customer.getStatus()).isVerified(customer.getIsVerified()).joinedOn(customer.getJoinedOn())
 				.isAcknowledged(customer.getIsAcknowledged())
 				.address(CustomerAddressRes.builder().zip(customer.getZip()).city(customer.getCity())
 						.street(customer.getStreet()).houseNumber(customer.getHouseNumber()).build())
 				.lexofficeNumber(customer.getLexofficeNumber()).build();
 	}
-	
-	public static SingleCustomerResponseDeliveryForAdmin getAdminSingleCustomerResponseDto(Customer customer) {
+
+	public static SingleCustomerResponseDeliveryForAdmin getAdminSingleCustomerResponseDto(Customer customer,
+			PdfGenerator pdfGenerator) {
+		Map<String, Object> allPdf = mapAllPdfs(customer, pdfGenerator);
 		return SingleCustomerResponseDeliveryForAdmin.builder().id(customer.getCustomerId()).email(customer.getEmail())
 				.firstName(customer.getFirstName()).lastName(customer.getLastName())
 				.salutation(customer.getSalutation()).title(customer.getTitle()).userType(customer.getUserType())
 				.isNotificationEnabled(customer.getIsNotificationEnabled()).companyName(customer.getCompanyName())
-				.mobileNumber(customer.getMobileNumber()).telephone(customer.getTelephone()).status(customer.getStatus())
-				.isVerified(customer.getIsVerified()).joinedOn(customer.getJoinedOn())
+				.mobileNumber(customer.getMobileNumber()).telephone(customer.getTelephone())
+				.status(customer.getStatus()).isVerified(customer.getIsVerified()).joinedOn(customer.getJoinedOn())
 				.isAcknowledged(customer.getIsAcknowledged())
 				.address(CustomerAddressRes.builder().zip(customer.getZip()).city(customer.getCity())
 						.street(customer.getStreet()).houseNumber(customer.getHouseNumber()).build())
 				.notes(Optional.ofNullable(customer.getCustomerNotes()).orElse(Collections.emptyList()).stream()
 						.map(CustomerNoteDto::mapNoteResponse).toList())
-				.lexofficeNumber(customer.getLexofficeNumber()).build();
+				.lexofficeNumber(customer.getLexofficeNumber())
+				.customerContractOrderDoc(allPdf.get("ContractSignedDocument")).attornyPdfUrl(allPdf.get("AttornyDoc"))
+				.build();
 	}
 
 	public static AdminCustomerResponse getCustomerDtoResponseForAdmin(Customer customer) {
@@ -307,9 +320,9 @@ public class CustomerDto {
 		return AdminCustomerResponse.builder().id(customer.getCustomerId()).email(customer.getEmail())
 				.firstName(customer.getFirstName()).lastName(customer.getLastName())
 				.salutation(customer.getSalutation()).title(customer.getTitle()).userType(customer.getUserType())
-				.companyName(customer.getCompanyName()).mobileNumber(customer.getMobileNumber()).telephone(customer.getTelephone())
-				.lexofficeNumber(customer.getLexofficeNumber()).status(customer.getStatus())
-				.isVerified(customer.getIsVerified()).verifiedOn(customer.getVerifiedOn())
+				.companyName(customer.getCompanyName()).mobileNumber(customer.getMobileNumber())
+				.telephone(customer.getTelephone()).lexofficeNumber(customer.getLexofficeNumber())
+				.status(customer.getStatus()).isVerified(customer.getIsVerified()).verifiedOn(customer.getVerifiedOn())
 				.joinedOn(customer.getJoinedOn()).isAcknowledged(customer.getIsAcknowledged())
 				.uniqueCustomerId(customer.getCustomerUniqueId())
 				.address(Optional.ofNullable(customer.getCustomerAddresses()).filter(list -> !list.isEmpty())
@@ -348,5 +361,36 @@ public class CustomerDto {
 						.map(CustomerBankAccountDto::mapResponseForProfile).toList())
 				.zip(customer.getZip()).city(customer.getCity()).street(customer.getStreet())
 				.houseNumber(customer.getHouseNumber()).lexofficeNumber(customer.getLexofficeNumber()).build();
+	}
+
+	public static Map<String, Object> mapAllPdfs(Customer customer, PdfGenerator pdfGenerator) {
+		List<Map<Integer, String>> orderDocs = new LinkedList<Map<Integer, String>>();
+		if (customer.getCustomerOrders() != null) {
+
+			orderDocs = customer.getCustomerOrders().stream()
+					.filter(order -> order.getCustomerBookingDocument() != null
+							&& order.getCustomerBookingDocument().getSignedDocumentSubmitted()
+							&& order.getCustomerBookingDocument().getSignedFileUrl() != null
+							&& !order.getCustomerBookingDocument().getSignedFileUrl().isEmpty())
+					.map(order -> Map.of(order.getId(), order.getCustomerBookingDocument().getSignedFileUrl()))
+					.collect(Collectors.toCollection(LinkedList::new));
+		}
+
+		String pdfUrl = "";
+		if (customer.getCustomerAttorny() != null) {
+			CustomerAttorny customerAttorny = customer.getCustomerAttorny().stream()
+					.filter(attorny -> !attorny.getApprovalStatus().equals(2) && !attorny.getIsRevoked())
+					.reduce((first, second) -> second).orElse(null);
+
+			if (customerAttorny != null) {
+				String base64String = pdfGenerator.generateVollmachtDocument(customerAttorny);
+
+				if (base64String != null && !base64String.isEmpty()) {
+					pdfUrl = "data:application/pdf;base64," + base64String;
+				}
+			}
+		}
+
+		return Map.of("ContractSignedDocument", orderDocs, "AttornyDoc", pdfUrl);
 	}
 }

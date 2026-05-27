@@ -17,7 +17,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @Data
 public class CustomerRequestCounsellingDto {
-
+	
+	private Long egonOrderId;
 	private Integer counsellingId;
     private String mobileNumber;
     private String weekDay;

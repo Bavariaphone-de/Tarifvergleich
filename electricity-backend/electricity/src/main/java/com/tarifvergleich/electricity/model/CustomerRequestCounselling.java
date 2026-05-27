@@ -31,6 +31,7 @@ public class CustomerRequestCounselling {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
+	
 
 	@Column(name = "mobile_number")
 	private String mobileNumber;
@@ -56,6 +57,10 @@ public class CustomerRequestCounselling {
 	@ManyToOne
 	@JoinColumn(name = "admin_id")
 	private AdminUser admin;
+	
+	@ManyToOne
+	@JoinColumn(name = "customer_order_id")
+	private CustomerOrder customerOrder;
 
 	@Column(name = "created_on")
 	private BigInteger createdOn;
