@@ -22,6 +22,8 @@ public interface CustomerDeliveryRepository extends JpaRepository<CustomerDelive
 	void updateMeterNumber(@Param("connectionId") Integer connectionId, @Param("meterNumber") String meterNumber);
 
 	Boolean existsByIdAndAdminAdminIdAndOrderPlaced(Integer id, Integer adminId, Boolean orderPlaced);
+	
+	long countByAdminAdminId(Integer adminId);
 
 	long countByAdminAdminId(Integer adminId);
 

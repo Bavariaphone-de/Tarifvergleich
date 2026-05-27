@@ -2315,18 +2315,19 @@
 .upload-btn,
 .submit-btn {
   flex: 1;
-  height: 32px;
+  /* height: 32px; */
   border: none;
   border-radius: 6px;
   font-size: 15px;
   font-weight: 700;
   cursor: pointer;
+  padding: 6px;
 }
 
 .upload-btn {
   background: #0085e0;
   color: #fff;
-  height: 40px;
+  /* height: 40px; */
 }
 
 .submit-btn {
@@ -2347,6 +2348,7 @@
   .meter-input-row,
   .meter-btn-row {
     flex-direction: column;
+    gap: 10px;
   }
 }
 

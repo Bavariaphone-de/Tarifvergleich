@@ -147,6 +147,31 @@ export class Register {
 AUTH MODE
 ══════════════════════════════════════════════════════════════════ */
   isLoggedIn: boolean = false;
+  saveAddress() {
+    const localAddr = this.authService.getAddressData();
+
+    // If already exists, do not save again
+    if (localAddr?.zip && localAddr?.city && localAddr?.street && localAddr?.houseNumber) {
+      console.log('Address already exists:', localAddr);
+      return;
+    }
+
+    this.authService.fetchCustomer();
+
+    this.authService.getCustomerData().subscribe((data) => {
+      if (!data) return;
+
+      const addressData = {
+        zip: data.address?.zip,
+        city: data.address?.city,
+        street: data.address?.street,
+        houseNumber: data.address?.houseNumber,
+      };
+      this.authService.setAddressData(addressData);
+
+      console.log('Saved Address:', addressData);
+    });
+  }
 
   setAuthMode(mode: 'register' | 'login') {
     this.authMode = mode;
@@ -189,8 +214,11 @@ AUTH MODE
   handleContinue() {
     if (this.selectedOption === 'same') {
       this.authService.clearDeliveryId();
+      this.saveAddress();
       this.cdr.detectChanges();
-      this.router.navigate([this.mainStepRoutes[2]]);
+      setTimeout(() => {
+        this.router.navigate([this.mainStepRoutes[2]]);
+      }, 1000);
     } else if (this.selectedOption === 'different') {
       this.currentStep = 1;
       this.authService.authState$.next(null);
@@ -1075,7 +1103,10 @@ AUTH MODE
             });
             this.authService.clearDeliveryId();
             this.cdr.detectChanges();
-            this.router.navigate([this.mainStepRoutes[2]]);
+            this.saveAddress();
+            setTimeout(() => {
+              this.router.navigate([this.mainStepRoutes[2]]);
+            }, 1000);
             console.log('Login successful');
           } else {
             this.loginError = res.message || 'Anmeldung fehlgeschlagen.';
@@ -1125,10 +1156,13 @@ AUTH MODE
 
             console.log('Login successful');
             this.authService.clearDeliveryId();
+            this.saveAddress();
             this.cdr.detectChanges();
 
             // Redirect
-            this.router.navigate([this.mainStepRoutes[2]]);
+            setTimeout(() => {
+              this.router.navigate([this.mainStepRoutes[2]]);
+            }, 1000);
           } else {
             this.loginError = res.message || 'E-Mail oder Passwort ist falsch.';
           }

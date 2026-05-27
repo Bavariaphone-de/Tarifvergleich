@@ -1,834 +1,1195 @@
 <div class="min-h-screen bg-gray-50 dark:bg-gray-950 px-4 py-8">
-
-    @if (isLoading) {
+  @if (isLoading) {
     <div class="flex items-center justify-center py-24 gap-3 text-gray-500">
-        <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-brand-500"></div>
-        <span class="text-sm">Kundendetails werden geladen...</span>
-    </div>
-    }
-
-    @if (!isLoading && errorMessage) {
-    <div class="max-w-xl mx-auto mt-12 text-center">
-        <div class="text-red-500 text-sm mb-4">{{ errorMessage }}</div>
-
-        <button
-            (click)="goBack()"
-            class="px-4 py-2 text-sm bg-brand-500 text-white rounded-lg hover:bg-brand-600 transition">
-            Zurueck zur Liste
-        </button>
-    </div>
-    }
-
-    @if (isNoteModalOpen && noteCustomer) {
-        <div class="fixed inset-0 z-99999 flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/50" (click)="closeNoteModal()"></div>
-
-        <div
-        class="relative w-full max-w-lg rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-2xl overflow-hidden">
-            <div class="flex items-start justify-between px-5 py-4 border-b border-gray-200 dark:border-gray-700">
-            <div>
-                <h3 class="text-base font-semibold text-gray-900 dark:text-white">Kundennotiz</h3>
-                <p class="text-xs text-gray-500 mt-0.5">
-                {{ noteCustomer.firstName || '—' }} {{ noteCustomer.lastName || '—' }} · #{{ noteCustomer.uniqueCustomerId ?? noteCustomer.id}}
-                </p>
-            </div>
-            <button (click)="closeNoteModal()"
-            class="ml-3 p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition">
-            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-            </button>
-        </div>
-
-    <!-- NOTIZ -->
-    <div class="px-5 py-4">
-      <label for="customer-note" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-        Notiz eingeben
-      </label>
-
-      <!-- TEXT AND CHAT FIELD -->
       <div
-        class="h-52 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-xl p-3 bg-gray-50 dark:bg-gray-800 space-y-3"
+        class="animate-spin rounded-full h-5 w-5 border-b-2 border-brand-500"
+      ></div>
+      <span class="text-sm">Kundendetails werden geladen...</span>
+    </div>
+  }
+
+  @if (!isLoading && errorMessage) {
+    <div class="max-w-xl mx-auto mt-12 text-center">
+      <div class="text-red-500 text-sm mb-4">{{ errorMessage }}</div>
+
+      <button
+        (click)="goBack()"
+        class="px-4 py-2 text-sm bg-brand-500 text-white rounded-lg hover:bg-brand-600 transition"
       >
-        @if(currentCustomerNotes.length === 0) {
+        Zurueck zur Liste
+      </button>
+    </div>
+  }
 
-          <p class="text-sm text-gray-400 text-center mt-20">
-            Keine Notizen vorhanden
-          </p>
-        }
+  @if (isNoteModalOpen && noteCustomer) {
+    <div class="fixed inset-0 z-99999 flex items-center justify-center p-4">
+      <div
+        class="absolute inset-0 bg-black/50"
+        (click)="closeNoteModal()"
+      ></div>
 
-        @for(note of currentCustomerNotes; track $index) {
-
-          <div class="flex justify-end">
-
-            <div
-              class="w-full border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-600 px-4 py-3 shadow-sm">
-              
-              <p class="text-sm text-gray-800 dark:text-white break-words">{{ note.note }}</p>
-
-              <p class="text-[10px] text-gray/70 mt-1 text-right">{{ formatDate(note.addedOn) }}</p>
-
-            </div>
-
+      <div
+        class="relative w-full max-w-lg rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-2xl overflow-hidden"
+      >
+        <div
+          class="flex items-start justify-between px-5 py-4 border-b border-gray-200 dark:border-gray-700"
+        >
+          <div>
+            <h3 class="text-base font-semibold text-gray-900 dark:text-white">
+              Kundennotiz
+            </h3>
+            <p class="text-xs text-gray-500 mt-0.5">
+              {{ noteCustomer.firstName || "—" }}
+              {{ noteCustomer.lastName || "—" }} · #{{
+                noteCustomer.uniqueCustomerId ?? noteCustomer.id
+              }}
+            </p>
           </div>
-        }
+          <button
+            (click)="closeNoteModal()"
+            class="ml-3 p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+          >
+            <svg
+              class="w-4 h-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
         </div>
 
-            <input
+        <!-- NOTIZ -->
+        <div class="px-5 py-4">
+          <label
+            for="customer-note"
+            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+          >
+            Notiz eingeben
+          </label>
+
+          <!-- TEXT AND CHAT FIELD -->
+          <div
+            class="h-52 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-xl p-3 bg-gray-50 dark:bg-gray-800 space-y-3"
+          >
+            @if (currentCustomerNotes.length === 0) {
+              <p class="text-sm text-gray-400 text-center mt-20">
+                Keine Notizen vorhanden
+              </p>
+            }
+
+            @for (note of currentCustomerNotes; track $index) {
+              <div class="flex justify-end">
+                <div
+                  class="w-full border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-600 px-4 py-3 shadow-sm"
+                >
+                  <p class="text-sm text-gray-800 dark:text-white break-words">
+                    {{ note.note }}
+                  </p>
+
+                  <p class="text-[10px] text-gray/70 mt-1 text-right">
+                    {{ formatDate(note.addedOn) }}
+                  </p>
+                </div>
+              </div>
+            }
+          </div>
+
+          <input
             type="text"
             [(ngModel)]="noteText"
             placeholder="Notiz fur diesen Kunden eingeben..."
             class="w-full mt-4 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-800 dark:text-gray-100 px-3 py-2.5 outline-none focus:ring-2 focus:ring-brand-500"
-            />
+          />
 
-            <p class="text-[11px] text-gray-400 mt-2">
+          <p class="text-[11px] text-gray-400 mt-2">
             Diese Notiz wird dem gewahlten Kundenprofil zugeordnet.
-            </p>
-        </div>
-
-    <div
-        class="flex items-center justify-end gap-2 px-5 py-4 bg-gray-50 dark:bg-gray-800/60 border-t border-gray-200 dark:border-gray-700">
-
-        <button (click)="closeNoteModal()"
-        class="px-3.5 py-2 rounded-lg text-sm font-medium border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition">
-        Abbrechen
-        </button>
-
-        <button (click)="saveCustomerNote()" [disabled]="isSavingNote || !noteText.trim()"
-        class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-medium bg-brand-500 hover:bg-brand-600 text-white disabled:opacity-60 disabled:cursor-not-allowed transition">
-        @if (isSavingNote) {
-            <div class="animate-spin rounded-full h-3.5 w-3.5 border-b-2 border-white"></div>
-            <span>Speichert...</span>
-        } @else {
-        <span>Notiz speichern</span>
-        }
-        </button>
-    </div>
-    </div>
-    </div>
-    }
-
-    @if (isContactHistoryModalOpen && contactHistoryCustomer) {
-
-        <div class="fixed inset-0 z-99999 flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/50" (click)="closeContactHistoryModal()"></div>
-        <div
-            class="relative w-full max-w-lg rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-2xl overflow-hidden">
-
-            <!-- HEADER -->
-            <div
-            class="flex items-start justify-between px-5 py-4 border-b border-gray-200 dark:border-gray-700">
-            <div>
-                <h3 class="text-base font-semibold text-gray-900 dark:text-white">Kontaktverlauf</h3>
-                
-                <p class="text-xs text-gray-500 mt-0.5">
-                    {{ contactHistoryCustomer.firstName || '—' }}
-                    {{ contactHistoryCustomer.lastName || '—' }}
-                    · #{{ contactHistoryCustomer.uniqueCustomerId ?? contactHistoryCustomer.id }}
-                </p>
-            </div>
-
-            <button
-                (click)="closeContactHistoryModal()"
-                class="ml-3 p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition">
-
-                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-
-                <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M6 18L18 6M6 6l12 12" />
-                </svg>
-            </button>
-            </div>
-
-            <!-- BODY -->
-            <div class="px-5 py-4">
-            <label
-                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Geben Sie eine zusätzliche Notiz ein
-            </label>
-
-            <!-- CHAT SECTION -->
-            <div
-                class="h-52 overflow-y-auto border border-gray-200 
-                dark:border-gray-700 rounded-xl p-3 bg-gray-50 dark:bg-gray-800 space-y-3">
-                @if(currentContactHistory.length === 0) {
-                <p class="text-sm text-gray-400 text-center mt-20">
-                    Keine zusätzlichen Notizen verfügbar
-                </p>
-                }
-
-                @for(history of currentContactHistory; track $index) {
-                <div class="flex justify-end">
-                    <div
-                    class="w-full border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-600 px-4 py-3 shadow-sm">
-
-                    <p class="text-sm text-gray-800 dark:text-white wrap-break-word">
-                        {{ history.note }}
-                    </p>
-
-                    <p class="text-[10px] text-gray/70 mt-1 text-right">
-                        {{ formatDate(history.addedOn) }}
-                    </p>
-                    </div>
-                </div>
-                }
-
-            </div>
-
-            <!-- INPUT -->
-            <input
-                type="text"
-                [(ngModel)]="contactHistoryText"
-                placeholder="Geben Sie zusätzliche Notizen für diese Kunden ein..."
-                class="w-full mt-4 rounded-xl border border-gray-300 dark:border-gray-600 
-                bg-white dark:bg-gray-800 text-sm text-gray-800 dark:text-gray-100 px-3 py-2.5 
-                outline-none focus:ring-2 focus:ring-brand-500"
-            />
-
-            <p class="text-[11px] text-gray-400 mt-2">
-                Diese zusätzliche Notiz wird dem ausgewählten Kundenprofil zugeordnet.
-            </p>
-
-            </div>
-
-            <!-- FOOTER -->
-            <div class="flex items-center justify-end gap-2 px-5 py-4 
-            bg-gray-50 dark:bg-gray-800/60 border-t border-gray-200 dark:border-gray-700">
-
-            <button
-                (click)="closeContactHistoryModal()"
-                class="px-3.5 py-2 rounded-lg text-sm font-medium border 
-                border-gray-300 dark:border-gray-600 text-gray-600 dark:
-                text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition">
-                Abbrechen </button>
-
-            <button
-                (click)="saveContactHistory()"
-                [disabled]="isSavingContactHistory || !contactHistoryText.trim()"
-                class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-medium bg-brand-500 hover:bg-brand-600 text-white disabled:opacity-60 disabled:cursor-not-allowed transition">
-
-                @if (isSavingContactHistory) {
-                <div
-                    class="animate-spin rounded-full h-3.5 w-3.5 border-b-2 border-white">
-                </div>
-
-                <span>Speichert...</span>
-                } @else {
-                <span>Zusätzliche Notizen speichern</span>
-
-                }
-            </button>
-            </div>
-        </div>
-        </div>
-        }
-
-    @if (!isLoading && !errorMessage && customer) {
-    <div class="max-w-6xl mx-auto space-y-6">
-
-        <!-- Top Header -->
-        <div class="flex items-center justify-between">
-
-            <button
-                (click)="goBack()"
-                class="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 transition">
-
-                <svg xmlns="http://www.w3.org/2000/svg"
-                     class="h-4 w-4"
-                     fill="none"
-                     viewBox="0 0 24 24"
-                     stroke="currentColor">
-
-                    <path stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
-                          d="M15 19l-7-7 7-7"/>
-                </svg>
-
-                Zurueck zur Liste
-            </button>
-
-            <!-- RIGHT SIDE  -->
-            <div class=" flex gap-2 ml-auto">
-                <!-- Lexoffice -->
-                 
-                <button
-                    (click)="openLexofficeModal()"
-                    class="inline-flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition shadow-sm active:scale-95 border border-blue-300"
-                    >
-                    <svg
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        class="h-4 w-4"
-                    >
-                        <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
-                        ></path>
-                    </svg>
-
-                    <span>Lexoffice</span>
-                    </button>
-
-                <!-- NOTIZ BUTTON -->
-                
-                <button
-                    (click)="openNoteModal(customer)"
-                    class="inline-flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition shadow-sm active:scale-95 border border-blue-300"
-                    >
-                    <svg
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        class="h-4 w-4"
-                    >
-                        <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5M18.586 2.586a2 2 0 112.828 2.828L12 14.828l-4 1 1-4 9.586-9.414z"
-                        ></path>
-                    </svg>
-
-                    <span>Note</span>
-                    </button>
-
-                <!-- CONTACT NOTIZ BUTTON -->
-                <button
-                    (click)="openContactHistoryModal(customer)"
-                    class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition shadow-sm active:scale-95 border-0">
-                    Contact history
-                </button>
-
-                <!-- GDPR -->
-                @if (customer.isNotificationEnabled) {
-
-                    <button
-                        (click)="toggleGdprStatus()"
-                        [disabled]="isTogglingGdpr"
-                        class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition shadow-sm active:scale-95 border border-blue-300 disabled:opacity-50">
-                            {{ isTogglingGdpr ? 'Wird aktualisiert...' : 'GDPR: Active' }}
-                    </button>
-
-                } @else {
-
-                    <button
-                        (click)="toggleGdprStatus()"
-                        [disabled]="isTogglingGdpr"
-                        class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition shadow-sm active:scale-95 border border-red-300 disabled:opacity-50">
-                            {{ isTogglingGdpr ? 'Wird aktualisiert...' : 'GDPR: Inaktiv' }}
-                    </button>
-                    
-                }
-            </div>
-
-        </div>
-
-        <!-- Customer Header Card -->
-        <div class="bg-white dark:bg-gray-900 rounded-2xl shadow p-6">
-
-            <div class="flex items-start gap-5 flex-wrap">
-
-                <!-- Avatar -->
-                <div
-                    class="h-14 w-14 rounded-xl bg-brand-100 text-brand-600 flex items-center justify-center text-lg font-bold">
-
-                    {{ customer.firstName?.charAt(0) }}{{ customer.lastName?.charAt(0) }}
-
-                </div>
-
-                <!-- Customer Info -->
-                <div class="flex-1 min-w-0">
-
-                    <div class="flex items-center gap-3 flex-wrap">
-
-                        <h1 class="text-xl font-semibold text-gray-900 dark:text-white">
-
-                            {{ customer.title }} {{ customer.firstName }} {{ customer.lastName }}
-
-                        </h1>
-
-                        <span
-                            class="px-2.5 py-0.5 rounded-full text-xs font-medium"
-                            [ngClass]="customer.status
-                                ? 'bg-green-100 text-green-700'
-                                : 'bg-red-100 text-red-700'">
-
-                            {{ customer.status ? 'Aktiv' : 'Inaktiv' }}
-
-                        </span>
-
-                    </div>
-
-                    <div class="flex-1 min-w-0">
-                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
-                            {{ customer.email }}
-                        </p>
-
-                        <p class="text-xs font-mono text-gray-400 mt-1">
-                            Customer ID : {{ customer.id ?? '—' }}
-                        </p>
-
-                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                            Anrede: {{ customer.salutation || '—' }} .
-                            Title Kunde: {{ customer.title || '—' }}
-                        </p>
-                    </div>
-
-                </div>
-
-            </div>
-
-        </div>
-
-        <!-- GRID -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
-            <!-- Customer Information -->
-            <div class="bg-white dark:bg-gray-900 rounded-2xl shadow p-6 space-y-4">
-
-                <h2
-                    class="text-sm font-semibold uppercase tracking-wider text-gray-400">
-                    Kundeninformation
-                </h2>
-
-                <div class="divide-y divide-gray-100 rounded-xl bg-gray-50">
-
-                    <div class="flex justify-between px-4 py-2.5">
-                        <span class="text-xs text-gray-500">Vorname</span>
-
-                        <span class="text-xs font-medium">
-                            {{ customer.firstName || '—' }}
-                        </span>
-                    </div>
-
-                    <div class="flex justify-between px-4 py-2.5">
-                        <span class="text-xs text-gray-500">Nachname</span>
-
-                        <span class="text-xs font-medium">
-                            {{ customer.lastName || '—' }}
-                        </span>
-                    </div>
-
-                    <div class="flex justify-between px-4 py-2.5">
-                        <span class="text-xs text-gray-500">E-Mail</span>
-
-                        <span class="text-xs font-medium">
-                            {{ customer.email || '—' }}
-                        </span>
-                    </div>
-
-                    <div class="flex justify-between px-4 py-2.5">
-                        <span class="text-xs text-gray-500">Mobilnummer</span>
-
-                        <span class="text-xs font-medium">
-                            {{ customer.mobileNumber || '—' }}
-                        </span>
-                    </div>
-
-                    <div class="flex justify-between px-4 py-2.5">
-                        <span class="text-xs text-gray-500">Benutzertyp</span>
-
-                        <span class="text-xs font-medium">
-                            {{ customer.userType || '—' }}
-                        </span>
-                    </div>
-
-                    <div class="flex justify-between px-4 py-2.5">
-                        <span class="text-xs text-gray-500">Firma</span>
-
-                        <span class="text-xs font-medium">
-                            {{ customer.companyName || '—' }}
-                        </span>
-                    </div>
-
-                    <div class="flex justify-between px-4 py-2.5">
-                        <span class="text-xs text-gray-500">Lexoffice Nummer</span>
-
-                        <span class="text-xs font-medium">
-                            {{ customer.lexofficeNumber || '—' }}
-                        </span>
-                    </div>
-
-                </div>
-
-            </div>
-
-            <!-- Account Information -->
-            <div class="bg-white dark:bg-gray-900 rounded-2xl shadow p-6 space-y-4">
-
-                <h2
-                    class="text-sm font-semibold uppercase tracking-wider text-gray-400">
-                    Kontoinformation
-                </h2>
-
-                <div class="divide-y divide-gray-100 rounded-xl bg-gray-50">
-
-                    <div class="flex justify-between px-4 py-2.5">
-                        <span class="text-xs text-gray-500">Verifiziert</span>
-                            @if (customer.isVerified) {
-                                <span class="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
-                                    Ja
-                                </span>
-                                } @else {
-                                <span class="px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-600">
-                                    Nein
-                                </span>
-                                }
-                    </div>
-
-                    <div class="flex justify-between px-4 py-2.5">
-                        <span class="text-xs text-gray-500">Bestaetigt</span>
-
-                        <span class="text-xs font-medium">
-                            {{ customer.isAcknowledged ? 'Ja' : 'Nein' }}
-                        </span>
-                    </div>
-
-                    <div class="flex justify-between px-4 py-2.5">
-                        <span class="text-xs text-gray-500">Status</span>
-
-                        <span class="text-xs font-medium">
-                            {{ customer.status ? 'Aktiv' : 'Inaktiv' }}
-                        </span>
-                    </div>
-
-                    <div class="flex justify-between px-4 py-2.5">
-                        <span class="text-xs text-gray-500">Beigetreten am</span>
-
-                        <span class="text-xs font-medium">
-                            {{ customer.joinedOn * 1000 | date:'dd.MM.yyyy HH:mm' }}
-                        </span>
-                    </div>
-
-                </div>
-
-            </div>
-
-            <!-- Address -->
-            <div class="bg-white dark:bg-gray-900 rounded-2xl shadow p-6 space-y-4">
-
-                <h2
-                    class="text-sm font-semibold uppercase tracking-wider text-gray-400">
-                    Adresse
-                </h2>
-
-                <div class="divide-y divide-gray-100 rounded-xl bg-gray-50">
-
-                    <div class="flex justify-between px-4 py-2.5">
-                        <span class="text-xs text-gray-500">PLZ</span>
-
-                        <span class="text-xs font-medium">
-                            {{ customer.address?.zip || '—' }}
-                        </span>
-                    </div>
-
-                    <div class="flex justify-between px-4 py-2.5">
-                        <span class="text-xs text-gray-500">Stadt</span>
-
-                        <span class="text-xs font-medium">
-                            {{ customer.address?.city || '—' }}
-                        </span>
-                    </div>
-
-                    <div class="flex justify-between px-4 py-2.5">
-                        <span class="text-xs text-gray-500">Strasse</span>
-
-                        <span class="text-xs font-medium">
-                            {{ customer.address?.street || '—' }}
-                        </span>
-                    </div>
-
-                    <div class="flex justify-between px-4 py-2.5">
-                        <span class="text-xs text-gray-500">Hausnummer</span>
-
-                        <span class="text-xs font-medium">
-                            {{ customer.address?.houseNumber || '—' }}
-                        </span>
-                    </div>
-
-                </div>
-
-            </div>
-
-            <!-- NOTES CARD -->
-            <div
-                class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 p-6">
-
-                <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-200 uppercase mb-5">
-                Notizen
-                </h3>
-
-                @if (customer.notes?.length > 0) {
-
-                <div class="space-y-3 max-h-96 overflow-y-auto pr-2">
-
-                    @for (note of customer.notes; track note.notesid) {
-
-                    <div
-                        class="border border-gray-200 dark:border-gray-700 rounded-xl p-3 bg-gray-50 dark:bg-gray-800">
-
-                        <p class="text-sm text-gray-700 dark:text-gray-200">
-                        {{ note.note }}
-                        </p>
-
-                        <p class="text-xs text-gray-400 mt-2">
-                        {{ note.addedOn }}
-                        </p>
-
-                    </div>
-                    }
-
-                </div>
-
-                } @else {
-
-                <div class="text-sm text-gray-400 italic">
-                    Keine Notizen vorhanden
-                </div>
-
-                }
-
-            </div>
-
-            <!-- Password History -->
-            <div class="bg-white h-92 dark:bg-gray-900 rounded-2xl shadow p-6 space-y-4">
-
-                <h2
-                    class="text-sm font-semibold uppercase tracking-wider text-gray-400">
-                    Passwort Historie
-                </h2>
-
-                @if (customer.changePasswordHistory?.length) {
-
-                <div class="divide-y divide-gray-100 rounded-xl bg-gray-50">
-
-                    @for (history of customer.changePasswordHistory; track history) {
-
-                    <div class="px-4 py-3 space-y-1">
-
-                        <p class="text-xs text-gray-500">
-                            Email : {{ history.email }}
-                        </p>
-
-                        <p class="text-xs text-gray-500">
-                            Passwort geaendert :
-                            {{ history.passwordChangedOn * 1000 | date:'dd.MM.yyyy HH:mm' }}
-                        </p>
-
-                    </div>
-
-                    }
-
-                </div>
-
-                } @else {
-
-                <div class="rounded-xl bg-gray-50 px-4 py-3 text-xs text-gray-400 italic">
-                    Keine Passwort Historie vorhanden.
-                </div>
-
-                }
-
-            </div>
-
-            <!-- Contact-History -->
-            <div
-
-                class="bg-white h-92 dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 p-6">
-                <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-200 uppercase mb-5">
-                KONTAKTVERLAUF
-                </h3>
-
-                @if (currentContactHistory.length > 0) {
-
-                <div class="space-y-3 max-h-96 overflow-y-auto pr-2">
-
-                    @for ( history of currentContactHistory; track $index) {
-
-                    <div
-                        class="border border-gray-200 dark:border-gray-700 rounded-xl p-3 bg-gray-50 dark:bg-gray-800">
-
-                        <p class="text-sm text-gray-700 dark:text-gray-200">
-                        {{ history.note }}
-                        </p>
-
-                        <p class="text-xs text-gray-400 mt-2">
-                        {{ formatDate(history.addedOn) }}
-                        </p>
-
-                    </div>
-                    }
-
-                </div>
-
-                } @else {
-
-                <div class="text-sm text-gray-400 italic">
-                    Keine Kontakthistorie vorhanden
-                </div>
-
-                }
-
-            </div>
-
-        </div>
-
-        <!-- Attorneys -->
-        <div class="bg-white dark:bg-gray-900 rounded-2xl shadow p-6 space-y-4">
-
-            <h2
-                class="text-sm font-semibold uppercase tracking-wider text-gray-400">
-                Vollmachten
-            </h2>
-
-            @if (customer.attornies?.length) {
-
-            <div class="divide-y divide-gray-100 rounded-xl bg-gray-50">
-
-                @for (attorney of customer.attornies; track attorney) {
-
-                <div class="px-4 py-3">
-
-                    <div class="flex justify-between">
-
-                        <div>
-
-                            <p class="text-sm font-medium">
-                                {{ attorney.firstName }} {{ attorney.lastName }}
-                            </p>
-
-                            <p class="text-xs text-gray-500">
-                                {{ attorney.email }}
-                            </p>
-
-                        </div>
-
-                        <span
-                            class="text-xs font-medium"
-                            [ngClass]="{
-                                'text-yellow-600': attorney.approvalStatus === 0,
-                                'text-green-600': attorney.approvalStatus === 1,
-                                'text-red-600': attorney.approvalStatus === 2
-                            }">
-
-                            {{
-                                attorney.approvalStatus === 0
-                                    ? 'Pending'
-                                    : attorney.approvalStatus === 1
-                                    ? 'Approved'
-                                    : 'Rejected'
-                            }}
-
-                        </span>
-
-                    </div>
-
-                </div>
-
-                }
-
-            </div>
-
-            } @else {
-
-            <div class="rounded-xl bg-gray-50 px-4 py-3 text-xs text-gray-400 italic">
-                Keine Vollmachten vorhanden.
-            </div>
-
-            }
-
-        </div>
-
-    </div>
-
-    }
-
-    <!-- Popup Error Modal -->
-    @if (popupError) {
-    <div class="fixed inset-0 z-[99999] flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/50" (click)="closePopupError()"></div>
-        <div class="relative w-full max-w-sm rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-2xl p-6 text-center">
-            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
-                <svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
-            </div>
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Fehler</h3>
-            <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">{{ popupError }}</p>
-            <button (click)="closePopupError()" class="px-5 py-2 bg-brand-500 hover:bg-brand-600 text-white rounded-lg text-sm font-medium transition cursor-pointer w-full">OK</button>
-        </div>
-    </div>
-    }
-
-    <!-- ============================================== -->
-    <!-- LEXOFFICE MODAL                                -->
-    <!-- ============================================== -->
-    @if (isLexofficeModalOpen && customer) {
-    <div class="fixed inset-0 z-[99999] flex items-center justify-center p-4">
-      <!-- Backdrop -->
-      <div class="absolute inset-0 bg-black/50" (click)="closeLexofficeModal()"></div>
-  
-      <!-- Modal Content -->
-      <div
-        class="relative w-full max-w-md rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-2xl overflow-hidden">
-        
-        <!-- Header -->
-        <div class="flex items-start justify-between px-5 py-4 border-b border-gray-200 dark:border-gray-700">
-          <div>
-            <h3 class="text-base font-semibold text-gray-900 dark:text-white">Lexoffice-Nummer vergeben</h3>
-            <p class="text-xs text-gray-500 mt-0.5">
-              {{ customer.firstName || '—' }} {{ customer.lastName || '—' }} ·
-              #{{ customer.uniqueCustomerId ?? customer.id }}
-            </p>
-          </div>
-          <button (click)="closeLexofficeModal()"
-            class="ml-3 p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition">
-            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-  
-        <!-- Body -->
-        <div class="px-5 py-4">
-          <label for="lexoffice-number" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Lexoffice-Nummer
-          </label>
-          <input id="lexoffice-number" type="text" [(ngModel)]="lexofficeInput" placeholder="z.B. ZP12345"
-            class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-brand-500 outline-none transition" />
-          <p class="text-xs text-gray-400 mt-2">
-            Diese Nummer ist nur für Administratoren sichtbar und wird dem Kunden nicht angezeigt.
           </p>
         </div>
-  
-        <!-- Footer -->
-        <div class="flex items-center justify-end gap-3 px-5 py-4 border-t border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50">
-          <button (click)="closeLexofficeModal()"
-            class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition shadow-sm">
+
+        <div
+          class="flex items-center justify-end gap-2 px-5 py-4 bg-gray-50 dark:bg-gray-800/60 border-t border-gray-200 dark:border-gray-700"
+        >
+          <button
+            (click)="closeNoteModal()"
+            class="px-3.5 py-2 rounded-lg text-sm font-medium border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+          >
             Abbrechen
           </button>
-          <button (click)="saveLexofficeNumber()" [disabled]="isSavingLexoffice || !lexofficeInput.trim()"
-            class="px-4 py-2 text-sm font-medium text-white bg-brand-500 rounded-lg hover:bg-brand-600 transition shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
-            @if (isSavingLexoffice) {
-            <div class="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
-            Speichert...
+
+          <button
+            (click)="saveCustomerNote()"
+            [disabled]="isSavingNote || !noteText.trim()"
+            class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-medium bg-brand-500 hover:bg-brand-600 text-white disabled:opacity-60 disabled:cursor-not-allowed transition"
+          >
+            @if (isSavingNote) {
+              <div
+                class="animate-spin rounded-full h-3.5 w-3.5 border-b-2 border-white"
+              ></div>
+              <span>Speichert...</span>
             } @else {
-            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-            </svg>
-            Speichern
+              <span>Notiz speichern</span>
             }
           </button>
         </div>
       </div>
     </div>
-    }
+  }
 
+  @if (isContactHistoryModalOpen && contactHistoryCustomer) {
+    <div class="fixed inset-0 z-99999 flex items-center justify-center p-4">
+      <div
+        class="absolute inset-0 bg-black/50"
+        (click)="closeContactHistoryModal()"
+      ></div>
+      <div
+        class="relative w-full max-w-lg rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-2xl overflow-hidden"
+      >
+        <!-- HEADER -->
+        <div
+          class="flex items-start justify-between px-5 py-4 border-b border-gray-200 dark:border-gray-700"
+        >
+          <div>
+            <h3 class="text-base font-semibold text-gray-900 dark:text-white">
+              Kontaktverlauf
+            </h3>
+
+            <p class="text-xs text-gray-500 mt-0.5">
+              {{ contactHistoryCustomer.firstName || "—" }}
+              {{ contactHistoryCustomer.lastName || "—" }}
+              · #{{
+                contactHistoryCustomer.uniqueCustomerId ??
+                  contactHistoryCustomer.id
+              }}
+            </p>
+          </div>
+
+          <button
+            (click)="closeContactHistoryModal()"
+            class="ml-3 p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+          >
+            <svg
+              class="w-4 h-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+        </div>
+
+        <!-- BODY -->
+        <div class="px-5 py-4">
+          <label
+            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+          >
+            Geben Sie eine zusätzliche Notiz ein
+          </label>
+
+          <!-- CHAT SECTION -->
+          <div
+            class="h-52 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-xl p-3 bg-gray-50 dark:bg-gray-800 space-y-3"
+          >
+            @if (currentContactHistory.length === 0) {
+              <p class="text-sm text-gray-400 text-center mt-20">
+                Keine zusätzlichen Notizen verfügbar
+              </p>
+            }
+
+            @for (history of currentContactHistory; track $index) {
+              <div class="flex justify-end">
+                <div
+                  class="w-full border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-600 px-4 py-3 shadow-sm"
+                >
+                  <p
+                    class="text-sm text-gray-800 dark:text-white wrap-break-word"
+                  >
+                    {{ history.note }}
+                  </p>
+
+                  <p class="text-[10px] text-gray/70 mt-1 text-right">
+                    {{ formatDate(history.addedOn) }}
+                  </p>
+                </div>
+              </div>
+            }
+          </div>
+
+          <!-- INPUT -->
+          <input
+            type="text"
+            [(ngModel)]="contactHistoryText"
+            placeholder="Geben Sie zusätzliche Notizen für diese Kunden ein..."
+            class="w-full mt-4 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-800 dark:text-gray-100 px-3 py-2.5 outline-none focus:ring-2 focus:ring-brand-500"
+          />
+
+          <p class="text-[11px] text-gray-400 mt-2">
+            Diese zusätzliche Notiz wird dem ausgewählten Kundenprofil
+            zugeordnet.
+          </p>
+        </div>
+
+        <!-- FOOTER -->
+        <div
+          class="flex items-center justify-end gap-2 px-5 py-4 bg-gray-50 dark:bg-gray-800/60 border-t border-gray-200 dark:border-gray-700"
+        >
+          <button
+            (click)="closeContactHistoryModal()"
+            class="px-3.5 py-2 rounded-lg text-sm font-medium border border-gray-300 dark:border-gray-600 text-gray-600 dark: text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+          >
+            Abbrechen
+          </button>
+
+          <button
+            (click)="saveContactHistory()"
+            [disabled]="isSavingContactHistory || !contactHistoryText.trim()"
+            class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-medium bg-brand-500 hover:bg-brand-600 text-white disabled:opacity-60 disabled:cursor-not-allowed transition"
+          >
+            @if (isSavingContactHistory) {
+              <div
+                class="animate-spin rounded-full h-3.5 w-3.5 border-b-2 border-white"
+              ></div>
+
+              <span>Speichert...</span>
+            } @else {
+              <span>Zusätzliche Notizen speichern</span>
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  @if (!isLoading && !errorMessage && customer) {
+    <div class="max-w-6xl mx-auto space-y-6">
+      <!-- Top Header -->
+      <div class="flex items-center justify-between">
+        <button
+          (click)="goBack()"
+          class="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 transition"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-4 w-4"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M15 19l-7-7 7-7"
+            />
+          </svg>
+
+          Zurueck zur Liste
+        </button>
+
+        <!-- RIGHT SIDE  -->
+        <div class="flex gap-2 ml-auto">
+          <!-- Lexoffice -->
+
+          <button
+            (click)="openLexofficeModal()"
+            class="inline-flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition shadow-sm active:scale-95 border border-blue-300"
+          >
+            <svg
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              class="h-4 w-4"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
+              ></path>
+            </svg>
+
+            <span>Lexoffice</span>
+          </button>
+
+          <!-- NOTIZ BUTTON -->
+
+          <button
+            (click)="openNoteModal(customer)"
+            class="inline-flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition shadow-sm active:scale-95 border border-blue-300"
+          >
+            <svg
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              class="h-4 w-4"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5M18.586 2.586a2 2 0 112.828 2.828L12 14.828l-4 1 1-4 9.586-9.414z"
+              ></path>
+            </svg>
+
+            <span>Note</span>
+          </button>
+
+          <!-- CONTACT NOTIZ BUTTON -->
+          <button
+            (click)="openContactHistoryModal(customer)"
+            class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition shadow-sm active:scale-95 border-0"
+          >
+            Contact history
+          </button>
+
+          <!-- GDPR -->
+          <div class="relative flex flex-col items-center">
+            @if (customer.isNotificationEnabled) {
+              <button
+                (click)="toggleGdprStatus()"
+                [disabled]="isTogglingGdpr"
+                class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition shadow-sm active:scale-95 border border-blue-300 disabled:opacity-50"
+              >
+                {{ isTogglingGdpr ? "Wird aktualisiert..." : "GDPR: Active" }}
+              </button>
+            } @else {
+              <button
+                (click)="toggleGdprStatus()"
+                [disabled]="isTogglingGdpr"
+                class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition shadow-sm active:scale-95 border border-red-300 disabled:opacity-50"
+              >
+                {{ isTogglingGdpr ? "Wird aktualisiert..." : "GDPR: Inaktiv" }}
+              </button>
+            }
+
+            @if (gdprSuccessMessage) {
+              <span
+                class="absolute top-full mt-1 text-[11px] text-green-600 font-medium whitespace-nowrap"
+                >{{ gdprSuccessMessage }}</span
+              >
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Customer Header Card -->
+      <div class="bg-white dark:bg-gray-900 rounded-2xl shadow p-6">
+        <div class="flex items-start gap-5 flex-wrap">
+          <!-- Avatar -->
+          <div
+            class="h-14 w-14 rounded-xl bg-brand-100 text-brand-600 flex items-center justify-center text-lg font-bold"
+          >
+            {{ customer.firstName?.charAt(0)
+            }}{{ customer.lastName?.charAt(0) }}
+          </div>
+
+          <!-- Customer Info -->
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-3 flex-wrap">
+              <h1 class="text-xl font-semibold text-gray-900 dark:text-white">
+                {{ customer.title }} {{ customer.firstName }}
+                {{ customer.lastName }}
+              </h1>
+
+              <span
+                class="px-2.5 py-0.5 rounded-full text-xs font-medium"
+                [ngClass]="
+                  customer.status
+                    ? 'bg-green-100 text-green-700'
+                    : 'bg-red-100 text-red-700'
+                "
+              >
+                {{ customer.status ? "Aktiv" : "Inaktiv" }}
+              </span>
+            </div>
+
+            <div class="flex-1 min-w-0">
+              <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+                {{ customer.email }}
+              </p>
+
+              <p class="text-xs font-mono text-gray-400 mt-1">
+                Customer ID : {{ customer.id ?? "—" }}
+              </p>
+
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                Anrede: {{ customer.salutation || "—" }} . Title Kunde:
+                {{ customer.title || "—" }}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Customer Documents Wrapper -->
+      <div class="bg-white dark:bg-gray-900 rounded-2xl shadow border border-gray-200 dark:border-gray-700 p-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+        <!-- Power of attorny -->
+        <div class="space-y-3 pt-2">
+          <div class="flex items-center gap-2">
+            <p
+              class="text-xs font-semibold text-gray-400 uppercase tracking-wider"
+            >
+              Attorny
+            </p>
+          </div>
+          @if (customer?.attornyPdfUrl) {
+            <div
+              class="flex items-center justify-between gap-3 rounded-xl bg-gray-50 dark:bg-gray-800 px-4 py-3.5 border border-gray-200 dark:border-gray-700"
+            >
+              <div class="min-w-0 flex items-center gap-3">
+                <div
+                  class="flex-shrink-0 h-10 w-10 rounded-lg bg-gray-200 dark:bg-gray-700 flex items-center justify-center"
+                >
+                  <svg
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    class="h-5 w-5 text-gray-600 dark:text-gray-300"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                    ></path>
+                  </svg>
+                </div>
+                <div class="min-w-0">
+                  <p
+                    class="text-xs font-semibold text-gray-800 dark:text-gray-200 truncate"
+                  >
+                      {{ getFileName(customer.attornyPdfUrl) }}
+                  </p>
+                  <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                    Signed and uploaded
+                  </p>
+                </div>
+              </div>
+              <div class="flex items-center gap-2 flex-shrink-0">
+                <button
+                (click)="viewDocument(customer.attornyPdfUrl)"
+                  class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 transition cursor-pointer"
+                >
+                  <svg
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    class="h-3.5 w-3.5"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                    ></path>
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                    ></path>
+                  </svg>
+                  View
+                </button>
+                <button
+                (click)="downloadDocument(customer.attornyPdfUrl, getFileName(customer.attornyPdfUrl))"
+                  class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-brand-500 text-white hover:bg-brand-600 border border-brand-600 transition cursor-pointer"
+                >
+                  <svg
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    class="h-3.5 w-3.5"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                    ></path>
+                  </svg>
+                  Download
+                </button>
+              </div>
+            </div>
+          } @else {
+            <div class="rounded-xl bg-gray-50 px-4 py-3 text-xs text-gray-400 italic">
+              No preview data found
+            </div>
+          }
+        </div>
+
+        <!-- Signed customer Doc 2 -->
+        <!-- <div class="space-y-3 pt-2">
+          <div class="flex items-center gap-2">
+            <p
+              class="text-xs font-semibold text-gray-400 uppercase tracking-wider"
+            >
+              Kundendokument 2
+            </p>
+          </div>
+          <div
+            class="flex items-center justify-between gap-3 rounded-xl bg-gray-50 dark:bg-gray-800 px-4 py-3.5 border border-gray-200 dark:border-gray-700"
+          >
+            <div class="min-w-0 flex items-center gap-3">
+              <div
+                class="flex-shrink-0 h-10 w-10 rounded-lg bg-gray-200 dark:bg-gray-700 flex items-center justify-center"
+              >
+                <svg
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  class="h-5 w-5 text-gray-600 dark:text-gray-300"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  ></path>
+                </svg>
+              </div>
+              <div class="min-w-0">
+                <p
+                  class="text-xs font-semibold text-gray-800 dark:text-gray-200 truncate"
+                >
+                  Herman_Noreichh_D9784912825
+                </p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                  Signed and uploaded · May 26, 2026
+                </p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2 flex-shrink-0">
+              <button
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 transition cursor-pointer"
+              >
+                <svg
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  class="h-3.5 w-3.5"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                  ></path>
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                  ></path>
+                </svg>
+                View
+              </button>
+              <button
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-brand-500 text-white hover:bg-brand-600 border border-brand-600 transition cursor-pointer"
+              >
+                <svg
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  class="h-3.5 w-3.5"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                  ></path>
+                </svg>
+                Download
+              </button>
+            </div>
+          </div>
+        </div> -->
+
+            </div>
+      </div>
+
+      <!-- Order Information Wrapper Box -->
+      <div class="bg-white dark:bg-gray-900 rounded-2xl shadow border border-gray-200 dark:border-gray-700 p-6">
+        <div class="space-y-3 pt-2">
+          <div class="flex items-center gap-2">
+            <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+              Orderinformation
+            </p>
+          </div>
+          @if (customer?.customerContractOrderDoc && customer.customerContractOrderDoc.length > 0) {
+            <ng-container *ngFor="let orderObj of customer.customerContractOrderDoc">
+              <div
+                *ngFor="let entry of orderObj | keyvalue"
+                class="flex items-center justify-between gap-3 rounded-xl bg-gray-50 dark:bg-gray-800 px-4 py-3.5 border border-gray-200 dark:border-gray-700 mb-3"
+              >
+                <div class="min-w-0 flex items-center gap-3">
+                  <div class="flex-shrink-0 h-10 w-10 rounded-lg bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" class="h-5 w-5 text-gray-600 dark:text-gray-300">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                  </div>
+                  <div class="min-w-0">
+                    <p class="text-xs font-semibold text-gray-800 dark:text-gray-200 truncate">
+                      {{ getFileName(entry.value) }}
+                    </p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                      Order details document
+                    </p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2 flex-shrink-0">
+                  <button
+                    (click)="viewDocument(entry.value)"
+                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 transition cursor-pointer"
+                  >
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" class="h-3.5 w-3.5">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                    </svg>
+                    View
+                  </button>
+                  <button
+                    (click)="downloadDocument(entry.value, getFileName(entry.value))"
+                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-brand-500 text-white hover:bg-brand-600 border border-brand-600 transition cursor-pointer"
+                  >
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" class="h-3.5 w-3.5">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                    </svg>
+                    Download
+                  </button>
+                </div>
+              </div>
+            </ng-container>
+          } @else {
+            <div class="rounded-xl bg-gray-50 px-4 py-3 text-xs text-gray-400 italic">
+              No order found
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- GRID -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Customer Information -->
+        <div class="bg-white dark:bg-gray-900 rounded-2xl shadow p-6 space-y-4">
+          <h2
+            class="text-sm font-semibold uppercase tracking-wider text-gray-400"
+          >
+            Kundeninformation
+          </h2>
+
+          <div class="divide-y divide-gray-100 rounded-xl bg-gray-50">
+            <div class="flex justify-between px-4 py-2.5">
+              <span class="text-xs text-gray-500">Vorname</span>
+
+              <span class="text-xs font-medium">
+                {{ customer.firstName || "—" }}
+              </span>
+            </div>
+
+            <div class="flex justify-between px-4 py-2.5">
+              <span class="text-xs text-gray-500">Nachname</span>
+
+              <span class="text-xs font-medium">
+                {{ customer.lastName || "—" }}
+              </span>
+            </div>
+
+            <div class="flex justify-between px-4 py-2.5">
+              <span class="text-xs text-gray-500">E-Mail</span>
+
+              <span class="text-xs font-medium">
+                {{ customer.email || "—" }}
+              </span>
+            </div>
+
+            <div class="flex justify-between px-4 py-2.5">
+              <span class="text-xs text-gray-500">Mobilnummer</span>
+
+              <span class="text-xs font-medium">
+                {{ customer.mobileNumber || "—" }}
+              </span>
+            </div>
+
+            <div class="flex justify-between px-4 py-2.5">
+              <span class="text-xs text-gray-500">Benutzertyp</span>
+
+              <span class="text-xs font-medium">
+                {{ customer.userType || "—" }}
+              </span>
+            </div>
+
+            <div class="flex justify-between px-4 py-2.5">
+              <span class="text-xs text-gray-500">Firma</span>
+
+              <span class="text-xs font-medium">
+                {{ customer.companyName || "—" }}
+              </span>
+            </div>
+
+            <div class="flex justify-between px-4 py-2.5">
+              <span class="text-xs text-gray-500">Lexoffice Nummer</span>
+
+              <span class="text-xs font-medium">
+                {{ customer.lexofficeNumber || "—" }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Account Information -->
+        <div class="bg-white dark:bg-gray-900 rounded-2xl shadow p-6 space-y-4">
+          <h2
+            class="text-sm font-semibold uppercase tracking-wider text-gray-400"
+          >
+            Kontoinformation
+          </h2>
+
+          <div class="divide-y divide-gray-100 rounded-xl bg-gray-50">
+            <div class="flex justify-between px-4 py-2.5">
+              <span class="text-xs text-gray-500">Verifiziert</span>
+              @if (customer.isVerified) {
+                <span
+                  class="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700"
+                >
+                  Ja
+                </span>
+              } @else {
+                <span
+                  class="px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-600"
+                >
+                  Nein
+                </span>
+              }
+            </div>
+
+            <div class="flex justify-between px-4 py-2.5">
+              <span class="text-xs text-gray-500">Bestaetigt</span>
+
+              <span class="text-xs font-medium">
+                {{ customer.isAcknowledged ? "Ja" : "Nein" }}
+              </span>
+            </div>
+
+            <div class="flex justify-between px-4 py-2.5">
+              <span class="text-xs text-gray-500">Status</span>
+
+              <span class="text-xs font-medium">
+                {{ customer.status ? "Aktiv" : "Inaktiv" }}
+              </span>
+            </div>
+
+            <div class="flex justify-between px-4 py-2.5">
+              <span class="text-xs text-gray-500">Beigetreten am</span>
+
+              <span class="text-xs font-medium">
+                {{ customer.joinedOn * 1000 | date: "dd.MM.yyyy HH:mm" }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Address -->
+        <div class="bg-white dark:bg-gray-900 rounded-2xl shadow p-6 space-y-4">
+          <h2
+            class="text-sm font-semibold uppercase tracking-wider text-gray-400"
+          >
+            Adresse
+          </h2>
+
+          <div class="divide-y divide-gray-100 rounded-xl bg-gray-50">
+            <div class="flex justify-between px-4 py-2.5">
+              <span class="text-xs text-gray-500">PLZ</span>
+
+              <span class="text-xs font-medium">
+                {{ customer.address?.zip || "—" }}
+              </span>
+            </div>
+
+            <div class="flex justify-between px-4 py-2.5">
+              <span class="text-xs text-gray-500">Stadt</span>
+
+              <span class="text-xs font-medium">
+                {{ customer.address?.city || "—" }}
+              </span>
+            </div>
+
+            <div class="flex justify-between px-4 py-2.5">
+              <span class="text-xs text-gray-500">Strasse</span>
+
+              <span class="text-xs font-medium">
+                {{ customer.address?.street || "—" }}
+              </span>
+            </div>
+
+            <div class="flex justify-between px-4 py-2.5">
+              <span class="text-xs text-gray-500">Hausnummer</span>
+
+              <span class="text-xs font-medium">
+                {{ customer.address?.houseNumber || "—" }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- NOTES CARD -->
+        <div
+          class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 p-6"
+        >
+          <h3
+            class="text-sm font-semibold text-gray-700 dark:text-gray-200 uppercase mb-5"
+          >
+            Notizen
+          </h3>
+
+          @if (customer.notes?.length > 0) {
+            <div class="space-y-3 max-h-96 overflow-y-auto pr-2">
+              @for (note of customer.notes; track note.notesid) {
+                <div
+                  class="border border-gray-200 dark:border-gray-700 rounded-xl p-3 bg-gray-50 dark:bg-gray-800"
+                >
+                  <p class="text-sm text-gray-700 dark:text-gray-200">
+                    {{ note.note }}
+                  </p>
+
+                  <p class="text-xs text-gray-400 mt-2">
+                    {{ note.addedOn }}
+                  </p>
+                </div>
+              }
+            </div>
+          } @else {
+            <div class="text-sm text-gray-400 italic">
+              Keine Notizen vorhanden
+            </div>
+          }
+        </div>
+
+        <!-- Password History -->
+        <div
+          class="bg-white h-92 dark:bg-gray-900 rounded-2xl shadow p-6 space-y-4"
+        >
+          <h2
+            class="text-sm font-semibold uppercase tracking-wider text-gray-400"
+          >
+            Passwort Historie
+          </h2>
+
+          @if (customer.changePasswordHistory?.length) {
+            <div class="divide-y divide-gray-100 rounded-xl bg-gray-50">
+              @for (history of customer.changePasswordHistory; track history) {
+                <div class="px-4 py-3 space-y-1">
+                  <p class="text-xs text-gray-500">
+                    Email : {{ history.email }}
+                  </p>
+
+                  <p class="text-xs text-gray-500">
+                    Passwort geaendert :
+                    {{
+                      history.passwordChangedOn * 1000
+                        | date: "dd.MM.yyyy HH:mm"
+                    }}
+                  </p>
+                </div>
+              }
+            </div>
+          } @else {
+            <div
+              class="rounded-xl bg-gray-50 px-4 py-3 text-xs text-gray-400 italic"
+            >
+              Keine Passwort Historie vorhanden.
+            </div>
+          }
+        </div>
+
+        <!-- Contact-History -->
+        <div
+          class="bg-white h-92 dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 p-6"
+        >
+          <h3
+            class="text-sm font-semibold text-gray-700 dark:text-gray-200 uppercase mb-5"
+          >
+            KONTAKTVERLAUF
+          </h3>
+
+          @if (currentContactHistory.length > 0) {
+            <div class="space-y-3 max-h-96 overflow-y-auto pr-2">
+              @for (history of currentContactHistory; track $index) {
+                <div
+                  class="border border-gray-200 dark:border-gray-700 rounded-xl p-3 bg-gray-50 dark:bg-gray-800"
+                >
+                  <p class="text-sm text-gray-700 dark:text-gray-200">
+                    {{ history.note }}
+                  </p>
+
+                  <p class="text-xs text-gray-400 mt-2">
+                    {{ formatDate(history.addedOn) }}
+                  </p>
+                </div>
+              }
+            </div>
+          } @else {
+            <div class="text-sm text-gray-400 italic">
+              Keine Kontakthistorie vorhanden
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Attorneys -->
+      <!-- <div class="bg-white dark:bg-gray-900 rounded-2xl shadow p-6 space-y-4">
+        <h2
+          class="text-sm font-semibold uppercase tracking-wider text-gray-400"
+        >
+          Vollmachten
+        </h2>
+
+        @if (customer.attornies?.length) {
+          <div class="divide-y divide-gray-100 rounded-xl bg-gray-50">
+            @for (attorney of customer.attornies; track attorney) {
+              <div class="px-4 py-3">
+                <div class="flex justify-between">
+                  <div>
+                    <p class="text-sm font-medium">
+                      {{ attorney.firstName }} {{ attorney.lastName }}
+                    </p>
+
+                    <p class="text-xs text-gray-500">
+                      {{ attorney.email }}
+                    </p>
+                  </div>
+
+                  <span
+                    class="text-xs font-medium"
+                    [ngClass]="{
+                      'text-yellow-600': attorney.approvalStatus === 0,
+                      'text-green-600': attorney.approvalStatus === 1,
+                      'text-red-600': attorney.approvalStatus === 2,
+                    }"
+                  >
+                    {{
+                      attorney.approvalStatus === 0
+                        ? "Pending"
+                        : attorney.approvalStatus === 1
+                          ? "Approved"
+                          : "Rejected"
+                    }}
+                  </span>
+                </div>
+              </div>
+            }
+          </div>
+        } @else {
+          <div
+            class="rounded-xl bg-gray-50 px-4 py-3 text-xs text-gray-400 italic"
+          >
+            Keine Vollmachten vorhanden.
+          </div>
+        }
+      </div> -->
+
+      <!-- Additional Documents Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+        <!-- Power of attorny -->
+        <div
+          class="bg-white h-92 dark:bg-gray-900 rounded-2xl shadow p-6 space-y-4"
+        >
+          <h2
+            class="text-sm font-semibold uppercase tracking-wider text-gray-400"
+          >
+            Vollmacht
+          </h2>
+          <div
+            class="rounded-xl bg-gray-50 px-4 py-3 text-xs text-gray-400 italic"
+          >
+            Keine Daten vorhanden.
+          </div>
+        </div>
+
+        <!-- Signed contracttaito -->
+        <div
+          class="bg-white h-92 dark:bg-gray-900 rounded-2xl shadow p-6 space-y-4"
+        >
+          <h2
+            class="text-sm font-semibold uppercase tracking-wider text-gray-400"
+          >
+            Unterzeichneter Vertrag
+          </h2>
+          <div
+            class="rounded-xl bg-gray-50 px-4 py-3 text-xs text-gray-400 italic"
+          >
+            Keine Daten vorhanden.
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Popup Error Modal -->
+  @if (popupError) {
+    <div class="fixed inset-0 z-[99999] flex items-center justify-center p-4">
+      <div
+        class="absolute inset-0 bg-black/50"
+        (click)="closePopupError()"
+      ></div>
+      <div
+        class="relative w-full max-w-sm rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-2xl p-6 text-center"
+      >
+        <div
+          class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4"
+        >
+          <svg
+            class="h-6 w-6 text-red-600"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+            />
+          </svg>
+        </div>
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+          Fehler
+        </h3>
+        <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">
+          {{ popupError }}
+        </p>
+        <button
+          (click)="closePopupError()"
+          class="px-5 py-2 bg-brand-500 hover:bg-brand-600 text-white rounded-lg text-sm font-medium transition cursor-pointer w-full"
+        >
+          OK
+        </button>
+      </div>
+    </div>
+  }
+
+  <!-- ============================================== -->
+  <!-- LEXOFFICE MODAL                                -->
+  <!-- ============================================== -->
+  @if (isLexofficeModalOpen && customer) {
+    <div class="fixed inset-0 z-[99999] flex items-center justify-center p-4">
+      <!-- Backdrop -->
+      <div
+        class="absolute inset-0 bg-black/50"
+        (click)="closeLexofficeModal()"
+      ></div>
+
+      <!-- Modal Content -->
+      <div
+        class="relative w-full max-w-md rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-2xl overflow-hidden"
+      >
+        <!-- Header -->
+        <div
+          class="flex items-start justify-between px-5 py-4 border-b border-gray-200 dark:border-gray-700"
+        >
+          <div>
+            <h3 class="text-base font-semibold text-gray-900 dark:text-white">
+              Lexoffice-Nummer vergeben
+            </h3>
+            <p class="text-xs text-gray-500 mt-0.5">
+              {{ customer.firstName || "—" }} {{ customer.lastName || "—" }} ·
+              #{{ customer.uniqueCustomerId ?? customer.id }}
+            </p>
+          </div>
+          <button
+            (click)="closeLexofficeModal()"
+            class="ml-3 p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+          >
+            <svg
+              class="w-4 h-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Body -->
+        <div class="px-5 py-4">
+          <label
+            for="lexoffice-number"
+            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+          >
+            Lexoffice-Nummer
+          </label>
+          <input
+            id="lexoffice-number"
+            type="text"
+            [(ngModel)]="lexofficeInput"
+            placeholder="z.B. ZP12345"
+            class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-brand-500 outline-none transition"
+          />
+          <p class="text-xs text-gray-400 mt-2">
+            Diese Nummer ist nur für Administratoren sichtbar und wird dem
+            Kunden nicht angezeigt.
+          </p>
+        </div>
+
+        <!-- Footer -->
+        <div
+          class="flex items-center justify-end gap-3 px-5 py-4 border-t border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50"
+        >
+          <button
+            (click)="closeLexofficeModal()"
+            class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition shadow-sm"
+          >
+            Abbrechen
+          </button>
+          <button
+            (click)="saveLexofficeNumber()"
+            [disabled]="isSavingLexoffice || !lexofficeInput.trim()"
+            class="px-4 py-2 text-sm font-medium text-white bg-brand-500 rounded-lg hover:bg-brand-600 transition shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+          >
+            @if (isSavingLexoffice) {
+              <div
+                class="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"
+              ></div>
+              Speichert...
+            } @else {
+              <svg
+                class="w-4 h-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M5 13l4 4L19 7"
+                />
+              </svg>
+              Speichern
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  }
 </div>

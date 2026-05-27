@@ -58,6 +58,7 @@ public class AdminEmailRequestDto {
 				            ? management.getCategory().getCateId()
 				            : null
 				    )
+				.category(AdminEmailRequestCategoryDto.mapCategory(management.getCategory()))
 				.documents(Optional.ofNullable(management.getDocuments()).orElseGet(Collections::emptySet).stream()
 						.map(ManageAdminDocumentDto::mapForAdmin).toList())
 				.build();

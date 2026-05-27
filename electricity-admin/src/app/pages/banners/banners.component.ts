@@ -50,7 +50,7 @@ export class BannersComponent implements OnInit {
         if (res.res && res.data && res.data.length > 0) {
           const banner = res.data[0];
           this.bannerId = banner.id;
-          this.currentBannerUrl = this.imgBase + banner.contentUrl;
+          this.currentBannerUrl = banner.contentUrl ? this.imgBase + banner.contentUrl : null;
         }
       },
       error: (err) => console.error("Could not load existing banner", err),
@@ -66,8 +66,8 @@ export class BannersComponent implements OnInit {
       return;
     }
 
-    if (file.size > 5 * 1024 * 1024) {
-      this.errorMessage = "Bild muss kleiner als 5MB sein";
+    if (file.size > 10 * 1024 * 1024) {
+      this.errorMessage = "Bild muss kleiner als 10MB sein";
       return;
     }
 

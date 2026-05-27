@@ -24,6 +24,7 @@ export class AboutUsComponent implements OnInit {
   imageFile: File | null = null;
   imagePreview: string | null = null;
   existingImageUrl: string | null = null;
+  aboutUsId: number | null = null;
 
   isLoading = false;
   errorMessage = "";
@@ -49,7 +50,12 @@ export class AboutUsComponent implements OnInit {
         this.isLoading = false;
 
         if (res.res && res.menu?.about?.length > 0) {
+          // Get the latest/last item if there are duplicates, or just the first if you want. 
+          // Usually we want the most recently added one, which would be at the end, but let's grab [0] to match original logic,
+          // except we need to store its ID so we can update it instead of creating new ones!
           const aboutData = res.menu.about[0];
+          
+          this.aboutUsId = aboutData.id;
 
           this.heading = aboutData.heading || "";
           this.nameField = aboutData.contactName || "";
@@ -61,6 +67,9 @@ export class AboutUsComponent implements OnInit {
           if (aboutData.contentUrl) {
             this.existingImageUrl = aboutData.contentUrl;
             this.imagePreview = this.imgBase + aboutData.contentUrl;
+          } else {
+            this.existingImageUrl = null;
+            this.imagePreview = null;
           }
         }
       },
@@ -83,9 +92,9 @@ export class AboutUsComponent implements OnInit {
       return;
     }
 
-    // New 2MB Validation
-    if (file.size > 2 * 1024 * 1024) {
-      this.errorMessage = "Bild muss kleiner als 2MB sein";
+    // New 10MB Validation
+    if (file.size > 10 * 1024 * 1024) {
+      this.errorMessage = "Bild muss kleiner als 10MB sein";
       event.target.value = ""; // Clears the input
       return;
     }
@@ -119,7 +128,7 @@ export class AboutUsComponent implements OnInit {
     this.errorMessage = "";
     this.successMessage = "";
 
-    const payload = {
+    const payload: any = {
       adminId: adminId,
       heading: this.heading,
       contactName: this.nameField,
@@ -129,6 +138,10 @@ export class AboutUsComponent implements OnInit {
       subHeading: this.description,
       type: 4,
     };
+
+    if (this.aboutUsId) {
+      payload.id = this.aboutUsId;
+    }
 
     const formData = new FormData();
 

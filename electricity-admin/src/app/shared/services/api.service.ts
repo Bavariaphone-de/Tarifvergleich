@@ -7,10 +7,14 @@ import { Observable, Subject } from "rxjs";
 })
 export class ApiService {
   private BASE_URL = "http://192.168.0.155:8080"; /* change later */
-  
+
+  public get baseUrl(): string {
+    return this.BASE_URL;
+  }
+
   public refreshPendingQueriesCount$ = new Subject<void>();
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
   get(endpoint: string, params?: any): Observable<any> {
     return this.http.get(`${this.BASE_URL}/${endpoint}`, { params });

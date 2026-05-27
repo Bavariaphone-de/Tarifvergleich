@@ -78,8 +78,8 @@ public class AsyncServiceAdmin {
 		String mailBody = emailBodyRender.orderSignatureBody(customer, securedToken, customerOrderId);
 
 		ServiceResponseEmailEvent emailEvent = new ServiceResponseEmailEvent(customer.getEmail(),
-				"Bitte unterschreiben Sie Ihren Vertrag: (Contract Number: " + customerOrderId + ")", mailBody);
-		
+				"Bitte unterschreiben Sie Ihren Vertrag: (Contract Number: " + order.getOrderId() + ")", mailBody);
+
 //		ServiceResponseEmailEvent emailEvent = new ServiceResponseEmailEvent("syntnpddr@gmail.com",
 //				"Bitte unterschreiben Sie Ihren Vertrag: (Contract Number: " + customerOrderId + ")", mailBody);
 

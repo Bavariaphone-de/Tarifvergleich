@@ -61,6 +61,7 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
     const payload = {
       adminId: this.authService.getUserId()
     };
+    
     this.http
       .post("http://192.168.0.234:8080/admin/count-open-service-requests", payload)
       .subscribe({

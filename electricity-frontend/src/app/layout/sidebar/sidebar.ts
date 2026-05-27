@@ -38,14 +38,14 @@ export class Sidebar implements OnChanges {
   // ── Derived display values ──────────────────────────────────────────────
 
   /** Average monthly cost, e.g. "149,59 €" */
-  avgMonthlyPrice: string = '–';
+  avgMonthlyPrice: string = '';
 
   /** Annual saving (positive = saving, negative = extra cost). */
-  savingPerYear: string = '–';
+  savingPerYear: string = '';
   isSaving: boolean = false;
 
   /** Tariff / rate name */
-  rateName: string = '–';
+  rateName: string = '';
 
   /** Whether this is an eco tariff */
   isEco: boolean = false;
@@ -78,14 +78,20 @@ export class Sidebar implements OnChanges {
     const p = this.providerDetails;
     if (!p) return;
 
+    const totalCommission = Array.isArray(p.commission)
+      ? p.commission.reduce((sum: number, item: any) => {
+          return sum + (Number(item?.amount) || 0);
+        }, 0)
+      : 0;
+
     // Monthly price
-    this.avgMonthlyPrice = this.formatEuro(p.totalPriceMonth);
+    this.avgMonthlyPrice = this.formatEuro(p.totalPriceMonth + totalCommission);
 
     // Saving — the API stores negative saving as a negative number;
     // a positive saving means the user saves money.
     const saving = typeof p.savingPerYear === 'number' ? p.savingPerYear : 0;
     this.isSaving = saving > 0;
-    this.savingPerYear = this.formatEuro(Math.abs(saving));
+    this.savingPerYear = this.formatEuro(Math.abs(saving - totalCommission));
 
     // Tariff details
     this.rateName = p.rateName ?? '–';
