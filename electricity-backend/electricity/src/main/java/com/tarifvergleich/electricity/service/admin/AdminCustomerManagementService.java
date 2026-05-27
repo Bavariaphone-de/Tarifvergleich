@@ -67,6 +67,7 @@ public class AdminCustomerManagementService {
 	private final EmailBodyRender emailBodyRender;
 	private final CustomerAuthService customerAuthService;
 	private final ObjectMapper objectMapper;
+	private final CustomerOrderRepository customerOrderRepository;
 	private final CustomerDetailsContactHistoryRepository customerDetailsContactHistoryRepo;
 
 	public Map<String, Object> getCustomers(CustomerDto customerReq) {
@@ -204,6 +205,12 @@ public class AdminCustomerManagementService {
 
 			Page<CustomerDeliveryResponseAll> customerDeliveryResponse = customerDeliveries
 					.map(CustomerDeliveryResponseDto::getDeliveryResponse);
+			
+
+			long totalDeliveries = customerDeliveryRepo.countByAdminAdminId(deliveryReq.getAdminId());
+			long totalCompleted = customerOrderRepository.countOrderCreatedStatus(deliveryReq.getAdminId());
+			
+
 
 			long totalDeliveries = customerDeliveryRepo.countByAdminAdminId(deliveryReq.getAdminId());
 			long totalCompleted = customerOrderRepo.countOrderCreatedStatus(deliveryReq.getAdminId());
@@ -212,7 +219,6 @@ public class AdminCustomerManagementService {
 					customerDeliveryResponse.getPageable().getPageNumber() + 1, "totalPage",
 					customerDeliveryResponse.getTotalPages(), "totalRecord",
 					totalDeliveries, "totalComplete", totalCompleted);
-
 		}
 
 		List<CustomerDelivery> customerDeliveries = customerDeliveryRepo

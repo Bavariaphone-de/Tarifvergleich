@@ -51,4 +51,3 @@ public class CustomerOrderStatusRecord {
 		checkedOn = Helper.getCurrentTimeBerlin();
 	}
 }
-
