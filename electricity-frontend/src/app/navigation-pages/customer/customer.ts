@@ -224,7 +224,7 @@ export class Customer {
   logout() {
     this.showLogoutModal = false;
 
-    console.log('Logged out');
+    // console.log('Logged out');
 
     this.authService.logout();
   }
@@ -337,7 +337,7 @@ export class Customer {
 
         this.isNotificationEnabled = this.customerData.isNotificationEnabled;
         this.customerType = this.customerData.userType;
-        console.log('customerData:', this.customerData);
+        // console.log('customerData:', this.customerData);
 
         if (this.isNotificationEnabled) {
           this.selection = 'yes';
@@ -345,8 +345,8 @@ export class Customer {
           this.selection = 'no';
         }
 
-        console.log('Customer :', this.customerData?.address);
-        console.log('customerData on init:', this.customerData?.address?.zip);
+        // console.log('Customer :', this.customerData?.address);
+        // console.log('customerData on init:', this.customerData?.address?.zip);
         // PREFILL ADDRESS DROPDOWNS
         if (this.customerData?.address?.zip) {
           this.addressService
@@ -597,7 +597,7 @@ export class Customer {
         if (res?.res) {
           this.isEditingSelectedMeterName = false;
 
-          console.log(res.message);
+          // console.log(res.message);
           this.cdr.detectChanges();
         }
       },
@@ -702,11 +702,11 @@ export class Customer {
 
   redirectPhotoUpload() {
     if (!this.validateMeterReadingForm()) {
-      console.log('validation failed', this.fieldErrors);
+      // console.log('validation failed', this.fieldErrors);
       return;
     }
 
-    console.log('redirect working');
+    // console.log('redirect working');
 
     this.redirect = 4;
   }
@@ -804,7 +804,7 @@ export class Customer {
 
     this.http.post(`${API_BASE}/customer/report-meter-reading`, formData).subscribe({
       next: (res: any) => {
-        console.log('Meter reading success', res);
+        // console.log('Meter reading success', res);
 
         if (res) {
           this.submittedReportMeterReading = true;
@@ -825,7 +825,7 @@ export class Customer {
   submittedInvoice: boolean = false;
 
   hasInvoice(item: any): boolean {
-    console.log('check item ', item);
+    // console.log('check item ', item);
     return Array.isArray(item?.invoiceRequests) && item.invoiceRequests.length > 0;
   }
 
@@ -863,7 +863,7 @@ export class Customer {
         this.cdr.detectChanges();
       },
       error: (err) => {
-        console.log(err);
+        // console.log(err);
       },
     });
   }
@@ -920,7 +920,7 @@ export class Customer {
             day: day as string,
           }));
 
-          // console.log('Available Days:', this.availableDays);
+          // // console.log('Available Days:', this.availableDays);
 
           this.setDefaultSelectedDay();
         }
@@ -1090,7 +1090,7 @@ export class Customer {
     this.cdr.detectChanges();
   }
   onNextPhone() {
-    console.log('Phone number entered:', this.phoneNumber);
+    // console.log('Phone number entered:', this.phoneNumber);
     if (!this.validatePhone()) return;
   }
 
@@ -1117,7 +1117,7 @@ export class Customer {
     }
 
     this.fieldErrors = errors;
-    console.log('Validation errors:', this.fieldErrors);
+    // console.log('Validation errors:', this.fieldErrors);
     this.cdr.detectChanges();
 
     return valid;
@@ -1125,11 +1125,11 @@ export class Customer {
   submitDay(): void {
     this.scheduleErrorMessage = '';
     this.cdr.detectChanges();
-    console.log('select day:', this.selectedDay);
+    // console.log('select day:', this.selectedDay);
 
     if (!this.selectedDay) {
       this.scheduleErrorMessage = 'Bitte wählen Sie einen Tag und eine Uhrzeit aus.';
-      console.log('error', this.scheduleErrorMessage);
+      // console.log('error', this.scheduleErrorMessage);
       return;
     }
 
@@ -1142,7 +1142,7 @@ export class Customer {
       scheduleDate: this.getDateFromDay(this.selectedDay),
     };
 
-    console.log('Schedule payload:', JSON.stringify(payload, null, 2));
+    // console.log('Schedule payload:', JSON.stringify(payload, null, 2));
 
     const submit = (apiBase: string) =>
       this.http.post<any>(`${apiBase}/api/check-holiday`, payload);
@@ -1231,7 +1231,7 @@ export class Customer {
       adminId: 1,
     };
 
-    console.log('Final Payload:', payload);
+    // console.log('Final Payload:', payload);
 
     const submit = (apiBase: string) =>
       this.http.post<any>(`${apiBase}/api/add-counselling-request`, payload);
@@ -1324,7 +1324,7 @@ export class Customer {
         this.isNotificationEnabled = isNotificationEnabled;
         this.showReminderModal = false;
 
-        console.log(res.message);
+        // console.log(res.message);
 
         this.cdr.detectChanges();
       },
@@ -1342,7 +1342,7 @@ export class Customer {
     this.http.post<any>(`${API_BASE}/customer/toggle-delivery-notification`, payload).subscribe({
       next: (res: any) => {
         if (res?.res) {
-          console.log('Notification updated successfully');
+          // console.log('Notification updated successfully');
         }
       },
 
@@ -1356,9 +1356,10 @@ export class Customer {
   }
 
   groupedContracts: any[] = [];
+
   private fetchDeliveryByAddress(): void {
     const customerId = this.authService.getUserId() || 0;
-
+    console.log('Fetching deliveries for customer ID:', customerId);
     const body = {
       id: customerId,
       adminId: 1,
@@ -1371,21 +1372,33 @@ export class Customer {
           return;
         }
 
+        console.log('Raw API Response:', res);
         const groupedData = res.data;
 
         let index = 1;
 
-        this.groupedContracts = Object.keys(groupedData).map((addressKey) => {
-          const deliveries = groupedData[addressKey];
+        this.groupedContracts = Object.keys(groupedData)
+          .map((addressKey) => {
+            const deliveries = groupedData[addressKey];
 
-          return {
-            addressLabel: `Haushalt ${index++}`,
-            addressKey: addressKey,
-            contracts: deliveries.map((item: any) => this.mapToContract(item)),
-          };
-        });
+            const contracts = deliveries
+              .filter((item: any) => item?.order?.orderId != null)
+              .map((item: any) => this.mapToContract(item));
 
-        console.log('Grouped Contracts:', this.groupedContracts);
+            return {
+              addressKey,
+              contracts,
+            };
+          })
+          .filter((group) => group.contracts.length > 0)
+          .map((group, index) => {
+            return {
+              ...group,
+              addressLabel: `Haushalt ${index + 1}`,
+            };
+          });
+
+        // console.log('Grouped Contracts:', this.groupedContracts);
         this.cdr.detectChanges();
       },
       error: (err) => {
@@ -1393,6 +1406,7 @@ export class Customer {
       },
     });
   }
+
   shouldShowContractActions(startTimestamp: number, durationMonths: number): boolean {
     if (!startTimestamp || !durationMonths) {
       return false;
@@ -1455,7 +1469,7 @@ export class Customer {
   consumption = 2510;
 
   compareNew(contract: any) {
-    console.log('Comparing contract:', contract);
+    // console.log('Comparing contract:', contract);
     if (!contract.zip || !contract.city || !contract.street || !contract.houseNumber) {
       console.error('Invalid contract data');
       return;
@@ -1470,7 +1484,7 @@ export class Customer {
       consumption: contract.consumption,
     };
 
-    console.log('Saving address:', data);
+    // console.log('Saving address:', data);
 
     this.authService.setAddressData(data);
     this.authService.setSelectedContract(contract);
@@ -1657,7 +1671,7 @@ export class Customer {
         this.closedRequests = this.mapRequests(res.closedRequests || []);
         this.cdr.detectChanges();
 
-        console.log('All Requests:', res);
+        // console.log('All Requests:', res);
       },
       error: (err) => {
         this.isLoading = false;
@@ -1705,7 +1719,7 @@ export class Customer {
         this.progressCount = res.progress ?? 0;
         this.cdr.detectChanges();
 
-        console.log('Counts:', res);
+        // console.log('Counts:', res);
       },
       error: (err) => {
         console.error('API Error:', err);
@@ -1735,7 +1749,7 @@ export class Customer {
           serviceName: item.serviceName || '',
         }));
 
-        console.log('categories:', this.categories);
+        // console.log('categories:', this.categories);
 
         this.cdr.detectChanges();
         this.isLoading = false;
@@ -1810,7 +1824,7 @@ export class Customer {
       deliveryId: this.selectedDeliveryId,
     };
 
-    console.log('Final Payload:', payload);
+    // console.log('Final Payload:', payload);
 
     this.isLoading = true;
 
@@ -1819,7 +1833,7 @@ export class Customer {
         this.isLoading = false;
 
         if (res?.res === true) {
-          console.log('Request submitted successfully');
+          // console.log('Request submitted successfully');
 
           this.fetchAllRequests();
           this.fetchServiceCount();
@@ -1904,7 +1918,7 @@ export class Customer {
           }));
 
           this.cdr.detectChanges();
-          console.log('messages:', this.messages);
+          // console.log('messages:', this.messages);
         } else {
           this.messages = [];
         }
@@ -1988,7 +2002,7 @@ export class Customer {
           this.fetchServiceCount();
           this.cdr.detectChanges();
 
-          console.log('Reopened successfully');
+          // console.log('Reopened successfully');
         }
       },
       error: (err) => {
@@ -2108,7 +2122,7 @@ export class Customer {
             };
           });
 
-        console.log('cards:', this.cards);
+        // console.log('cards:', this.cards);
 
         // dynamic electricity list
         this.electricityList = res.delivery
@@ -2141,35 +2155,35 @@ export class Customer {
 
               contractNumber: item?.uniqueDeliveryId || '',
 
-              customerNumber: connection?.customerNumber || '-',
+              customerNumber: connection?.customerNumber || 'N/A',
 
-              minimumTerm: provider?.optTerm ? `${provider.optTerm} Monate` : '-',
+              minimumTerm: provider?.optTerm ? `${provider.optTerm} Monate` : 'N/A',
 
               orderDate: item?.orderPlacedOn
                 ? new Date(item.orderPlacedOn * 1000).toLocaleDateString('de-DE')
-                : '-',
+                : 'N/A',
 
               contractStart: connection?.desiredDelivery
                 ? new Date(connection.desiredDelivery * 1000).toLocaleDateString('de-DE')
-                : '-',
+                : 'N/A',
 
-              noticePeriod: '-',
-              contractEnd: '-',
+              noticePeriod: 'N/A',
+              contractEnd: 'N/A',
 
-              workPrice: provider?.workPrice ? `${provider.workPrice} Ct./kWh` : '-',
+              workPrice: provider?.workPrice ? `${provider.workPrice} Ct./kWh` : 'N/A',
 
-              basePrice: provider?.basePriceMonth ? `${provider.basePriceMonth} €/Monat` : '-',
+              basePrice: provider?.basePriceMonth ? `${provider.basePriceMonth} €/Monat` : 'N/A',
 
-              monthlyPrice: provider?.totalPriceMonth ? `${provider.totalPriceMonth} €` : '-',
+              monthlyPrice: provider?.totalPriceMonth ? `${provider.totalPriceMonth} €` : 'N/A',
 
-              meterNumber: connection?.meterNumber || '-',
+              meterNumber: connection?.meterNumber || 'N/A',
 
-              meterDesignation: connection?.meterDesignation || connection?.meterNumber || '-',
+              meterDesignation: connection?.meterDesignation || connection?.meterNumber || 'N/A',
 
-              marketLocation: connection?.marketLocationId || '-',
+              marketLocation: connection?.marketLocationId || 'N/A',
 
               // Meter designation same as meter number
-              meterName: connection?.meterNumber || '-',
+              meterName: connection?.meterNumber || 'N/A',
               id: connection?.id || '',
               isEditingMeterName: false,
               originalMeterName: '',
@@ -2193,7 +2207,7 @@ export class Customer {
             };
           });
 
-        console.log('electricityList', this.electricityList);
+        // console.log('electricityList', this.electricityList);
 
         this.meterList = res.delivery
           .filter((item: any) => item?.order?.orderId) // only valid contracts
@@ -2224,12 +2238,12 @@ export class Customer {
 
               providerType: provider?.branch === 'gas' ? 'Gas' : 'Strom | Hausstrom',
 
-              meterNumber: connection?.meterNumber || '-',
+              meterNumber: connection?.meterNumber || 'N/A',
 
-              marketLocation: connection?.marketLocationId || '-',
+              marketLocation: connection?.marketLocationId || 'N/A',
 
-              meterName: connection?.meterDesignation || connection?.meterNumber || '-',
-              meterDesignation: connection?.meterDesignation || connection?.meterNumber || '-',
+              meterName: connection?.meterDesignation || connection?.meterNumber || 'N/A',
+              meterDesignation: connection?.meterDesignation || connection?.meterNumber || 'N/A',
 
               id: connection?.id || '',
               isEditingMeterName: false,
@@ -2251,12 +2265,12 @@ export class Customer {
 
               contractStart: connection?.desiredDelivery
                 ? new Date(connection.desiredDelivery * 1000).toLocaleDateString('de-DE')
-                : '-',
+                : 'N/A',
 
-              contractEnd: '-', // not provided in API
+              contractEnd: 'N/A', // not provided in API
 
               contractNumber: item?.uniqueDeliveryId || '',
-              customerNumber: connection?.customerNumber || '-',
+              customerNumber: connection?.customerNumber || 'N/A',
             };
           });
 
@@ -2370,8 +2384,8 @@ export class Customer {
           }
 
           this.cdr.detectChanges();
-          console.log('Attorney:', this.recordIsPresent);
-          console.log('Status:', this.approvalStatus);
+          // console.log('Attorney:', this.recordIsPresent);
+          // console.log('Status:', this.approvalStatus);
         }
       },
       error: (err) => {
@@ -2417,7 +2431,7 @@ export class Customer {
         this.isLoading = false;
 
         if (res) {
-          console.log('Success:', message);
+          // console.log('Success:', message);
           this.isRevoked = true;
           this.nextStep(1);
           this.cdr.detectChanges();
@@ -2521,8 +2535,8 @@ export class Customer {
         this.isLoading = false;
 
         if (res) {
-          console.log('Success:', message);
-          console.log('Created On:', createdOn);
+          // console.log('Success:', message);
+          // console.log('Created On:', createdOn);
           this.placeAndDate = '';
           this.legalFirstName = '';
           this.legalLastName = '';
@@ -2667,7 +2681,7 @@ export class Customer {
         this.isLoading = false;
 
         if (res) {
-          console.log('Success:', message);
+          // console.log('Success:', message);
 
           this.nextStep(2);
           this.cdr.detectChanges();
@@ -2773,7 +2787,7 @@ export class Customer {
       })
       .subscribe({
         next: (res) => {
-          console.log(res);
+          // console.log(res);
 
           if (res) {
             this.successMessage =
@@ -2789,19 +2803,19 @@ export class Customer {
       });
   }
   resetPassword() {
-    console.log('resetPassword called');
+    // console.log('resetPassword called');
     this.apiError = '';
 
     const isValid = this.validateStepReset(this.confirmPassword);
 
     if (!isValid) {
-      console.log('not valid');
+      // console.log('not valid');
       return;
     }
 
     if (!this.authService.getUserId()) {
       this.apiError = 'Session abgelaufen.';
-      console.log('Session abgelaufen.');
+      // console.log('Session abgelaufen.');
       return;
     }
 
@@ -2827,8 +2841,8 @@ export class Customer {
             this.currentStep = 2;
             this.clearPwdField();
           } else {
-            console.log('false going');
-            console.log('error message', res.errMessage);
+            // console.log('false going');
+            // console.log('error message', res.errMessage);
 
             this.apiError = res.errMessage || 'Error occurred';
           }
@@ -3160,12 +3174,12 @@ export class Customer {
 
   editBankAccount(account: any): void {
     // Navigate to edit view or open a modal — adjust to your routing pattern
-    console.log('editBankAccount:', account);
+    // console.log('editBankAccount:', account);
   }
 
   changeBankAccount(account: any): void {
     // Trigger payment-method change flow — adjust to your routing pattern
-    console.log('changeBankAccount:', account);
+    // console.log('changeBankAccount:', account);
   }
 
   // =========================

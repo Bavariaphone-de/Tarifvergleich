@@ -9,24 +9,37 @@
       </span>
       <span class="accordion-chevron" [class.rotated]="open['preis']">&#8250;</span>
     </div>
-    <div class="accordion-body-wrap" [class.accordion-body-open]="open['preis']">
-      <div class="card-body">
-        <div class="price-amount">{{ avgMonthlyPrice }}</div>
-        <div class="price-sub">
-          <span class="pro-monat">⌀ pro Monat</span>
-          <span class="info-base info-circ">i</span>
-        </div>
-        <div class="price-save" *ngIf="isSaving">
-          Sie sparen: <span class="hl">{{ savingPerYear }}</span>
-          <span class="info-base info-circ">i</span>
-        </div>
-        <div class="price-save price-extra" *ngIf="!isSaving">
-          Mehrkosten: <span class="hl hl-negative">{{ savingPerYear }}</span>
-          <span class="info-base info-circ">i</span>
-        </div>
+    <!-- NO PROVIDER SELECTED -->
+    <div *ngIf="!rateName && !providerSVG" style="padding: 20px; text-align: center;">
+      <div style="font-size: 16px; font-weight: 600; margin-bottom: 8px;">
+        Kein Anbieter ausgewählt
+      </div>
+
+      <div style="font-size: 14px; color: #666;">
+        Bitte wählen Sie einen Tarif aus.
       </div>
     </div>
+    <ng-container *ngIf="rateName || providerSVG">
+      <div class="accordion-body-wrap" [class.accordion-body-open]="open['preis']">
+        <div class="card-body">
+          <div class="price-amount">{{ avgMonthlyPrice }}</div>
+          <div class="price-sub">
+            <span class="pro-monat">⌀ pro Monat</span>
+            <span class="info-base info-circ">i</span>
+          </div>
+          <div class="price-save" *ngIf="isSaving">
+            Sie sparen: <span class="hl">{{ savingPerYear }}</span>
+            <span class="info-base info-circ">i</span>
+          </div>
+          <div class="price-save price-extra" *ngIf="!isSaving">
+            Mehrkosten: <span class="hl hl-negative">{{ savingPerYear }}</span>
+            <span class="info-base info-circ">i</span>
+          </div>
+        </div>
+      </div>
+    </ng-container>
   </div>
+
 
   <!-- Tarifdetails -->
   <div class="card accordion-card" [class.accordion-open]="open['tarifdetails']">
@@ -34,39 +47,52 @@
       <span class="accordion-header-left">Tarifdetails</span>
       <span class="accordion-chevron" [class.rotated]="open['tarifdetails']">&#8250;</span>
     </div>
-    <div class="accordion-body-wrap" [class.accordion-body-open]="open['tarifdetails']">
-      <div class="card-body">
-        <!-- Provider logo: rendered from inline SVG when available, image fallback otherwise -->
-        <div style="margin-bottom: 8px;">
-          <div class="icon-provider" *ngIf="providerSVG; else logoFallback">
-            <img [src]="providerSVG" [alt]="rateName" class="provider-logo-img" style="max-width: 150px; height: auto;">
-          </div>
-          <ng-template #logoFallback>
-            <div class="icon-octopus">
-              <img src="assets/icons/Octopus_Energy.png" alt="Fallback Provider" style="width: 40px; height: 40px;">
-            </div>
-          </ng-template>
-        </div>
+    <!-- NO PROVIDER SELECTED -->
+    <div *ngIf="!rateName && !providerSVG" style="padding: 20px; text-align: center;">
+      <div style="font-size: 16px; font-weight: 600; margin-bottom: 8px;">
+        Kein Anbieter ausgewählt
+      </div>
 
-        <div class="d-row">
-          <div class="d-label">Tarif</div>
-          <div class="d-value">{{ rateName }}</div>
-        </div>
-
-        <div class="d-row-inline">
-          <div>
-            <div class="d-label">Ökostromtarif</div>
-            <div class="d-value">{{ isEco ? 'Ja · Öko KlimaPlus' : 'Nein' }}</div>
-          </div>
-          <span class="info-base info-circ" style="margin-top: 8px;">i</span>
-        </div>
-
-        <div class="d-row">
-          <div class="d-label">Mindestvertragslaufzeit</div>
-          <div class="d-value">{{ minTerm }}</div>
-        </div>
+      <div style="font-size: 14px; color: #666;">
+        Bitte wählen Sie einen Tarif aus.
       </div>
     </div>
+    <ng-container *ngIf="rateName || providerSVG">
+      <div class="accordion-body-wrap" [class.accordion-body-open]="open['tarifdetails']">
+        <div class="card-body">
+          <!-- Provider logo: rendered from inline SVG when available, image fallback otherwise -->
+          <div style="margin-bottom: 8px;">
+            <div class="icon-provider" *ngIf="providerSVG; else logoFallback">
+              <img [src]="providerSVG" [alt]="rateName" class="provider-logo-img"
+                style="max-width: 150px; height: auto;">
+            </div>
+            <ng-template #logoFallback>
+              <div class="icon-octopus">
+                <img src="assets/icons/Octopus_Energy.png" alt="Fallback Provider" style="width: 40px; height: 40px;">
+              </div>
+            </ng-template>
+          </div>
+
+          <div class="d-row">
+            <div class="d-label">Tarif</div>
+            <div class="d-value">{{ rateName }}</div>
+          </div>
+
+          <div class="d-row-inline">
+            <div>
+              <div class="d-label">Ökostromtarif</div>
+              <div class="d-value">{{ isEco ? 'Ja · Öko KlimaPlus' : 'Nein' }}</div>
+            </div>
+            <span class="info-base info-circ" style="margin-top: 8px;">i</span>
+          </div>
+
+          <div class="d-row">
+            <div class="d-label">Mindestvertragslaufzeit</div>
+            <div class="d-value">{{ minTerm }}</div>
+          </div>
+        </div>
+      </div>
+    </ng-container>
   </div>
 
   <!-- Tarifübersicht -->
@@ -75,32 +101,44 @@
       <span class="accordion-header-left">Tarifübersicht</span>
       <span class="accordion-chevron" [class.rotated]="open['tarifuebersicht']">&#8250;</span>
     </div>
-    <div class="accordion-body-wrap" [class.accordion-body-open]="open['tarifuebersicht']">
-      <div class="card-body">
-        <div class="ov-row">
-          <div class="ov-label">Jahresverbrauch</div>
-          <div class="ov-value">{{ annualUsage }}</div>
-        </div>
-        <div class="ov-row">
-          <div class="ov-label">Grundpreis</div>
-          <div class="ov-value">{{ basePriceDisplay }}</div>
-        </div>
-        <div class="ov-row">
-          <div class="ov-label">Arbeitspreis</div>
-          <div class="ov-value">{{ workPriceDisplay }}</div>
-        </div>
-        <div class="ov-row" *ngIf="bonusDisplay">
-          <div class="ov-label">Neukundenbonus</div>
-          <div class="ov-value">{{ bonusDisplay }}</div>
-        </div>
-        <div class="line-blue">
-          <div class="link-blue">Tarifdetails anzeigen</div>
-          <div class="icon-blue">
-            <span class="info-base info-border-blue">i</span>
+    <!-- NO PROVIDER SELECTED -->
+    <div *ngIf="!rateName && !providerSVG" style="padding: 20px; text-align: center;">
+      <div style="font-size: 16px; font-weight: 600; margin-bottom: 8px;">
+        Kein Anbieter ausgewählt
+      </div>
+
+      <div style="font-size: 14px; color: #666;">
+        Bitte wählen Sie einen Tarif aus.
+      </div>
+    </div>
+    <ng-container *ngIf="rateName || providerSVG">
+      <div class="accordion-body-wrap" [class.accordion-body-open]="open['tarifuebersicht']">
+        <div class="card-body">
+          <div class="ov-row">
+            <div class="ov-label">Jahresverbrauch</div>
+            <div class="ov-value">{{ annualUsage }}</div>
+          </div>
+          <div class="ov-row">
+            <div class="ov-label">Grundpreis</div>
+            <div class="ov-value">{{ basePriceDisplay }}</div>
+          </div>
+          <div class="ov-row">
+            <div class="ov-label">Arbeitspreis</div>
+            <div class="ov-value">{{ workPriceDisplay }}</div>
+          </div>
+          <div class="ov-row" *ngIf="bonusDisplay">
+            <div class="ov-label">Neukundenbonus</div>
+            <div class="ov-value">{{ bonusDisplay }}</div>
+          </div>
+          <div class="line-blue">
+            <div class="link-blue">Tarifdetails anzeigen</div>
+            <div class="icon-blue">
+              <span class="info-base info-border-blue">i</span>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </ng-container>
   </div>
 
 </div>

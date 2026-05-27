@@ -852,6 +852,9 @@
     <div *ngIf="activeTab === 1 && currentStep === 1">
       <div class="login-berich">Übersicht Zähler & Verträge</div>
       <br />
+      <div class="no-data-found" *ngIf="!meterList || meterList.length === 0">
+        Keine Daten gefunden
+      </div>
       <div class="meter-section" *ngIf="viewSection != 2 && meterList && meterList.length > 0">
         <div class="meter-section-header">Meine Zähler</div>
 
@@ -2373,125 +2376,132 @@
     <div *ngIf="activeTab === 2 && currentStep === 1">
       <div class="login-berich">Wechselerinnerung</div>
       <br />
-      <div class="attorney-berich-green" style="align-items: start; justify-content: start; padding-left: 20px">
-        Wechselerinnerung
-      </div>
 
-      <div class="section-body">
-        <!-- Neu einziehen toggle -->
-        <div class="toggle-row header"></div>
-        <div class="toggle-row">
-          <div class="toggle-box">
-            <div class="toggle-opt" [class.selected]="selection === 'yes'" (click)="selectOption('yes')">
-              <label class="cb-row">
-                <input type="checkbox" name="selectionYes" [checked]="selection === 'yes'"
-                  (click)="$event.stopPropagation()" />
-              </label>
-              Ja
+      <!-- NO DATA -->
+      <div class="no-data-found" *ngIf="!groupedContracts || groupedContracts.length === 0">
+        Keine Daten gefunden
+      </div>
+      <ng-container *ngIf="groupedContracts && groupedContracts.length > 0">
+        <div class="attorney-berich-green" style="align-items: start; justify-content: start; padding-left: 20px">
+          Wechselerinnerung
+        </div>
+
+        <div class="section-body">
+          <!-- Neu einziehen toggle -->
+          <div class="toggle-row header"></div>
+          <div class="toggle-row">
+            <div class="toggle-box">
+              <div class="toggle-opt" [class.selected]="selection === 'yes'" (click)="selectOption('yes')">
+                <label class="cb-row">
+                  <input type="checkbox" name="selectionYes" [checked]="selection === 'yes'"
+                    (click)="$event.stopPropagation()" />
+                </label>
+                Ja
+              </div>
+              <div class="toggle-opt" [class.selected]="selection === 'no'" (click)="selectOption('no')">
+                <label class="cb-row">
+                  <input type="checkbox" name="selectionNo" [checked]="selection === 'no'"
+                    (click)="$event.stopPropagation()" />
+                </label>
+                Nein
+              </div>
             </div>
-            <div class="toggle-opt" [class.selected]="selection === 'no'" (click)="selectOption('no')">
-              <label class="cb-row">
-                <input type="checkbox" name="selectionNo" [checked]="selection === 'no'"
-                  (click)="$event.stopPropagation()" />
-              </label>
-              Nein
+            <div>
+              <span class="info-base info-circ" style="flex-shrink: 0">i</span>
             </div>
-          </div>
-          <div>
-            <span class="info-base info-circ" style="flex-shrink: 0">i</span>
           </div>
         </div>
-      </div>
 
-      <br />
+        <br />
 
-      <div *ngFor="let group of groupedContracts">
-        <!-- ADDRESS HEADER -->
-        <div style="border-radius: 0 0 8px 8px; border: 1px solid #00a651; margin-bottom: 20px">
-          <div class="attorney-berich-green" style="align-items: start; justify-content: start; padding-left: 20px">
-            Ihre Verträge und Kündigungsfristen - {{ group.addressLabel }}
-          </div>
+        <div *ngFor="let group of groupedContracts">
+          <!-- ADDRESS HEADER -->
+          <div style="border-radius: 0 0 8px 8px; border: 1px solid #00a651; margin-bottom: 20px">
+            <div class="attorney-berich-green" style="align-items: start; justify-content: start; padding-left: 20px">
+              Ihre Verträge und Kündigungsfristen - {{ group.addressLabel }}
+            </div>
 
-          <!-- CONTRACTS -->
-          <div class="tab-row">
-            <div class="contract-card" *ngFor="let contract of group.contracts">
-              <!-- LEFT -->
-              <div class="card-left">
-                <img [src]="contract.logo" class="company-logo" />
+            <!-- CONTRACTS -->
+            <div class="tab-row">
+              <div class="contract-card" *ngFor="let contract of group.contracts">
+                <!-- LEFT -->
+                <div class="card-left">
+                  <img [src]="contract.logo" class="company-logo" />
 
-                <div style="padding-bottom: 10px; font-size: 14px">
-                  <strong>{{ contract.title }}</strong>
-                </div>
+                  <div style="padding-bottom: 10px; font-size: 14px">
+                    <strong>{{ contract.title }}</strong>
+                  </div>
 
-                <div class="badge" style="font-size: 14px">
-                  <img [src]="contract.icon" class="badge-icon" />
-                  {{ contract.type }}
-                </div>
+                  <div class="badge" style="font-size: 14px">
+                    <img [src]="contract.icon" class="badge-icon" />
+                    {{ contract.type }}
+                  </div>
 
-                <div class="address">
-                  <p><strong>Zählernummer:</strong> {{ contract.meter }}</p>
-                  <p><strong>Adresse:</strong> {{ contract.name }}</p>
-                  <p>{{ contract.address }}</p>
-                </div>
-              </div>
-
-              <!-- MIDDLE -->
-              <div class="card-middle" style="font-size: 13px">
-                <p>
-                  Vertragsnummer: <strong>{{ contract.contractNumber }}</strong>
-                </p>
-                <p>
-                  Kundennummer: <strong>{{ contract.customerNumber }}</strong>
-                </p>
-                <p>
-                  Mindestvertragslaufzeit: <strong>{{ contract.duration }}</strong>
-                </p>
-                <p>
-                  Ende der Mindestvertragslaufzeit: <strong>{{ contract.endOfDuration }}</strong>
-                </p>
-                <p>
-                  Vertragsbeginn: <strong>{{ contract.startDate }}</strong>
-                </p>
-                <p>
-                  Automatische Verlängerung: <strong>{{ contract.renewal }}</strong>
-                </p>
-                <p>
-                  Arbeitspreis: <strong>{{ contract.price }}</strong>
-                </p>
-                <p>
-                  Grundpreis: <strong>{{ contract.basePrice }}</strong>
-                </p>
-                <p>
-                  Abschlag pro Monat: <strong>{{ contract.monthly }}</strong>
-                </p>
-              </div>
-
-              <!-- RIGHT -->
-              <div class="card-actions">
-                <!-- TOP TOGGLE -->
-                <div *ngIf="isNotificationEnabled">
-                  <div class="toggle-wrap">
-                    <label class="switch">
-                      <input type="checkbox" [(ngModel)]="contract.notificationEnabled"
-                        (change)="toggleDeliveryNotification(contract)" />
-                      <span class="slider"></span>
-                    </label>
+                  <div class="address">
+                    <p><strong>Zählernummer:</strong> {{ contract.meter }}</p>
+                    <p><strong>Adresse:</strong> {{ contract.name }}</p>
+                    <p>{{ contract.address }}</p>
                   </div>
                 </div>
 
-                <!-- BOTTOM BUTTONS -->
-                <div class="action-buttons" *ngIf="contract.showActions">
-                  <button class="cancel-btn">Kündigungsfrist zum {{ contract.cancelDate }}</button>
+                <!-- MIDDLE -->
+                <div class="card-middle" style="font-size: 13px">
+                  <p>
+                    Vertragsnummer: <strong>{{ contract.contractNumber }}</strong>
+                  </p>
+                  <p>
+                    Kundennummer: <strong>{{ contract.customerNumber }}</strong>
+                  </p>
+                  <p>
+                    Mindestvertragslaufzeit: <strong>{{ contract.duration }}</strong>
+                  </p>
+                  <p>
+                    Ende der Mindestvertragslaufzeit: <strong>{{ contract.endOfDuration }}</strong>
+                  </p>
+                  <p>
+                    Vertragsbeginn: <strong>{{ contract.startDate }}</strong>
+                  </p>
+                  <p>
+                    Automatische Verlängerung: <strong>{{ contract.renewal }}</strong>
+                  </p>
+                  <p>
+                    Arbeitspreis: <strong>{{ contract.price }}</strong>
+                  </p>
+                  <p>
+                    Grundpreis: <strong>{{ contract.basePrice }}</strong>
+                  </p>
+                  <p>
+                    Abschlag pro Monat: <strong>{{ contract.monthly }}</strong>
+                  </p>
+                </div>
 
-                  <button class="compare-btn" (click)="compareNew(contract)">
-                    Vertrag neu vergleichen
-                  </button>
+                <!-- RIGHT -->
+                <div class="card-actions">
+                  <!-- TOP TOGGLE -->
+                  <div *ngIf="isNotificationEnabled">
+                    <div class="toggle-wrap">
+                      <label class="switch">
+                        <input type="checkbox" [(ngModel)]="contract.notificationEnabled"
+                          (change)="toggleDeliveryNotification(contract)" />
+                        <span class="slider"></span>
+                      </label>
+                    </div>
+                  </div>
+
+                  <!-- BOTTOM BUTTONS -->
+                  <div class="action-buttons" *ngIf="contract.showActions">
+                    <button class="cancel-btn">Kündigungsfrist zum {{ contract.cancelDate }}</button>
+
+                    <button class="compare-btn" (click)="compareNew(contract)">
+                      Vertrag neu vergleichen
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      </ng-container>
     </div>
 
     <!--Reminder Overlay -->
