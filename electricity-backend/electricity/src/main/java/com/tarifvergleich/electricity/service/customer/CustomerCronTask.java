@@ -14,7 +14,6 @@ import org.springframework.stereotype.Service;
 import com.tarifvergleich.electricity.dto.ServiceRequestEmailEvent.ServiceResponseEmailEvent;
 import com.tarifvergleich.electricity.model.Customer;
 import com.tarifvergleich.electricity.model.CustomerDelivery;
-import com.tarifvergleich.electricity.model.CustomerOrder;
 import com.tarifvergleich.electricity.repository.CustomerDeliveryRepository;
 import com.tarifvergleich.electricity.repository.CustomerOrderRepository;
 import com.tarifvergleich.electricity.util.EmailTemplate;
@@ -31,6 +30,7 @@ public class CustomerCronTask {
 	private final ApplicationEventPublisher eventPublisher;
 	private final EmailTemplate emailTemplate;
 	private final CustomerOrderRepository customerOrderRepo;
+	private final CustomerCronOrderService customerCronOrderService;
 
 	@Qualifier("orderStatusCronExecutor")
 	private final Executor orderStatusCronExecutor;
@@ -72,14 +72,16 @@ public class CustomerCronTask {
 		return Map.of("res", true, "message", "Notification send successfully to customer");
 	}
 
-	@Scheduled(cron = "0 0 1 * * ?")
+	@Scheduled(cron = "${app.order-status-check.cron-expression}", zone = "Europe/Berlin")
 	public void checkOrderStatus() {
 
-		List<Integer> orderIds = customerOrderRepo.findIdsByAdminPlacedOrderAndIsExpiredAndIsCancelled(true, false, false);
-		
-		if(orderIds.isEmpty())
+		List<Integer> orderIds = customerOrderRepo.findIdsByAdminPlacedOrderAndIsExpiredAndIsCancelled(true, false,
+				false);
+
+		if (orderIds.isEmpty())
 			return;
-		
+
+		orderIds.forEach(id -> customerCronOrderService.checkStatusAndSendMail(id));
 	}
 
 }

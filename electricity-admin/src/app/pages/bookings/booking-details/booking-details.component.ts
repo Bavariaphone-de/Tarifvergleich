@@ -149,6 +149,17 @@ type OrderInfo = {
   customerSignatureSet?: boolean | null;
 };
 
+/**
+ * Top-level egON order status object returned alongside the booking data.
+ * Populated after admin calls "check-order-status"; may be null on first load.
+ */
+type EgonOrderStatus = {
+  status?: number | null; // egON numeric status code (e.g. 1000)
+  message?: string | null; // Human-readable German message from egON
+  checkedOn?: number | null; // Unix timestamp of last status check
+  orderState?: string | null; // Internal state label (e.g. "Document Uploaded")
+};
+
 /** Full shape of a single delivery record returned by the API */
 export type ApiBooking = {
   // ── Identity ────────────────────────────────────────────────────────────────
@@ -183,6 +194,9 @@ export type ApiBooking = {
   contactSchedule?: ContactSchedule | null;
   customer?: CustomerInfo | null;
   order?: OrderInfo | null;
+
+  // ── egON live order status (top-level, nullable) ──────────────────────────
+  orderStatus?: EgonOrderStatus | null;
 
   // ── Legacy / derived fields that may appear in older records ─────────────────
   deliveryDate?: number | string | null;
@@ -240,6 +254,22 @@ export class BookingDetailComponent implements OnInit {
   signatureLinkMessage = "";
   signatureLinkError = "";
 
+  // ── Post-signature actions (visible once customer has signed the contract) ─
+  /** Mirrors the top-level `customerSignedContract` field from the API response */
+  customerSignedContract = false;
+
+  // ── egON live order status (top-level field from API response) ────────────
+  /** Null until a status check has been performed, or if the API hasn't returned it yet */
+  egonOrderStatus: EgonOrderStatus | null = null;
+
+  isCheckingContractStatus = false;
+  checkContractStatusMessage = "";
+  checkContractStatusError = "";
+
+  isSendingContractPdf = false;
+  sendContractPdfMessage = "";
+  sendContractPdfError = "";
+
   // Derived from booking data — adjust the path to match your booking model
   get customerSignatureSet(): boolean {
     return !!this.booking?.order?.customerSignatureSet;
@@ -284,6 +314,44 @@ export class BookingDetailComponent implements OnInit {
           console.error("Signature link send error:", err);
         },
       });
+  }
+
+  // ── egON live order status helpers ───────────────────────────────────────
+  // The API returns a top-level `orderStatus` object (not a numeric code) with
+  // { status, message, checkedOn, orderState }. This is stored in egonOrderStatus.
+
+  /**
+   * Maps the egON `orderState` string to a Tailwind badge colour set.
+   * Falls back to gray for unknown/null states.
+   */
+  getEgonStatusClass(): string {
+    const state = this.egonOrderStatus?.orderState?.toLowerCase() ?? "";
+    if (
+      state.includes("upload") ||
+      state.includes("complete") ||
+      state.includes("confirmed")
+    )
+      return "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400";
+    if (
+      state.includes("pending") ||
+      state.includes("open") ||
+      state.includes("created")
+    )
+      return "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400";
+    if (
+      state.includes("cancel") ||
+      state.includes("error") ||
+      state.includes("reject") ||
+      state.includes("expired")
+    )
+      return "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400";
+    if (
+      state.includes("waiting") ||
+      state.includes("wartend") ||
+      state.includes("ausstehend")
+    )
+      return "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400";
+    return "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300";
   }
 
   readonly dayLabels: Record<string, string> = {
@@ -340,6 +408,11 @@ export class BookingDetailComponent implements OnInit {
       next: (res: any) => {
         this.isLoading = false;
         this.booking = this.extractBooking(res);
+        // Top-level flags — independent of the nested booking object
+        this.customerSignedContract = res?.customerSignedContract === true;
+        // Top-level egON order status object (may be null if no check run yet)
+        this.egonOrderStatus =
+          res?.data?.orderStatus ?? res?.orderStatus ?? null;
         if (!this.booking) this.errorMessage = "Buchung nicht gefunden.";
       },
       error: (err) => {
@@ -430,8 +503,15 @@ export class BookingDetailComponent implements OnInit {
   // ── Status: Pending ───────────────────────────────────────────────────────
 
   /**
-   * TRUE when the booking's order object is null — the customer has completed
-   * and submitted the booking form, but no internal order has been created yet.
+   * TRUE when the customer has fully submitted the booking (orderPlaced === true)
+   * but no internal order record has been created yet (order === null).
+   *
+   * NOTE: Do NOT use `connection !== null` as the "submitted" signal here.
+   * `connection` can legitimately be null even after the customer completes
+   * submission (e.g. tariffs that require no connection data), which would
+   * silently hide all Pending-state buttons. `orderPlaced` is the single
+   * authoritative flag the backend sets when the customer finishes the wizard.
+   *
    * Shown buttons: Change Provider · Change Booking · Create Order.
    */
   get isPending(): boolean {
@@ -439,7 +519,7 @@ export class BookingDetailComponent implements OnInit {
       !this.isExpired &&
       this.booking !== null &&
       this.booking?.order === null &&
-      this.booking?.connection !== null
+      this.booking?.orderPlaced === true
     );
   }
 
@@ -585,6 +665,83 @@ export class BookingDetailComponent implements OnInit {
         this.isGeneratingDoc = false;
         this.generateDocError = "Fehler beim Hochladen des Dokuments.";
         console.error("Generate document error:", err);
+      },
+    });
+  }
+
+  // ── Action: Check contract status (post-signature) ────────────────────────
+
+  checkContractStatus(): void {
+    if (!this.booking?.order?.customerOrderId) return;
+    this.isCheckingContractStatus = true;
+    this.checkContractStatusError = "";
+    this.checkContractStatusMessage = "";
+
+    const payload = {
+      customerOrderId: this.booking.order.customerOrderId,
+      adminId: this.authService.getUserId() || 1,
+    };
+
+    this.api.post("admin/check-order-status", payload).subscribe({
+      next: (res: any) => {
+        this.isCheckingContractStatus = false;
+        if (res?.res) {
+          // Prioritize the statusDescription from the new data object
+          this.checkContractStatusMessage =
+            res.data?.statusDescription ??
+            res.message ??
+            "Status erfolgreich abgerufen.";
+
+          this.fetchBooking(this.booking!.deliveryId ?? 0);
+        } else {
+          this.checkContractStatusError =
+            res?.errMessage ??
+            res?.message ??
+            "Status konnte nicht abgerufen werden.";
+        }
+      },
+      error: (err) => {
+        this.isCheckingContractStatus = false;
+        this.checkContractStatusError =
+          err?.error?.message ?? "Fehler beim Abrufen des Status.";
+        console.error("Check contract status error:", err);
+      },
+    });
+  }
+
+  // ── Action: Send signed contract PDF to customer ───────────────────────────
+
+  sendContractPdf(): void {
+    if (!this.booking?.order?.customerOrderId) return;
+    this.isSendingContractPdf = true;
+    this.sendContractPdfError = "";
+    this.sendContractPdfMessage = "";
+
+    const payload = {
+      customerOrderId: this.booking.order.customerOrderId,
+      adminId: this.authService.getUserId() || 1,
+    };
+
+    this.api.post("admin/send-contract-pdf", payload).subscribe({
+      next: (res: any) => {
+        this.isSendingContractPdf = false;
+        if (res?.res) {
+          this.sendContractPdfMessage =
+            res.message ??
+            "Der unterzeichnete Vertrag wurde erfolgreich an den Kunden gesendet.";
+        } else {
+          this.sendContractPdfError =
+            res?.errMessage ??
+            res?.message ??
+            "Der Vertrag konnte nicht gesendet werden.";
+        }
+      },
+      error: (err) => {
+        this.isSendingContractPdf = false;
+        this.sendContractPdfError =
+          err?.error?.message ??
+          "Fehler beim Senden des Vertrags. Bitte erneut versuchen.";
+        console.error("Send contract PDF error:", err);
       },
     });
   }

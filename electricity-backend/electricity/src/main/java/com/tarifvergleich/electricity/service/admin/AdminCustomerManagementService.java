@@ -62,6 +62,7 @@ public class AdminCustomerManagementService {
 	private final CustomerComparingEnergyRepository customerComparingEnergyRepo;
 	private final CustomerServiceRequestRepository customerServiceRequestRepo;
 	private final CustomerAttornyRepository customerAttornyRepo;
+	private final CustomerOrderRepository customerOrderRepo;
 	private final ApplicationEventPublisher eventPublisher;
 	private final EmailBodyRender emailBodyRender;
 	private final CustomerAuthService customerAuthService;
@@ -127,6 +128,7 @@ public class AdminCustomerManagementService {
 					"totalRecords", totalCustomers,
 					"totalConsluded", totalVerifiedCustomers
 			);
+
 		}
 
 		List<Customer> customers = customerRepo.findAllByAdminAdminIdOrderByJoinedOnDesc(customerReq.getAdminId());
@@ -209,6 +211,9 @@ public class AdminCustomerManagementService {
 			long totalCompleted = customerOrderRepository.countOrderCreatedStatus(deliveryReq.getAdminId());
 			
 
+
+			long totalDeliveries = customerDeliveryRepo.countByAdminAdminId(deliveryReq.getAdminId());
+			long totalCompleted = customerOrderRepo.countOrderCreatedStatus(deliveryReq.getAdminId());
 
 			return Map.of("res", true, "data", customerDeliveryResponse.getContent(), "page",
 					customerDeliveryResponse.getPageable().getPageNumber() + 1, "totalPage",

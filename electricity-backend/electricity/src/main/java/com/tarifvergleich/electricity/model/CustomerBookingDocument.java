@@ -74,6 +74,7 @@ public class CustomerBookingDocument {
 	@PrePersist
 	protected void onCreate() {
 		addedOn = Helper.getCurrentTimeBerlin();
+		signedDocumentSubmitted = false;
 	}
 
 	@PreUpdate

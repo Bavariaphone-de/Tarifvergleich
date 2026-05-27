@@ -25,6 +25,8 @@ public interface CustomerDeliveryRepository extends JpaRepository<CustomerDelive
 	
 	long countByAdminAdminId(Integer adminId);
 
+	long countByAdminAdminId(Integer adminId);
+
 	Page<CustomerDelivery> findAllByAdminAdminId(Integer adminId, Pageable pageable);
 
 	Optional<CustomerDelivery> findByIdAndAdminAdminId(Integer id, Integer adminId);

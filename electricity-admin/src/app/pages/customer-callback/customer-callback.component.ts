@@ -67,7 +67,7 @@ export class CustomerCallbackComponent {
     const payload = {
       adminId: this.authService.getUserId(),
       page: this.currentPage,
-      size: 5,
+      size: this.PAGE_LIMIT,
       concluded:
         this.selectedStatus === "" ? undefined : this.selectedStatus === "true",
     };
