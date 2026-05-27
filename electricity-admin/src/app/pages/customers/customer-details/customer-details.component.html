@@ -257,7 +257,7 @@
                  
                 <button
                     (click)="openLexofficeModal()"
-                    class="inline-flex items-center gap-2 bg-pink-600 hover:bg-pink-400 text-white px-4 py-2 rounded-lg text-sm font-medium transition shadow-sm active:scale-95 border border-pink-300"
+                    class="inline-flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition shadow-sm active:scale-95 border border-blue-300"
                     >
                     <svg
                         fill="none"
@@ -280,7 +280,7 @@
                 
                 <button
                     (click)="openNoteModal(customer)"
-                    class="inline-flex items-center gap-2 bg-orange-600 hover:bg-orange-400 text-white px-4 py-2 rounded-lg text-sm font-medium transition shadow-sm active:scale-95 border border-orange-300"
+                    class="inline-flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition shadow-sm active:scale-95 border border-blue-300"
                     >
                     <svg
                         fill="none"
@@ -302,7 +302,7 @@
                 <!-- CONTACT NOTIZ BUTTON -->
                 <button
                     (click)="openContactHistoryModal(customer)"
-                    class="bg-blue-600 hover:bg-blue-400 text-white px-4 py-2 rounded-lg text-sm font-medium transition shadow-sm active:scale-95 border-0">
+                    class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition shadow-sm active:scale-95 border-0">
                     Contact history
                 </button>
 
@@ -312,7 +312,7 @@
                     <button
                         (click)="toggleGdprStatus()"
                         [disabled]="isTogglingGdpr"
-                        class="bg-green-600 hover:bg-green-400 text-white px-4 py-2 rounded-lg text-sm font-medium transition shadow-sm active:scale-95 border border-green-300 disabled:opacity-50">
+                        class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition shadow-sm active:scale-95 border border-blue-300 disabled:opacity-50">
                             {{ isTogglingGdpr ? 'Wird aktualisiert...' : 'GDPR: Active' }}
                     </button>
 
@@ -321,7 +321,7 @@
                     <button
                         (click)="toggleGdprStatus()"
                         [disabled]="isTogglingGdpr"
-                        class="bg-red-600 hover:bg-red-400 text-white px-4 py-2 rounded-lg text-sm font-medium transition shadow-sm active:scale-95 border border-red-300 disabled:opacity-50">
+                        class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition shadow-sm active:scale-95 border border-red-300 disabled:opacity-50">
                             {{ isTogglingGdpr ? 'Wird aktualisiert...' : 'GDPR: Inaktiv' }}
                     </button>
                     

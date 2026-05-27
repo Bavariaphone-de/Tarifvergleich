@@ -179,15 +179,4 @@ public class AdminCustomerManagementController {
 	public ResponseEntity<?> addLexofficeNumber(@RequestBody CustomerDto customerDto) {
 		return ResponseEntity.ok(adminCustomerManagementService.addLexofficeNumberForCustomer(customerDto));
 	}
-
-	@PostMapping("/fetch-signed-contract")
-	public ResponseEntity<?> fetchSignedContract(@RequestBody CustomerOrderDto customerOrderDto) {
-		return ResponseEntity.ok(adminCustomerDeliveryManagementService.getSignedPdfFromEgon(customerOrderDto));
-	}
-
-	@PostMapping("/resend-signing-order")
-	public ResponseEntity<?> resendSigningContractMail(@RequestBody CustomerOrderDto customerOrderDto) {
-
-		return ResponseEntity.ok(adminCustomerDeliveryManagementService.resendSigningContractMail(customerOrderDto));
-	}
 }

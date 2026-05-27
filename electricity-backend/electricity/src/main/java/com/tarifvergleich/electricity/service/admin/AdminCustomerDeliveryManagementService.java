@@ -307,38 +307,6 @@ public class AdminCustomerDeliveryManagementService {
 
 		CustomerDelivery delivery = order.getDelivery();
 
-//		CustomerSelectedProvider provider = delivery.getCustomerProvider();
-//
-//		LocalDate expiry;
-//		BigInteger totalTerm;
-//
-//		try {
-//			expiry = helper.flexibleDateParser(provider.getRaw().get("optTerm").asText())
-//					.atStartOfDay(ZoneId.of("Europe/Berlin")).minusDays(1).toLocalDate();
-//		} catch (DateTimeParseException | IllegalArgumentException e) {
-//			Long expireDuration = provider.getRaw().get("optTerm").asLong();
-//			expiry = LocalDate.now().atStartOfDay().atZone(ZoneId.of("Europe/Berlin")).plusMonths(expireDuration)
-//					.minusDays(1).toLocalDate();
-//		}
-//
-//		totalTerm = BigInteger.valueOf(ChronoUnit.SECONDS.between(expiry.atStartOfDay(ZoneId.of("Europe/Berlin")),
-//				ZonedDateTime.now(ZoneId.of("Europe/Berlin"))));
-//
-//		BigInteger cancelTime = BigInteger.valueOf(0);
-//		if (provider.getRaw().path("cancel") != null && provider.getRaw().path("cancelType") != null) {
-//			Integer cancel = provider.getRaw().path("cancel").asInt();
-//			Integer cancelType = provider.getRaw().path("cancelType").asInt();
-//			BigInteger expiryBigInt = helper.toGermamUnixTimestamp(expiry);
-//
-//			if (cancelType.equals(0))
-//				cancelTime = expiryBigInt.subtract(helper.getSecondValueOfDuration(0, 0, 0, 0, 0, 0));
-//			else if (cancelType.equals(1))
-//				cancelTime = expiryBigInt.subtract(helper.getSecondValueOfDuration(0, 0, cancel, 0, 0, 0));
-//			else if (cancelType.equals(2))
-//				cancelTime = expiryBigInt.subtract(helper.getSecondValueOfDuration(0, 0, cancel * 7, 0, 0, 0));
-//			else if (cancelType.equals(3))
-//				cancelTime = expiryBigInt.subtract(helper.getSecondValueOfDuration(0, cancel, 0, 0, 0, 0));
-//		}
 
 		/* Map egon place order payload */
 		AdminCreateOrderEgonDto placeOrderRequest = AdminCreateOrderEgonDto.mapToEgonRequest(delivery, "new");
@@ -371,94 +339,6 @@ public class AdminCustomerDeliveryManagementService {
 		return Map.of("res", true, "message", "Order placed successfully", "Order no", orderNo);
 	}
 
-	@Transactional
-	public Map<String, Object> getSignedPdfFromEgon(CustomerOrderDto customerOrderDto) {
-		if (customerOrderDto.getAdminId() == null || customerOrderDto.getAdminId() <= 0)
-			throw new InternalServerException("Admin id missing", HttpStatus.OK);
-		if (customerOrderDto.getCustomerOrderId() == null || customerOrderDto.getCustomerOrderId() <= 0)
-			throw new InternalServerException("Customer order id missing", HttpStatus.OK);
-
-		CustomerOrder order = customerOrderRepo
-				.findByIdAndAdminAdminId(customerOrderDto.getCustomerOrderId(), customerOrderDto.getAdminId())
-				.orElseThrow(() -> new InternalServerException("Order record not found with this credential",
-						HttpStatus.OK));
-
-		if (order.getOrderId() == null || order.getOrderId() <= 0)
-			throw new InternalServerException("Order is not placed", HttpStatus.OK);
-
-		if (order.getCustomerBookingDocument() != null)
-			throw new InternalServerException("Contract already signed", HttpStatus.OK);
-
-		AdminSignature adminSignature = adminSignatureRepo.findByAdminAdminId(customerOrderDto.getAdminId())
-				.orElseThrow(() -> new InternalServerException("Admin signature not found with this credential",
-						HttpStatus.OK));
-
-		if (adminSignature.getFilePath().isEmpty())
-			throw new InternalServerException("Admin signature not found", HttpStatus.OK);
-
-		String fetchAdminSignature = fileServiceSuperAdmin.relativeToBase64(adminSignature.getFilePath());
-
-        if (customerSignatures == null)
-            throw new InternalServerException("Customer have not submitted their contract signature yet", HttpStatus.OK);
-
-		CustomerContractSignature customerSignatures = order.getCustomerContractSignature();
-
-		if (customerSignatures == null)
-			throw new InternalServerException("Customer signature is missing", HttpStatus.OK);
-
-		String fetchSignature = "";
-		String fetchSignatureBank = "";
-		String fetchSignatureCustomer = "";
-		String fetchSignatureDataProtection = "";
-		if (customerSignatures.getSignature() != null && !customerSignatures.getSignature().isEmpty())
-			fetchSignature = fileServiceCustomer.relativeToBase64(customerSignatures.getSignature());
-		if (customerSignatures.getSignatureBank() != null && !customerSignatures.getSignatureBank().isEmpty())
-			fetchSignatureBank = fileServiceCustomer.relativeToBase64(customerSignatures.getSignatureBank());
-		if (customerSignatures.getSignatureCustomer() != null && !customerSignatures.getSignatureCustomer().isEmpty())
-			fetchSignatureCustomer = fileServiceCustomer.relativeToBase64(customerSignatures.getSignatureCustomer());
-		if (customerSignatures.getSignatureDataProtection() != null
-				&& !customerSignatures.getSignatureDataProtection().isEmpty())
-			fetchSignatureDataProtection = fileServiceCustomer
-					.relativeToBase64(customerSignatures.getSignatureDataProtection());
-
-		CustomerBookingDocument bookingDoc = CustomerBookingDocument.builder().orderNo(delivery.getOrderNo())
-				.customer(delivery.getCustomerId()).customerDelivery(delivery).admin(delivery.getAdmin())
-				.customerOrder(order).build();
-
-		EgonFileSignatureRequest signature = EgonFileSignatureResponse.mapSignatures(fetchSignature, fetchSignatureBank,
-				fetchAdminSignature, fetchSignatureCustomer, fetchSignatureDataProtection);
-
-		EgonDocumentDto egonBookingResponse = energyService.createBookingPdf(delivery.getOrderNo().toString(),
-				signature);
-
-		String fileName = delivery.getFirstName() + "_" + delivery.getLastName() + "_" + delivery.getUniqueDeliveryId();
-
-		try {
-			String signedContractFilePath = fileServiceCustomer.saveBase64Pdf(egonBookingResponse.file(), fileName,
-					"customer-signed-documents");
-			bookingDoc.setSignedOriginalFileName(fileName);
-			bookingDoc.setSignedFileUrl(signedContractFilePath);
-			bookingDoc.setSignedDocumentSubmitted(true);
-		} catch (IOException e) {
-			e.printStackTrace();
-			throw new RuntimeException();
-		}
-
-		bookingDoc = customerBookingDocumentRepo.save(bookingDoc);
-
-		delivery.setCustomerBookingDocument(bookingDoc);
-		order.setCustomerBookingDocument(bookingDoc);
-		order.setDelivery(delivery);
-
-		customerOrderRepo.save(order);
-
-		String signedPdfAbsolutePath = fileServiceCustomer.getAbsolutePath(bookingDoc.getSignedFileUrl());
-
-		if (signedPdfAbsolutePath == null || signedPdfAbsolutePath.isEmpty())
-			throw new InternalServerException("Fail to convert url", HttpStatus.OK);
-
-		return Map.of("res", true, "signedPdfUrl", signedPdfAbsolutePath);
-	}
 
 	@Transactional
 	public Map<String, Object> openOrder(CustomerDeliveryDto deliveryDto) {
@@ -538,48 +418,5 @@ public class AdminCustomerDeliveryManagementService {
 
 		customerBookingDocumentRepo.save(bookingDocument);
 		return Map.of("res", true, "message", "Customer signed document uploaded successfully");
-	}
-
-	public Map<String, Object> resendSigningContractMail(CustomerOrderDto orderDto) {
-
-		if (orderDto.getAdminId() == null || orderDto.getAdminId() <= 0)
-			throw new InternalServerException("Admin id missing", HttpStatus.OK);
-
-		if (orderDto.getCustomerOrderId() == null || orderDto.getCustomerOrderId() < 0)
-			throw new InternalServerException("Customer order id missing", HttpStatus.OK);
-
-		CustomerOrder order = customerOrderRepo
-				.findByIdAndAdminAdminId(orderDto.getCustomerOrderId(), orderDto.getAdminId())
-				.orElseThrow(() -> new InternalServerException("Customer order not found with this credential",
-						HttpStatus.OK));
-
-		if (order.getOrderId() == null || order.getOrderId() <= 0)
-			throw new InternalServerException("Order not placed", HttpStatus.OK);
-
-		asyncServiceAdmin.sendMailToCustomerForSignatures(orderDto.getCustomerOrderId());
-
-        customerBookingDocumentRepo.save(bookingDocument);
-        return Map.of("res", true, "message", "Customer signed document uploaded successfully");
-    }
-    
-    public Map<String, Object> resendSigningContractMail(CustomerOrderDto orderDto) {
-
-		if (orderDto.getAdminId() == null || orderDto.getAdminId() <= 0)
-			throw new InternalServerException("Admin id missing", HttpStatus.OK);
-
-		if (orderDto.getCustomerOrderId() == null || orderDto.getCustomerOrderId() < 0)
-			throw new InternalServerException("Customer order id missing", HttpStatus.OK);
-
-		CustomerOrder order = customerOrderRepo
-				.findByIdAndAdminAdminId(orderDto.getCustomerOrderId(), orderDto.getAdminId())
-				.orElseThrow(() -> new InternalServerException("Customer order not found with this credential",
-						HttpStatus.OK));
-
-		if (order.getOrderId() == null || order.getOrderId() <= 0)
-			throw new InternalServerException("Order not placed", HttpStatus.OK);
-
-		asyncServiceAdmin.sendMailToCustomerForSignatures(orderDto.getCustomerOrderId());
-
-		return Map.of("res", true, "message", "Email for signature contract send successfully");
 	}
 }
