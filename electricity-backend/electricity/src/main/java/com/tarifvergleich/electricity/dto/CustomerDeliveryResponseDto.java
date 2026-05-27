@@ -7,6 +7,7 @@ import com.tarifvergleich.electricity.dto.CustomerContactScheduleRequestDto.Cust
 import com.tarifvergleich.electricity.dto.CustomerDto.SingleCustomerAdminResponseDelivery;
 import com.tarifvergleich.electricity.dto.CustomerOrderDto.CustomerOrderAdminResDto;
 import com.tarifvergleich.electricity.dto.CustomerOrderDto.CustomerOrderDetailsForProfile;
+import com.tarifvergleich.electricity.dto.CustomerOrderStatusRecordDto.CustomerOrderStatusRecordForDeliveryDetailsAdmin;
 import com.tarifvergleich.electricity.dto.CustomerPaymentRequestDto.CustomerPaymentResponse;
 import com.tarifvergleich.electricity.model.CustomerDelivery;
 
@@ -15,7 +16,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.util.List;
-
 
 @Data
 @NoArgsConstructor
@@ -38,7 +38,6 @@ public class CustomerDeliveryResponseDto {
 	private CustomerAddressRes customerAddress;
 	private CustomerBillingAddressRes billingAddress;
 	private EnergyRateDto provider;
-	
 
 	private Integer adminId;
 	private Integer page;
@@ -99,6 +98,7 @@ public class CustomerDeliveryResponseDto {
 		private CustomerContactScheduleResponse contactSchedule;
 		private SingleCustomerAdminResponseDelivery customer;
 		private CustomerOrderAdminResDto order;
+		private CustomerOrderStatusRecordForDeliveryDetailsAdmin orderStatus;
 		private List<CustomerInvoiceRequestDto> invoiceRequests;
 		private List<ReportMeterReadingDto> reportMeterReadings;
 	}
@@ -168,6 +168,7 @@ public class CustomerDeliveryResponseDto {
 						.houseNumber(delivery.getBillingAddress().getHouseNumber())
 						.isDifferent(delivery.getBillingAddress().getIsDifferent()).build())
 				.orderPlaced(delivery.getOrderPlaced()).orderPlacedOn(delivery.getOrderPlacedOn())
+				.orderStatus(CustomerOrderStatusRecordDto.mapForCustomerDeliveryDetails(delivery.getCustomerOrder()))
 				.notificationEnabled(delivery.getNotificationEnabled())
 //				.admin(
 //					    admin.getAdminSignature() != null
