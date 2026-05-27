@@ -37,6 +37,7 @@ import com.tarifvergleich.electricity.model.CustomerComparingEnergy;
 import com.tarifvergleich.electricity.model.CustomerDelivery;
 import com.tarifvergleich.electricity.model.CustomerDetailsContactHistory;
 import com.tarifvergleich.electricity.model.CustomerNote;
+import com.tarifvergleich.electricity.model.CustomerOrder;
 import com.tarifvergleich.electricity.model.CustomerServiceRequest;
 import com.tarifvergleich.electricity.model.CustomerServiceRequestMessages;
 import com.tarifvergleich.electricity.repository.CustomerAttornyRepository;
@@ -47,6 +48,7 @@ import com.tarifvergleich.electricity.repository.CustomerRepository;
 import com.tarifvergleich.electricity.repository.CustomerServiceRequestRepository;
 import com.tarifvergleich.electricity.service.customer.CustomerAuthService;
 import com.tarifvergleich.electricity.util.EmailBodyRender;
+import com.tarifvergleich.electricity.util.FileServiceCustomer;
 import com.tarifvergleich.electricity.util.Helper;
 
 import jakarta.transaction.Transactional;
@@ -66,6 +68,7 @@ public class AdminCustomerManagementService {
 	private final CustomerAuthService customerAuthService;
 	private final ObjectMapper objectMapper;
 	private final CustomerDetailsContactHistoryRepository customerDetailsContactHistoryRepo;
+	private final FileServiceCustomer fileServiceCustomer;
 
 	public Map<String, Object> getCustomers(CustomerDto customerReq) {
 
@@ -135,8 +138,10 @@ public class AdminCustomerManagementService {
 
 		if (deliveryReq.getDeliveryId() != null && deliveryReq.getDeliveryId() > 0) {
 
-			CustomerDelivery delivery = customerDeliveryRepo.findByIdAndAdminAdminId(deliveryReq.getDeliveryId(), deliveryReq.getAdminId()).orElseThrow(
-					() -> new InternalServerException("Resource not found with this credential", HttpStatus.OK));
+			CustomerDelivery delivery = customerDeliveryRepo
+					.findByIdAndAdminAdminId(deliveryReq.getDeliveryId(), deliveryReq.getAdminId())
+					.orElseThrow(() -> new InternalServerException("Resource not found with this credential",
+							HttpStatus.OK));
 
 			Boolean isCustomerSignedContract = false;
 
@@ -545,4 +550,29 @@ public class AdminCustomerManagementService {
 		return Map.of("res", true, "message", "lexoffice_Number added successfully");
 	}
 
+	public Map<String, Object> fetchAllPdfOfCustomer(CustomerDto customerDto) {
+
+		if (customerDto.getAdminId() == null || customerDto.getAdminId() <= 0)
+			throw new InternalServerException("Admin id missing", HttpStatus.OK);
+		if (customerDto.getId() == null || customerDto.getId() <= 0)
+			throw new InternalServerException("Customer id missing", HttpStatus.OK);
+
+		Customer customer = customerRepo.findByCustomerIdAndAdminAdminId(customerDto.getId(), customerDto.getAdminId())
+				.orElseThrow(
+						() -> new InternalServerException("Customer not found with this credential", HttpStatus.OK));
+
+		List<CustomerOrder> orders = customer.getCustomerOrders().stream()
+				.filter(order -> order.getCustomerBookingDocument() != null
+						&& order.getCustomerBookingDocument().getSignedDocumentSubmitted()
+						&& order.getCustomerBookingDocument().getSignedFileUrl() != null
+						&& !order.getCustomerBookingDocument().getSignedFileUrl().isEmpty())
+				.toList();
+
+		Map<Integer, String> orderDocs = orders.stream().collect(Collectors.toMap(CustomerOrder::getId,
+				order -> fileServiceCustomer.getAbsolutePath(order.getCustomerBookingDocument().getSignedFileUrl())));
+		
+		
+
+		return Map.of("res", true, "data", Map.of("ContractSignedDocument", orderDocs));
+	}
 }
