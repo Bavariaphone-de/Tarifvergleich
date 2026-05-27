@@ -23,6 +23,8 @@ public interface CustomerDeliveryRepository extends JpaRepository<CustomerDelive
 
 	Boolean existsByIdAndAdminAdminIdAndOrderPlaced(Integer id, Integer adminId, Boolean orderPlaced);
 
+	long countByAdminAdminId(Integer adminId);
+
 	Page<CustomerDelivery> findAllByAdminAdminId(Integer adminId, Pageable pageable);
 
 	Optional<CustomerDelivery> findByIdAndAdminAdminId(Integer id, Integer adminId);

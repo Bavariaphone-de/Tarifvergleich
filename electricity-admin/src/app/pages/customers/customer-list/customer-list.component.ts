@@ -131,8 +131,8 @@ export class CustomerListComponent implements OnInit {
   constructor(
     private api: ApiService,
     private authService: AuthService,
-    private router:Router,
-  ) { }
+    private router: Router,
+  ) {}
 
   ngOnInit(): void {
     this.fetchCustomers();
@@ -141,7 +141,9 @@ export class CustomerListComponent implements OnInit {
   onFilterChange(): void {
     this.fetchCustomers(1);
   }
-
+  totalRecords = 0;
+  totalConsluded = 0;
+  totalUnconcluded = 0;
   /** Open sidebar with selected customer */
   selectCustomer(customer: AdminCustomer): void {
     this.selectedCustomer =
@@ -175,7 +177,6 @@ export class CustomerListComponent implements OnInit {
   /**  FOR NOTIZ SECTION */
   get currentCustomerNotes() {
     if (!this.noteCustomer) {
-
       return [];
     }
     return this.customerNotes[this.noteCustomer.id] || [];
@@ -200,7 +201,7 @@ export class CustomerListComponent implements OnInit {
       next: () => {
         this.customerNotes[this.noteCustomer!.id].push({
           note: trimmedNote,
-          addedOn: new Date().toLocaleString()
+          addedOn: new Date().toLocaleString(),
         });
 
         this.noteText = "";
@@ -277,6 +278,10 @@ export class CustomerListComponent implements OnInit {
         this.hasMoreData = newData.length === this.PAGE_LIMIT;
         this.totalPage = res?.totalPage ?? null;
 
+        this.totalRecords = res?.totalRecords || 0;
+        this.totalConsluded = res?.totalConsluded || 0;
+        this.totalUnconcluded = res?.totalUnconcluded || 0;
+
         // Initialise GDPR state for any new customers (preserve existing toggles)
         newData.forEach((c) => {
           if (!(c.id in this.gdprContactStatus)) {
@@ -284,7 +289,6 @@ export class CustomerListComponent implements OnInit {
           }
 
           if (!(c.id in this.customerNotes)) {
-
             this.customerNotes[c.id] = c.notes || [];
           }
 
@@ -313,34 +317,30 @@ export class CustomerListComponent implements OnInit {
     }
   }
 
-  openCustomerDetails(id: number | string): void{
-    this.router.navigate(['/customers/details', id])
+  openCustomerDetails(id: number | string): void {
+    this.router.navigate(["/customers/details", id]);
   }
 
   formatDate(value?: number | string | null): string {
-    if (value === null || value === undefined || value === '') {
-      return '—';
+    if (value === null || value === undefined || value === "") {
+      return "—";
     }
 
-    const num = typeof value === 'number'
-      ? value
-      : Number(value);
+    const num = typeof value === "number" ? value : Number(value);
 
     if (Number.isNaN(num)) {
       return String(value);
     }
 
-    const ms = num < 1_000_000_000_000
-      ? num * 1000
-      : num;
+    const ms = num < 1_000_000_000_000 ? num * 1000 : num;
 
-    return new Intl.DateTimeFormat('de-DE', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false
+    return new Intl.DateTimeFormat("de-DE", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
     }).format(new Date(ms));
   }
 
@@ -359,11 +359,10 @@ export class CustomerListComponent implements OnInit {
 
     const payload = {
       adminId: this.authService.getUserId(),
-      customerId: customer.id,
-      gdprContactAllowed: newStatus,
+      id: customer.id,
     };
 
-    this.api.post("admin/update-gdpr-contact-status", payload).subscribe({
+    this.api.post("admin/toggle-customer-notification", payload).subscribe({
       next: () => {
         this.gdprContactStatus[customer.id] = newStatus;
         this.gdprLoading[customer.id] = false;

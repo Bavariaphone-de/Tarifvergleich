@@ -15,6 +15,7 @@ import com.tarifvergleich.electricity.dto.ServiceRequestEmailEvent;
 import com.tarifvergleich.electricity.dto.ServiceRequestEmailEvent.ServiceAttachmentMailOfAcknowledgement;
 import com.tarifvergleich.electricity.dto.ServiceRequestEmailEvent.ServiceResponseEmailEvent;
 import com.tarifvergleich.electricity.dto.email.AttornyEmailDto;
+import com.tarifvergleich.electricity.dto.email.ContractMailDto;
 import com.tarifvergleich.electricity.dto.email.VerifyOtpEmail;
 import com.tarifvergleich.electricity.model.ManageAdminDocument;
 import com.tarifvergleich.electricity.repository.ManageAdminDocumentRepository;
@@ -84,5 +85,23 @@ public class ServiceRequestEmailListener {
 	public void sendPowerOfAttorny(AttornyEmailDto attornyEmailDto) {
 		mailService.sendEmailWithBase64Attachment(attornyEmailDto.to(), attornyEmailDto.body(),
 				attornyEmailDto.base64pdf(), attornyEmailDto.pdfName());
+	}
+
+	@EventListener
+	public void sendContractMail(ContractMailDto contractMail) {
+
+		if (TransactionSynchronizationManager.isActualTransactionActive()) {
+
+			TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+				@Override
+				public void afterCommit() {
+					mailService.sendMailWithAttachment(contractMail.to(), contractMail.subject(), contractMail.body(),
+							contractMail.absolutePath());
+				}
+			});
+		} else {
+			mailService.sendMailWithAttachment(contractMail.to(), contractMail.subject(), contractMail.body(),
+					contractMail.absolutePath());
+		}
 	}
 }
