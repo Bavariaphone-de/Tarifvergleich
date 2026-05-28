@@ -19,6 +19,7 @@ import lombok.NoArgsConstructor;
 public class CustomerRequestCounsellingDto {
 
 	private Integer counsellingId;
+	private Long egonOrderId;
     private String mobileNumber;
     private String weekDay;
     private String timeSlot;

@@ -1,6 +1,7 @@
 package com.tarifvergleich.electricity.service;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.springframework.context.event.EventListener;
@@ -34,15 +35,30 @@ public class ServiceRequestEmailListener {
 	@Async
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
 	public void handleServiceRequestEmail(ServiceRequestEmailEvent event) {
-		mailService.sendMail(event.customerMail(), event.customerSub(), event.customerBody());
+
+		if (event.docs() != null && !event.docs().isEmpty()) {
+			List<String> attachements = event.docs().stream().map(ManageAdminDocument::getFilePath)
+					.map(fileServiceSuperAdmin::getAbsolutePath).toList();
+			mailService.sendMailWithAttachment(event.customerMail(), event.customerSub(), event.customerBody(),
+					attachements);
+		} else {
+			mailService.sendMail(event.customerMail(), event.customerSub(), event.customerBody());
+		}
 		mailService.sendMail(event.adminMail(), event.adminSub(), event.adminBody());
 	}
 
 	@Async
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
 	public void handleServiceResponseEmail(ServiceResponseEmailEvent event) {
-		String emailContent = event.customerBody();
-		mailService.sendMail(event.customerMail(), event.customerSub(), emailContent);
+		if (event.docs() != null && !event.docs().isEmpty()) {
+			List<String> attachements = event.docs().stream().map(ManageAdminDocument::getFilePath)
+					.map(fileServiceSuperAdmin::getAbsolutePath).toList();
+			mailService.sendMailWithAttachment(event.customerMail(), event.customerSub(), event.customerBody(),
+					attachements);
+		} else {
+			String emailContent = event.customerBody();
+			mailService.sendMail(event.customerMail(), event.customerSub(), emailContent);
+		}
 	}
 
 	@Async
@@ -71,24 +87,53 @@ public class ServiceRequestEmailListener {
 			TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
 				@Override
 				public void afterCommit() {
-					System.err.println("Hello from transaction");
-					mailService.sendMail(verifyEmail.to(), verifyEmail.subject(), verifyEmail.body());
+					if (verifyEmail.docs() != null && !verifyEmail.docs().isEmpty()) {
+						List<String> attachements = verifyEmail.docs().stream().map(ManageAdminDocument::getFilePath)
+								.map(fileServiceSuperAdmin::getAbsolutePath).toList();
+						mailService.sendMailWithAttachment(verifyEmail.to(), verifyEmail.subject(), verifyEmail.body(),
+								attachements);
+					} else {
+						mailService.sendMail(verifyEmail.to(), verifyEmail.subject(), verifyEmail.body());
+					}
 				}
 			});
 		} else {
-			System.err.println("Hello from non-transaction");
-			mailService.sendMail(verifyEmail.to(), verifyEmail.subject(), verifyEmail.body());
+			if (verifyEmail.docs() != null && !verifyEmail.docs().isEmpty()) {
+				List<String> attachements = verifyEmail.docs().stream().map(ManageAdminDocument::getFilePath)
+						.map(fileServiceSuperAdmin::getAbsolutePath).toList();
+				mailService.sendMailWithAttachment(verifyEmail.to(), verifyEmail.subject(), verifyEmail.body(),
+						attachements);
+			} else {
+				mailService.sendMail(verifyEmail.to(), verifyEmail.subject(), verifyEmail.body());
+			}
 		}
 	}
 
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
 	public void sendPowerOfAttorny(AttornyEmailDto attornyEmailDto) {
-		mailService.sendEmailWithBase64Attachment(attornyEmailDto.to(), attornyEmailDto.body(),
-				attornyEmailDto.base64pdf(), attornyEmailDto.pdfName());
+
+		if (attornyEmailDto.docs() == null && !attornyEmailDto.docs().isEmpty()) {
+			List<String> attachements = attornyEmailDto.docs().stream().map(ManageAdminDocument::getFilePath)
+					.map(fileServiceSuperAdmin::getAbsolutePath).toList();
+
+			mailService.sendEmailWithBase64Attachment(attornyEmailDto.to(), attornyEmailDto.body(),
+					attornyEmailDto.base64pdf(), attornyEmailDto.pdfName(), attachements);
+		} else {
+
+			mailService.sendEmailWithBase64Attachment(attornyEmailDto.to(), attornyEmailDto.body(),
+					attornyEmailDto.base64pdf(), attornyEmailDto.pdfName());
+		}
 	}
 
 	@EventListener
 	public void sendContractMail(ContractMailDto contractMail) {
+
+		List<String> attachments = new LinkedList<String>();
+		if (contractMail.docs() != null && !contractMail.docs().isEmpty()) {
+			attachments.addAll(contractMail.docs().stream().map(ManageAdminDocument::getFilePath)
+					.map(fileServiceSuperAdmin::getAbsolutePath).toList());
+		}
+		attachments.add(contractMail.absolutePath());
 
 		if (TransactionSynchronizationManager.isActualTransactionActive()) {
 
@@ -96,12 +141,12 @@ public class ServiceRequestEmailListener {
 				@Override
 				public void afterCommit() {
 					mailService.sendMailWithAttachment(contractMail.to(), contractMail.subject(), contractMail.body(),
-							contractMail.absolutePath());
+							attachments);
 				}
 			});
 		} else {
 			mailService.sendMailWithAttachment(contractMail.to(), contractMail.subject(), contractMail.body(),
-					contractMail.absolutePath());
+					attachments);
 		}
 	}
 }

@@ -187,6 +187,10 @@ public class AdminCustomerManagementController {
 	public ResponseEntity<?> sendSignedContractToCustomer(@RequestBody CustomerOrderDto orderDto) {
 		return ResponseEntity.ok(adminCustomerDeliveryManagementService.sendSignedPdfToCustomer(orderDto));
 	}
+
+	@PostMapping("/fetch-all-customer-doc")
+	public ResponseEntity<?> fetchAllCustomerDoc(@RequestBody CustomerDto customerDto) {
+		return ResponseEntity.ok(adminCustomerManagementService.fetchAllPdfOfCustomer(customerDto));
 	
 	@PostMapping("/send-customer-email")
 	public ResponseEntity<?> sendCustomerEmail(@RequestBody CustomerSendEmailRequestDto request) {

@@ -6,6 +6,8 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.annotation.Async;
@@ -20,6 +22,7 @@ import com.tarifvergleich.electricity.model.CustomerDelivery;
 import com.tarifvergleich.electricity.model.CustomerOrder;
 import com.tarifvergleich.electricity.model.CustomerOrderStatusRecord;
 import com.tarifvergleich.electricity.model.CustomerSelectedProvider;
+import com.tarifvergleich.electricity.model.ManageAdminDocument;
 import com.tarifvergleich.electricity.repository.CustomerOrderRepository;
 import com.tarifvergleich.electricity.service.EnergyService;
 import com.tarifvergleich.electricity.util.Helper;
@@ -115,8 +118,17 @@ public class CustomerCronOrderService {
 
 		String emailBody = "";
 
+		Set<ManageAdminDocument> docs = new HashSet<ManageAdminDocument>();
+//		if (emailTemplate.get("docs") instanceof Collection<?> rawCollection) {
+//			for (Object obj : rawCollection) {
+//				if (obj instanceof ManageAdminDocument doc) {
+//					docs.add(doc);
+//				}
+//			}
+//		}
+
 		ServiceResponseEmailEvent mailEvent = new ServiceResponseEmailEvent(customer.getEmail(),
-				"Contract Confirmation (Contract Number: " + order.getId() + ")", emailBody);
+				"Contract Confirmation (Contract Number: " + order.getId() + ")", emailBody, docs);
 
 		eventPublisher.publishEvent(mailEvent);
 	}

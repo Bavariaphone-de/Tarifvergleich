@@ -1,5 +1,6 @@
 package com.tarifvergleich.electricity.util;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.http.HttpStatus;
@@ -22,7 +23,7 @@ public class EmailBodyRender {
 	private final AdminEmailManagementRepository adminEmailManagementRepo;
 	private final CustomEmailTemplate customEmailTemplate;
 
-	public String verifyOtpBody(String otp) {
+	public Map<String, Object> verifyOtpBody(String otp) {
 
 		AdminEmailManagement adminEmailManagement = adminEmailManagementRepo
 				.findByCategoryCategorySlugLike("%VERIFICATION_OTP%")
@@ -35,10 +36,15 @@ public class EmailBodyRender {
 		String emailBody = customEmailTemplate.generateEmailHtml(adminEmailManagement.getTitle(),
 				adminEmailManagement.getSubtitle(), tempEmailBody);
 
-		return emailBody;
+		HashMap<String, Object> response = new HashMap<String, Object>();
+		response.put("body", emailBody);
+		response.put("title", adminEmailManagement.getTitle());
+		response.put("docs", adminEmailManagement.getDocuments());
+
+		return response;
 	}
 
-	public String conscent365AdvisorBody(String concentUrl, Customer customer) {
+	public Map<String, Object> conscent365AdvisorBody(String concentUrl, Customer customer) {
 		AdminEmailManagement adminEmailManagement = adminEmailManagementRepo
 				.findByCategoryCategorySlugLike("%CONSENT_360_ADVISOR_SERVICE%")
 				.orElseThrow(() -> new InternalServerException("Error finding Email body", HttpStatus.OK));
@@ -49,10 +55,16 @@ public class EmailBodyRender {
 		tempEmailBody = tempEmailBody.replace("{CONFIRMATION_URL}", concentUrl);
 		String emailBody = customEmailTemplate.generateEmailHtml(adminEmailManagement.getTitle(),
 				adminEmailManagement.getSubtitle(), tempEmailBody);
-		return emailBody;
+
+		HashMap<String, Object> response = new HashMap<String, Object>();
+		response.put("body", emailBody);
+		response.put("title", adminEmailManagement.getTitle());
+		response.put("docs", adminEmailManagement.getDocuments());
+
+		return response;
 	}
 
-	public String beratervollmachtBody(CustomerAttorny customerAttorny) {
+	public Map<String, Object> beratervollmachtBody(CustomerAttorny customerAttorny) {
 		AdminEmailManagement adminEmailManagement = adminEmailManagementRepo
 				.findByCategoryCategorySlugLike("%BERATERVOLLMACHT%")
 				.orElseThrow(() -> new InternalServerException("Error finding Email body", HttpStatus.OK));
@@ -63,10 +75,15 @@ public class EmailBodyRender {
 		String emailBody = customEmailTemplate.generateEmailHtml(adminEmailManagement.getTitle(),
 				adminEmailManagement.getSubtitle(), tempEmailBody);
 
-		return emailBody;
+		HashMap<String, Object> response = new HashMap<String, Object>();
+		response.put("body", emailBody);
+		response.put("title", adminEmailManagement.getTitle());
+		response.put("docs", adminEmailManagement.getDocuments());
+
+		return response;
 	}
 
-	public String serviceAnfrageBody(CustomerServiceRequest customerServiceRequest) {
+	public Map<String, Object> serviceAnfrageBody(CustomerServiceRequest customerServiceRequest) {
 
 		if (customerServiceRequest == null)
 			throw new InternalServerException("Customer service request not found for email body", HttpStatus.OK);
@@ -93,10 +110,15 @@ public class EmailBodyRender {
 		String emailBody = customEmailTemplate.generateEmailHtml(title, adminEmailManagement.getSubtitle(),
 				tempEmailBody);
 
-		return emailBody;
+		HashMap<String, Object> response = new HashMap<String, Object>();
+		response.put("body", emailBody);
+		response.put("title", title);
+		response.put("docs", adminEmailManagement.getDocuments());
+
+		return response;
 	}
 
-	public String orderSignatureBody(Customer customer, String securedToken, Integer customerOrderId) {
+	public Map<String, Object> orderSignatureBody(Customer customer, String securedToken, Integer customerOrderId) {
 
 		if (customer == null || securedToken == null || securedToken.isEmpty())
 			throw new InternalServerException("Error building email body", HttpStatus.OK);
@@ -128,10 +150,15 @@ public class EmailBodyRender {
 		String emailBody = customEmailTemplate.generateEmailHtml(title, adminEmailManagement.getSubtitle(),
 				tempEmailBody);
 
-		return emailBody;
+		HashMap<String, Object> response = new HashMap<String, Object>();
+		response.put("body", emailBody);
+		response.put("title", title);
+		response.put("docs", adminEmailManagement.getDocuments());
+
+		return response;
 	}
 
-	public String contractConfirmationEmailBody(CustomerOrder order) {
+	public Map<String, Object> contractConfirmationEmailBody(CustomerOrder order) {
 
 		if (order == null)
 			throw new InternalServerException("Error creating email body", HttpStatus.OK);
@@ -159,10 +186,15 @@ public class EmailBodyRender {
 		String emailBody = customEmailTemplate.generateEmailHtml(title, adminEmailManagement.getSubtitle(),
 				tempEmailBody);
 
-		return emailBody;
+		HashMap<String, Object> response = new HashMap<String, Object>();
+		response.put("body", emailBody);
+		response.put("title", title);
+		response.put("docs", adminEmailManagement.getDocuments());
+
+		return response;
 	}
 
-	public String contractAttachmentBody(CustomerOrder order) {
+	public Map<String, Object> signedContractNotificationBody(CustomerOrder order) {
 		if (order == null)
 			throw new InternalServerException("Error creating email body", HttpStatus.OK);
 
@@ -173,10 +205,10 @@ public class EmailBodyRender {
 				+ dateTimeMap.get("minute").toString() + " " + dateTimeMap.get("amPm").toString();
 
 		AdminEmailManagement adminEmailManagement = adminEmailManagementRepo
-				.findByCategoryCategorySlugLike("%CONTRACT_ATTACHMENT%")
+				.findByCategoryCategorySlugLike("%SIGNED_CONTRACT_NOTIFICATION%")
 				.orElseThrow(() -> new InternalServerException("Error finding Email body", HttpStatus.OK));
 
-		String title = adminEmailManagement.getTitle().replace("{ORDER_NUMBER}", order.getId().toString());
+		String title = adminEmailManagement.getTitle().replace("{ORDER_NUMBER}", order.getOrderId().toString());
 
 		String tempEmailBody = adminEmailManagement.getEmailContent();
 
@@ -189,14 +221,19 @@ public class EmailBodyRender {
 		String emailBody = customEmailTemplate.generateEmailHtml(title, adminEmailManagement.getSubtitle(),
 				tempEmailBody);
 
-		return emailBody;
+		HashMap<String, Object> response = new HashMap<String, Object>();
+		response.put("body", emailBody);
+		response.put("title", title);
+		response.put("docs", adminEmailManagement.getDocuments());
+
+		return response;
 	}
 
-	public String contractUploadReminderBody() {
+	public Map<String, Object> contractUploadReminderBody() {
 		return null;
 	}
 
-	public String serviceRequestResponseBody(CustomerServiceRequest serviceRequest) {
+	public Map<String, Object> serviceRequestResponseBody(CustomerServiceRequest serviceRequest) {
 
 		if (serviceRequest == null)
 			throw new InternalServerException("Error creating email body", HttpStatus.OK);
@@ -223,10 +260,15 @@ public class EmailBodyRender {
 		String emailBody = customEmailTemplate.generateEmailHtml(title, adminEmailManagement.getSubtitle(),
 				tempEmailBody);
 
-		return emailBody;
+		HashMap<String, Object> response = new HashMap<String, Object>();
+		response.put("body", emailBody);
+		response.put("title", title);
+		response.put("docs", adminEmailManagement.getDocuments());
+
+		return response;
 	}
 
-	public String serviceRequestReopenBody(CustomerServiceRequest serviceRequest) {
+	public Map<String, Object> serviceRequestReopenBody(CustomerServiceRequest serviceRequest) {
 
 		if (serviceRequest == null)
 			throw new InternalServerException("Error creating email body", HttpStatus.OK);
@@ -253,10 +295,15 @@ public class EmailBodyRender {
 		String emailBody = customEmailTemplate.generateEmailHtml(title, adminEmailManagement.getSubtitle(),
 				tempEmailBody);
 
-		return emailBody;
+		HashMap<String, Object> response = new HashMap<String, Object>();
+		response.put("body", emailBody);
+		response.put("title", title);
+		response.put("docs", adminEmailManagement.getDocuments());
+
+		return response;
 	}
 
-	public String resetPasswordConfirmationBody(Customer customer) {
+	public Map<String, Object> resetPasswordConfirmationBody(Customer customer) {
 
 		if (customer == null)
 			throw new InternalServerException("Error creating email body", HttpStatus.OK);
@@ -273,10 +320,15 @@ public class EmailBodyRender {
 		String emailBody = customEmailTemplate.generateEmailHtml(adminEmailManagement.getTitle(),
 				adminEmailManagement.getSubtitle(), tempEmailBody);
 
-		return emailBody;
+		HashMap<String, Object> response = new HashMap<String, Object>();
+		response.put("body", emailBody);
+		response.put("title", adminEmailManagement.getTitle());
+		response.put("docs", adminEmailManagement.getDocuments());
+
+		return response;
 	}
 
-	public String forgotPasswordBody(Customer customer, String token) {
+	public Map<String, Object> forgotPasswordBody(Customer customer, String token) {
 
 		if (customer == null)
 			throw new InternalServerException("Error creating email body", HttpStatus.OK);
@@ -295,6 +347,11 @@ public class EmailBodyRender {
 		String emailBody = customEmailTemplate.generateEmailHtml(adminEmailManagement.getTitle(),
 				adminEmailManagement.getSubtitle(), tempEmailBody);
 
-		return emailBody;
+		HashMap<String, Object> response = new HashMap<String, Object>();
+		response.put("body", emailBody);
+		response.put("title", adminEmailManagement.getTitle());
+		response.put("docs", adminEmailManagement.getDocuments());
+
+		return response;
 	}
 }
