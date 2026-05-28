@@ -63,6 +63,6 @@ public class EnergySupplierMessageCategory {
 	
 	@PreUpdate
 	public void updatedon() {
-		updatedOn = Helper.getCurrentTimeBerlin();
+		this.updatedOn = Helper.getCurrentTimeBerlin();
 	}
 }
