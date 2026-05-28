@@ -25,11 +25,14 @@ import com.tarifvergleich.electricity.dto.CustomerInvoiceRequestDto;
 import com.tarifvergleich.electricity.dto.CustomerPaymentRequestDto;
 import com.tarifvergleich.electricity.dto.CustomerServiceRequestDto;
 import com.tarifvergleich.electricity.dto.CustomerServicesDto;
+import com.tarifvergleich.electricity.dto.EnergySupplierMessageDto;
 import com.tarifvergleich.electricity.dto.ReportMeterReadingDto;
 import com.tarifvergleich.electricity.service.customer.CustomerBookingService;
 import com.tarifvergleich.electricity.service.customer.CustomerDetailService;
-import com.tarifvergleich.electricity.service.customer.CustomerUpdateService;
+import com.tarifvergleich.electricity.service.customer.CustomerEnergySupplierService;
 import com.tarifvergleich.electricity.service.customer.CustomerMeterService;
+import com.tarifvergleich.electricity.service.customer.CustomerUpdateService;
+
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -43,6 +46,7 @@ public class CustomerController {
 	private final CustomerUpdateService customerUpdateService;
 	private final ObjectMapper objectMapper;
 	private final CustomerMeterService customerMeterService;
+	private final CustomerEnergySupplierService customerEnergySupplierService;
 
 	@PostMapping("/fetch-customer-detail")
 	public ResponseEntity<?> fetchCustomer(@RequestBody CustomerDto customerDto) {
@@ -226,5 +230,10 @@ public class CustomerController {
 
 			return ResponseEntity.ok(Map.of("res", false, "message", e.getMessage()));
 		}
+	}
+
+	@PostMapping("/add-supplier-message")
+	public ResponseEntity<?> addSupplierMessage(@RequestBody EnergySupplierMessageDto energySupplierMessageDto) {
+		return ResponseEntity.ok(customerEnergySupplierService.saveSupplierMessage(energySupplierMessageDto));
 	}
 }

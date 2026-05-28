@@ -1,9 +1,13 @@
 package com.tarifvergleich.electricity.dto;
 
 import java.math.BigInteger;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
 import com.tarifvergleich.electricity.dto.CustomerBookingDocumentDto.CustomerBookingDocumentAdminResDto;
 import com.tarifvergleich.electricity.dto.CustomerBookingDocumentDto.CustomerBookingDocumentForProfile;
+import com.tarifvergleich.electricity.dto.EnergySupplierMessageDto.SupplierMessageCustomerResponse;
 import com.tarifvergleich.electricity.model.CustomerOrder;
 
 import lombok.AllArgsConstructor;
@@ -53,6 +57,7 @@ public class CustomerOrderDto {
 		private BigInteger operationPeriod;
 		private Boolean customerSignatureSet;
 		private CustomerBookingDocumentAdminResDto doc;
+		private List<SupplierMessageCustomerResponse> supplierMessage;
 
 		private Integer bookingDocId;
 	}
@@ -92,7 +97,10 @@ public class CustomerOrderDto {
 				.customerSignatureSet(order.getCustomerContractSignature() != null
 						&& order.getCustomerContractSignature().getSignature() != null
 						&& !order.getCustomerContractSignature().getSignature().isEmpty())
-				.isCancelled(order.getIsCancelled()).cancelledOn(order.getCancelledOn()).build();
+				.isCancelled(order.getIsCancelled()).cancelledOn(order.getCancelledOn())
+				.supplierMessage(Optional.ofNullable(order.getEnergySupplierMessages()).orElse(Collections.emptyList())
+						.stream().map(EnergySupplierMessageDto::mapForDeliveryResponseCustomer).toList())
+				.build();
 	}
 
 	public static CustomerOrderDetailsForProfile mapCustomerResForProfile(CustomerOrder order) {

@@ -101,6 +101,10 @@ public class CustomerOrder {
 	@OneToMany(mappedBy = "customerOrder", cascade = { CascadeType.PERSIST, CascadeType.MERGE })
 	@JsonIgnoreProperties("customerOrder")
 	private List<CustomerOrderStatusRecord> customerOrderStatusRecords;
+	
+	@OneToMany(mappedBy = "customerOrder",  cascade = { CascadeType.PERSIST, CascadeType.MERGE })
+	@JsonIgnoreProperties("customerOrder")
+	private List<EnergySupplierMessage> energySupplierMessages;
 
 	@PrePersist
 	protected void onCreate() {

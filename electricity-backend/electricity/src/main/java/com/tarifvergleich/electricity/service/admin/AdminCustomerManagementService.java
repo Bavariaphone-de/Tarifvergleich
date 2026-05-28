@@ -79,7 +79,6 @@ public class AdminCustomerManagementService {
 	private final CustomerDetailsContactHistoryRepository customerDetailsContactHistoryRepo;
 	private final PdfGenerator pdfGenerator;
 	private final CustomerEmailSendHistoryRepository customerEmailSendHistoryRepo;
-	private final PdfGenerator pdfGenerator;
 
 	public Map<String, Object> getCustomers(CustomerDto customerReq) {
 
@@ -96,7 +95,7 @@ public class AdminCustomerManagementService {
 				throw new InternalServerException("Not authorised to access customer details", HttpStatus.OK);
 
 			SingleCustomerResponseDeliveryForAdmin customerRes = CustomerDto.getAdminSingleCustomerResponseDto(customer,
-					pdfGenerator, pdfGenerator);
+					pdfGenerator);
 
 			return Map.of("res", true, "data", customerRes);
 
@@ -622,32 +621,28 @@ public class AdminCustomerManagementService {
 
 	@Transactional
 	public Object sendCustomerEmail(CustomerSendEmailRequestDto request) {
-		
+
 		if (request.getTitle() == null || request.getTitle().trim().isEmpty())
 			throw new InternalServerException("Title cannot be empty", HttpStatus.OK);
 		if (request.getSubtitle() == null || request.getSubtitle().trim().isEmpty())
 			throw new InternalServerException("Subtitle cannot be empty", HttpStatus.OK);
 		if (request.getEmailContent() == null || request.getEmailContent().trim().isEmpty())
 			throw new InternalServerException("Email content cannot be empty", HttpStatus.OK);
-		
-	    Customer customer = customerRepo
-	            .findById(request.getCustomerId().intValue())
-	            .orElseThrow(() -> new InternalServerException("Customer not found", HttpStatus.OK));
 
-	    String toEmail = customer.getEmail();
-	    CustomerEmailSendHistory history = new CustomerEmailSendHistory();
+		Customer customer = customerRepo.findById(request.getCustomerId().intValue())
+				.orElseThrow(() -> new InternalServerException("Customer not found", HttpStatus.OK));
 
-	    history.setCustomerId(request.getCustomerId());
-	    history.setAdminId(request.getAdminId());
-	    history.setTitle(request.getTitle());
-	    history.setSubtitle(request.getSubtitle());
-	    history.setEmailContent(request.getEmailContent());
-	    history.setSentOn(Helper.getCurrentTimeBerlin());
+		String toEmail = customer.getEmail();
+		CustomerEmailSendHistory history = new CustomerEmailSendHistory();
 
-	    customerEmailSendHistoryRepo.save(history);
-	    return Map.of(
-	            "res", true,
-	            "email", toEmail
-	    );
+		history.setCustomerId(request.getCustomerId());
+		history.setAdminId(request.getAdminId());
+		history.setTitle(request.getTitle());
+		history.setSubtitle(request.getSubtitle());
+		history.setEmailContent(request.getEmailContent());
+		history.setSentOn(Helper.getCurrentTimeBerlin());
+
+		customerEmailSendHistoryRepo.save(history);
+		return Map.of("res", true, "email", toEmail);
 	}
 }
