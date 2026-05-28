@@ -490,7 +490,7 @@ export class CheckoutPage implements OnInit {
       customerId: parseInt(userId, 10),
       deliveryId: parseInt(deliveryId, 10),
       adminId: 1,
-      dayOfWeek: this.selectedDay,
+      dayOfWeek: this.selectedDay?.value || '',
       timeSlot: this.selectedTimeSlot,
       scheduleDate: this.selectedDay?.date,
       description: this.scheduleDescription ?? '',

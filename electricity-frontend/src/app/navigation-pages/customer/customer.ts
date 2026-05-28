@@ -344,6 +344,7 @@ export class Customer {
           additionalBankAccounts: data.additionalBankAccounts || [], // ← add
 
           deliveryDetails: data.deliveryDetails || [],
+          attornyPdfUrl: data.attornyPdfUrl || '',
         };
 
         this.isNotificationEnabled = this.customerData.isNotificationEnabled;
@@ -2865,6 +2866,38 @@ export class Customer {
     window.open(pdfUrl, '_blank');
   }
 
+  viewPdf(url?: string) {
+    if (url && url.startsWith('data:application/pdf;base64,')) {
+      const base64Data = url.split(',')[1];
+      const byteCharacters = atob(base64Data);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], { type: 'application/pdf' });
+      const blobUrl = URL.createObjectURL(blob);
+      window.open(blobUrl, '_blank');
+    } else if (url) {
+      window.open(url, '_blank');
+    } else {
+      this.viewDocument();
+    }
+  }
+
+  downloadPdf(url?: string) {
+    if (url) {
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'Vollmacht.pdf';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    } else {
+      this.downloadDocument();
+    }
+  }
+
   downloadDocument() {
     const customerId = this.authService.getUserId();
 
@@ -2877,7 +2910,7 @@ export class Customer {
 
     this.isLoading = true;
 
-    this.http.post<any>(`${API_BASE}/customer/send-attachment-mail`, payload).subscribe({
+    this.http.post<any>(`${API_BASE}/customer/fetch-customer-details`, payload).subscribe({
       next: ({ res, message }) => {
         this.isLoading = false;
 
