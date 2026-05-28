@@ -2164,6 +2164,7 @@
   border-radius: 4px;
   overflow: hidden;
   background: #fff;
+  overflow: visible !important;
 }
 
 .selected-contract-header {
@@ -3485,6 +3486,69 @@ input {
 .subaccount-card-name {
   font-size: 14px;
   font-weight: 600;
+/* =========================================================
+   CONTRACT CHANGE SECTION
+
+.contract-change-section {
+  margin-top: 30px;
+}
+
+/* =========================================================
+   HEADING
+
+.contract-change-heading {
+  font-size: 16px;
+  font-weight: 700;
+  color: black;
+  margin-bottom: 6px;
+}
+
+.contract-change-subheading {
+  font-size: 15px;
+  color: #666;
+  margin-bottom: 20px;
+}
+
+/* =========================================================
+   DROPDOWN WRAPPER
+
+.contract-change-dropdown {
+  position: relative;
+  width: 100%;
+  max-width: 550px;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  overflow: visible !important;
+  z-index: 1000;
+}
+
+/* =========================================================
+   SELECT BOX
+
+.contract-change-select-box {
+  width: 100%;
+  min-height: 58px;
+  border: 1px solid #d9d9d9;
+  border-radius: 12px;
+  background: #fff;
+  padding: 10px 16px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.contract-change-select-box:hover {
+  border-color: #ff7a00;
+}
+
+/* =========================================================
+   SELECTED VALUES
+
+.contract-change-selected-values {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
@@ -3628,4 +3692,280 @@ input {
   height: 16px;
   accent-color: #e65100;
   cursor: pointer;
+}
+  flex: 1;
+}
+
+/* =========================================================
+   PLACEHOLDER
+
+.contract-change-placeholder {
+  font-size: 14px;
+  color: #999;
+}
+
+/* =========================================================
+   TAGS
+
+.contract-change-tag {
+  background: #ff7a00;
+  color: #fff;
+
+  padding: 7px 12px;
+  border-radius: 8px;
+
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1;
+}
+
+/* =========================================================
+   ARROW
+
+.contract-change-arrow {
+  font-size: 13px;
+  color: #666;
+  margin-left: 10px;
+  flex-shrink: 0;
+}
+
+/* =========================================================
+   DROPDOWN MENU (IMPROVED)
+.contract-change-dropdown-menu {
+  position: absolute;
+  top: 100%; /* Sits flush right below the select box */
+  left: 0;
+  width: 100%;
+  background: #fff;
+  border: 1px solid #e5e5e5;
+  border-radius: 12px;
+  
+  /* Creates a clean floating effect over the background elements */
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.15); 
+  
+  /* Ensures it stays completely on top of footer or body text */
+  z-index: 999999 !important; 
+  
+  /* Restricts dropdown size if options grow, triggering internal scrollbar */
+  max-height: 240px; 
+  overflow-y: auto;
+  overflow-x: hidden;
+  
+  padding: 6px 0;
+  margin-top: 4px; /* Slight decorative gap below the main bar */
+}
+
+/* =========================================================
+   DROPDOWN ITEM
+
+.contract-change-dropdown-item {
+  width: 100%;
+
+  padding: 14px 18px;
+
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  cursor: pointer;
+
+  transition: background 0.2s ease;
+
+  font-size: 14px;
+}
+
+.contract-change-dropdown-item:hover {
+  background: #f7f7f7;
+}
+
+/* =========================================================
+   CHECKBOX
+
+.contract-change-dropdown-item input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  /* accent-color: #ff7a00; */
+}
+
+/* =========================================================
+   SCROLLBAR
+
+.contract-change-dropdown-menu::-webkit-scrollbar {
+  width: 6px;
+}
+
+.contract-change-dropdown-menu::-webkit-scrollbar-thumb {
+  background: #d0d0d0;
+  border-radius: 10px;
+}
+
+/* =========================================================
+   BUTTON
+
+.contract-change-submit-btn {
+  margin-top: 18px;
+
+  padding: 12px 24px;
+
+  border: none;
+  border-radius: 8px;
+
+  background: #ff7a00;
+  color: #fff;
+
+  font-size: 14px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition: 0.2s ease;
+}
+
+.contract-change-submit-btn:hover {
+  background: #eb6e00;
+}
+
+/* =========================================================
+   FORM BOX
+
+.contract-change-form-box {
+  margin-top: 25px;
+
+  padding: 20px;
+
+  border: 1px solid #e5e5e5;
+  border-radius: 12px;
+
+  background: #fafafa;
+}
+
+/* =========================================================
+   FORM TITLE
+
+.contract-change-form-title {
+  font-size: 17px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+/* =========================================================
+   INPUTS
+
+.contract-change-input,
+.contract-change-textarea {
+  width: 100%;
+
+  margin-bottom: 14px;
+
+  padding: 12px 14px;
+
+  border: 1px solid #dcdcdc;
+  border-radius: 8px;
+
+  font-size: 14px;
+
+  outline: none;
+}
+
+.contract-change-input:focus,
+.contract-change-textarea:focus {
+  border-color: #ff7a00;
+}
+
+.contract-change-textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+/* =========================================================
+   IMPORTANT FIX
+
+.selected-contract-card,
+.selected-contract-wrapper,
+.contract-top,
+.contract-center {
+  overflow: visible !important;
+}
+.contract-change-section {
+  margin-top: 30px;
+  padding-bottom: 60px; /* Gives the dropdown comfortable breathing room to expand */
+}
+
+/* =========================================
+   CONTRACT DOCUMENT UPLOAD
+
+.contract-change-upload-box {
+  margin-top: 20px;
+  /* padding: 18px; */
+  border: 1px dashed #d7d7d7;
+  border-radius: 14px;
+  background: #fafafa;
+  transition: 0.2s ease;
+}
+
+.contract-change-upload-box:hover {
+  border-color: #ff7a00;
+  background: #fffaf5;
+}
+
+/* TITLE */
+
+.contract-change-upload-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #222;
+  margin-bottom: 8px;
+}
+
+/* DESCRIPTION */
+
+.contract-change-upload-text {
+  font-size: 13px;
+  color: #666;
+  line-height: 1.5;
+  margin-bottom: 14px;
+}
+
+/* FILE INPUT */
+
+.contract-change-upload-box input[type='file'] {
+  width: 100%;
+  /* padding: 12px; */
+  border: 1px solid #e3e3e3;
+  border-radius: 10px;
+  background: white;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+/* FILE BUTTON */
+
+.contract-change-upload-box input[type='file']::file-selector-button {
+  background: #ff7a00;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  margin-right: 14px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.2s ease;
+}
+
+.contract-change-upload-box input[type='file']::file-selector-button:hover {
+  background: #e56f00;
+}
+
+/* SELECTED FILE */
+
+.contract-change-file-name {
+  margin-top: 12px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: #fff4eb;
+  color: #ff7a00;
+  font-size: 13px;
+  font-weight: 500;
+  word-break: break-word;
 }

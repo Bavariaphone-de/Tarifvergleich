@@ -144,6 +144,8 @@ public class CustomerDto {
 		private Boolean isNotificationEnabled;
 		private List<CustomerDeliveryResponseDto> deliveryDetails;
 		private String lexofficeNumber;
+		private Object customerContractOrderDoc;
+		private Object attornyPdfUrl;
 	}
 
 	@Data
@@ -231,16 +233,6 @@ public class CustomerDto {
 	@Builder
 	@NoArgsConstructor
 	@AllArgsConstructor
-	public static class UpdateGdprContactStatusDto {
-		private Integer adminId;
-		private Integer customerId;
-		private Boolean gdprContactAllowed;
-	}
-
-	@Data
-	@Builder
-	@NoArgsConstructor
-	@AllArgsConstructor
 	public static class CustomerInfoForProfile {
 
 		private Integer customerId;
@@ -280,6 +272,25 @@ public class CustomerDto {
 				.deliveryDetails(
 						customer.getCustomerDelivery().stream().map(CustomerDeliveryResponseDto::mapResponse).toList())
 				.lexofficeNumber(customer.getLexofficeNumber()).build();
+	}
+
+	public static SingleCustomerResponseDelivery getCustomerResponseDto(Customer customer, PdfGenerator pdfGenerator) {
+		Map<String, Object> allPdf = mapAllPdfs(customer, pdfGenerator);
+		return SingleCustomerResponseDelivery.builder().id(customer.getCustomerId()).email(customer.getEmail())
+				.firstName(customer.getFirstName()).lastName(customer.getLastName())
+				.salutation(customer.getSalutation()).title(customer.getTitle()).userType(customer.getUserType())
+				.isNotificationEnabled(customer.getIsNotificationEnabled()).companyName(customer.getCompanyName())
+				.mobileNumber(customer.getMobileNumber()).telephone(customer.getTelephone())
+				.status(customer.getStatus()).isVerified(customer.getIsVerified()).joinedOn(customer.getJoinedOn())
+				.isAcknowledged(customer.getIsAcknowledged())
+				.address(CustomerAddressRes.builder().zip(customer.getZip()).city(customer.getCity())
+						.street(customer.getStreet()).houseNumber(customer.getHouseNumber()).build())
+				.deliveryDetails(
+						customer.getCustomerDelivery().stream().map(CustomerDeliveryResponseDto::mapResponse).toList())
+				.lexofficeNumber(customer.getLexofficeNumber())
+				.customerContractOrderDoc(allPdf.get("ContractSignedDocument"))
+				.attornyPdfUrl(allPdf.get("AttornyDoc"))
+				.build();
 	}
 
 	public static SingleCustomerAdminResponseDelivery getAdminCustomerResponseDto(Customer customer) {

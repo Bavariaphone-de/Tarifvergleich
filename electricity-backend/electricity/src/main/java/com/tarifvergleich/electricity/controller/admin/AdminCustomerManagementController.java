@@ -7,7 +7,10 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.tarifvergleich.electricity.dto.CustomerAttornyDto;
 import com.tarifvergleich.electricity.dto.CustomerConnectionRequestDto;
@@ -24,6 +27,7 @@ import com.tarifvergleich.electricity.service.admin.AdminCustomerDeliveryManagem
 import com.tarifvergleich.electricity.service.admin.AdminCustomerManagementService;
 import com.tarifvergleich.electricity.service.admin.AdminServicePointManagementService;
 import com.tarifvergleich.electricity.service.customer.CustomerDetailService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -40,6 +44,7 @@ public class AdminCustomerManagementController {
 	private final AdminServicePointManagementService servicePointManagementService;
 	private final CustomerDetailService customerDetailService;
 	private final AdminCustomerDeliveryManagementService adminCustomerDeliveryManagementService;
+	private final ObjectMapper objectMapper;
 
 	@Operation(summary = "Fetch customer", description = "Returns a list of customer with there details")
 	@PostMapping("/fetch-customer-details")
@@ -191,9 +196,21 @@ public class AdminCustomerManagementController {
 	@PostMapping("/fetch-all-customer-doc")
 	public ResponseEntity<?> fetchAllCustomerDoc(@RequestBody CustomerDto customerDto) {
 		return ResponseEntity.ok(adminCustomerManagementService.fetchAllPdfOfCustomer(customerDto));
+	}
 	
 	@PostMapping("/send-customer-email")
-	public ResponseEntity<?> sendCustomerEmail(@RequestBody CustomerSendEmailRequestDto request) {
-	    return ResponseEntity.ok(adminCustomerManagementService.sendCustomerEmail(request));
-	}
+		public ResponseEntity<?> sendCustomerEmail(
+		    @RequestParam("data") String jsonData,
+		    @RequestPart(value = "uploadDocuments",required = false)
+		    MultipartFile[] uploadDocuments
+		) throws Exception {
+
+		    CustomerSendEmailRequestDto request = objectMapper.readValue(jsonData, CustomerSendEmailRequestDto.class);
+
+		    return ResponseEntity.ok(adminCustomerManagementService.sendCustomerEmail(
+		            request,
+		            uploadDocuments
+		        )
+		    );
+		}
 }

@@ -1,5 +1,6 @@
 package com.tarifvergleich.electricity.service.admin;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -15,6 +16,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -35,6 +37,7 @@ import com.tarifvergleich.electricity.dto.CustomerServiceRequestDto.CustomerServ
 import com.tarifvergleich.electricity.dto.CustomerServiceRequestDto.CustomerServiceRequestResDtoForListing;
 import com.tarifvergleich.electricity.dto.ServiceRequestEmailEvent.ServiceResponseEmailEvent;
 import com.tarifvergleich.electricity.exception.InternalServerException;
+import com.tarifvergleich.electricity.model.AdminUser;
 import com.tarifvergleich.electricity.model.Customer;
 import com.tarifvergleich.electricity.model.CustomerAttorny;
 import com.tarifvergleich.electricity.model.CustomerComparingEnergy;
@@ -43,9 +46,11 @@ import com.tarifvergleich.electricity.model.CustomerDetailsContactHistory;
 import com.tarifvergleich.electricity.model.CustomerEmailSendHistory;
 import com.tarifvergleich.electricity.model.CustomerNote;
 import com.tarifvergleich.electricity.model.CustomerOrder;
+import com.tarifvergleich.electricity.model.CustomerSendEmailUpload;
 import com.tarifvergleich.electricity.model.CustomerServiceRequest;
 import com.tarifvergleich.electricity.model.CustomerServiceRequestMessages;
 import com.tarifvergleich.electricity.model.ManageAdminDocument;
+import com.tarifvergleich.electricity.repository.AdminUserRepository;
 import com.tarifvergleich.electricity.repository.CustomerAttornyRepository;
 import com.tarifvergleich.electricity.repository.CustomerComparingEnergyRepository;
 import com.tarifvergleich.electricity.repository.CustomerDeliveryRepository;
@@ -54,8 +59,10 @@ import com.tarifvergleich.electricity.repository.CustomerEmailSendHistoryReposit
 import com.tarifvergleich.electricity.repository.CustomerOrderRepository;
 import com.tarifvergleich.electricity.repository.CustomerRepository;
 import com.tarifvergleich.electricity.repository.CustomerServiceRequestRepository;
+import com.tarifvergleich.electricity.repository.ManageAdminDocumentRepository;
 import com.tarifvergleich.electricity.service.customer.CustomerAuthService;
 import com.tarifvergleich.electricity.util.EmailBodyRender;
+import com.tarifvergleich.electricity.util.FileServiceSuperAdmin;
 import com.tarifvergleich.electricity.util.Helper;
 import com.tarifvergleich.electricity.util.PdfGenerator;
 
@@ -79,7 +86,9 @@ public class AdminCustomerManagementService {
 	private final CustomerDetailsContactHistoryRepository customerDetailsContactHistoryRepo;
 	private final PdfGenerator pdfGenerator;
 	private final CustomerEmailSendHistoryRepository customerEmailSendHistoryRepo;
-	private final PdfGenerator pdfGenerator;
+	private final AdminUserRepository adminUserRepo;
+	private final FileServiceSuperAdmin fileUtil;
+	private final ManageAdminDocumentRepository manageAdminDocumentRepo; 
 
 	public Map<String, Object> getCustomers(CustomerDto customerReq) {
 
@@ -96,7 +105,7 @@ public class AdminCustomerManagementService {
 				throw new InternalServerException("Not authorised to access customer details", HttpStatus.OK);
 
 			SingleCustomerResponseDeliveryForAdmin customerRes = CustomerDto.getAdminSingleCustomerResponseDto(customer,
-					pdfGenerator, pdfGenerator);
+					pdfGenerator);
 
 			return Map.of("res", true, "data", customerRes);
 
@@ -621,7 +630,7 @@ public class AdminCustomerManagementService {
 	}
 
 	@Transactional
-	public Object sendCustomerEmail(CustomerSendEmailRequestDto request) {
+	public Object sendCustomerEmail(CustomerSendEmailRequestDto request, MultipartFile[] uploadDocuments) {
 		
 		if (request.getTitle() == null || request.getTitle().trim().isEmpty())
 			throw new InternalServerException("Title cannot be empty", HttpStatus.OK);
@@ -633,21 +642,55 @@ public class AdminCustomerManagementService {
 	    Customer customer = customerRepo
 	            .findById(request.getCustomerId().intValue())
 	            .orElseThrow(() -> new InternalServerException("Customer not found", HttpStatus.OK));
+	    
+	    AdminUser admin = adminUserRepo
+	            .findById(request.getAdminId().intValue())
+	            .orElseThrow(() -> new InternalServerException("Admin not found", HttpStatus.OK));
 
 	    String toEmail = customer.getEmail();
-	    CustomerEmailSendHistory history = new CustomerEmailSendHistory();
+	    CustomerEmailSendHistory sendEmailhistory = new CustomerEmailSendHistory();
 
-	    history.setCustomerId(request.getCustomerId());
-	    history.setAdminId(request.getAdminId());
-	    history.setTitle(request.getTitle());
-	    history.setSubtitle(request.getSubtitle());
-	    history.setEmailContent(request.getEmailContent());
-	    history.setSentOn(Helper.getCurrentTimeBerlin());
+	    sendEmailhistory.setCustomerId(request.getCustomerId());
+	    sendEmailhistory.setAdminId(request.getAdminId());
+	    sendEmailhistory.setTitle(request.getTitle());
+	    sendEmailhistory.setSubtitle(request.getSubtitle());
+	    sendEmailhistory.setEmailContent(request.getEmailContent());
+	    sendEmailhistory.setSentOn(Helper.getCurrentTimeBerlin());
 
-	    customerEmailSendHistoryRepo.save(history);
+	    if (request.getDocumentIds() != null && !request.getDocumentIds().isEmpty()) {
+	        List<Integer> documentIds = request.getDocumentIds().stream().map(Long::intValue).toList();
+	        List<ManageAdminDocument> documents = manageAdminDocumentRepo.findAllById(documentIds);
+	        sendEmailhistory.setDocuments(documents);
+	    }
+	    
+	    List<CustomerSendEmailUpload> uploadedDocuments = new ArrayList<>();
+	    if (uploadDocuments != null) {
+	        for (MultipartFile file : uploadDocuments) {
+	            if (file != null && !file.isEmpty()) {
+	            	if (file.getSize() > 10 * 1024 * 1024) {
+	            	    throw new InternalServerException("File size must be less than 10MB", HttpStatus.OK);
+	            	}
+	                CustomerSendEmailUpload document = new CustomerSendEmailUpload();
+	                document.setFileName(file.getOriginalFilename());
+	                String uploadedPath;
+	                	try {
+	                		uploadedPath = fileUtil.saveFile(file, "customer-email-documents");
+	                	}catch (Exception e) {
+	                		throw new InternalServerException("Failed to uppload document", HttpStatus.OK);
+	                	}
+	                document.setFilePath(uploadedPath);
+	                document.setAdmin(admin);
+	                document.setSendEmailHistory(sendEmailhistory);
+	                uploadedDocuments.add(document);
+	            }
+	        }
+	    }
+	    sendEmailhistory.setUploadDocuments(uploadedDocuments);
+	    
+	    customerEmailSendHistoryRepo.save(sendEmailhistory);
 	    return Map.of(
 	            "res", true,
-	            "email", toEmail
+	            "messsage", "Email sent successfully"
 	    );
 	}
 }

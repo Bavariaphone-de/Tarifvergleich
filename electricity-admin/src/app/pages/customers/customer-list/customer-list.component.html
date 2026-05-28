@@ -49,7 +49,7 @@
   <!-- Search & Filters -->
   <div class="flex flex-wrap items-center gap-3 w-full mb-6">
     <div class="relative flex-1">
-      <input type="text" [(ngModel)]="searchTerm" (keyup.enter)="onFilterChange()"
+      <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="onFilterChange()" (keyup.enter)="onFilterChange()"
         placeholder="Suchen (Name, E-Mail, ID)..."
         class="w-full pl-3 pr-10 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-brand-500 outline-none transition" />
     </div>
@@ -973,7 +973,7 @@
 @if (isSendEmailModalOpen) {
   <div class="fixed inset-0 z-99999 flex items-center justify-center p-4 absolute inset-0 bg-black/50">
     <div class="bg-white rounded-2xl w-full max-w-2xl shadow-xl">
-
+       <!-- max-h-[90vh] overflow-y-auto -->
       <!-- Header -->
       <div class="flex items-center justify-between px-6 py-4 border-b">
         <div>
@@ -985,9 +985,9 @@
         <button (click)="closeSendEmailModal()">✕</button>
       </div>
 
-      <!-- Body -->
+      <!-- Scrollable Body -->
       <div class="p-6 space-y-4">
-        
+        <!-- flex-1 overflow-y-auto  -->
         <!-- TITLE -->
           <div>
             <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
@@ -1147,18 +1147,61 @@
 
         </div>
 
+        <!-- Upload Documents -->
+          <div class="space-y-1">
+            <div *ngFor="let document of uploadDocuments; let i = index" class="flex items-center gap-2">
+
+              <!-- Upload Field -->
+              <label
+               class="flex-2 border-2 border-dashed rounded-lg px-4 py-3 text-center cursor-pointer hover:border-brand-400 transition">
+                  {{ document.file?.name || 'Choose File' }}
+                <input type="file" class="hidden" 
+                accept=".pdf,.jpg,.jpeg,.png" (change)="onUploadDocumentSelect($event, i)"/>
+              </label>
+
+              <!-- Add Button -->
+              <button
+                type="button" (click)="addUploadDocumentField()"
+                class="w-8 h-8 rounded-lg bg-brand-500 hover:bg-brand-600 text-white flex items-center justify-center text-lg">
+                +
+              </button>
+
+              <!-- Remove Button -->
+              <button
+                *ngIf="uploadDocuments.length > 1 || document.file"
+                type="button" (click)="removeUploadDocumentField(i)"
+                class="w-8 h-8 rounded-lg border border-red-200 text-red-500 hover:bg-red-50 flex items-center justify-center">
+                ✖
+              </button>
+
+            </div>
+
+          </div>
+
       </div>
 
       <!-- Footer -->
       <div class="flex justify-end gap-3 px-6 py-4 border-t">
 
+      <div
+        *ngIf="successMessage" class="mb-3 text-green-600 font-medium text-sm">
+        {{ successMessage }}
+      </div>
+
+      <div
+        *ngIf="errorMessageEmail" class="mb-3 text-red-600 font-medium text-sm">
+        {{ errorMessageEmail }}
+      </div>
+
         <button (click)="closeSendEmailModal()" class="px-4 py-2 rounded-lg border">
           Cancel
         </button>
 
-        <button type="submit"
-        class="px-5 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white flex items-center justify-center gap-2">
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <button type="submit" (click)="submitSendEmail()"
+        class="px-5 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white flex 
+        items-center justify-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" 
+          viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               d="M3 20l18-8L3 4v6l13 2-13 2v6z"/>
           </svg>
