@@ -106,9 +106,9 @@
           <tbody>
             @for (customer of customers; track customer.id) {
             <tr
-              class="border-t border-gray-100 dark:border-gray-700/60 hover:bg-brand-50/50 dark:hover:bg-gray-800/50 transition-colors cursor-pointer"
+              class="border-t border-gray-100 dark:border-gray-700/60 hover:bg-brand-50/50 dark:hover:bg-gray-800/50 transition-colors"
               [class.bg-brand-50]="selectedCustomer?.id === customer.id"
-              [class.dark:bg-gray-800]="selectedCustomer?.id === customer.id" (click)="selectCustomer(customer)">
+              [class.dark:bg-gray-800]="selectedCustomer?.id === customer.id">
 
               <!-- ID -->
               <td class="px-4 py-3.5">

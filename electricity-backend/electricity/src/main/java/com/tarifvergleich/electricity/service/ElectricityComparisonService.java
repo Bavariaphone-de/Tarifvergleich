@@ -74,7 +74,16 @@ public class ElectricityComparisonService {
 				if (filters.get("branch") != null)
 					customerCompare.setBranch(filters.get("branch").toString());
 
-				customerId = filters.containsKey("customerId") ? (Integer) filters.remove("customerId") : 0;
+				Object cIdObj = filters.remove("customerId");
+				if (cIdObj != null && !cIdObj.toString().trim().isEmpty() && !cIdObj.toString().equals("null")) {
+					try {
+						customerId = Integer.parseInt(cIdObj.toString());
+					} catch (NumberFormatException e) {
+						customerId = 0;
+					}
+				} else {
+					customerId = 0;
+				}
 			} else {
 				filters.remove("isSave");
 				filters.remove("customerId");

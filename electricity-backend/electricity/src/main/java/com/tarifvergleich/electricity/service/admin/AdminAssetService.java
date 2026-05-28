@@ -96,7 +96,7 @@ public class AdminAssetService {
 
             String oldContentUrl = adminAsset.getContentUrl();
 
-            if (fileUrl != null && oldContentUrl != null) {
+            if (fileUrl != null) {
                 adminAsset.setContentUrl(fileUrl);
             }
 
@@ -118,7 +118,7 @@ public class AdminAssetService {
 
             AdminAsset updateAsset = adminAssetRepo.save(adminAsset);
 
-            if (fileUrl != null)
+            if (fileUrl != null && oldContentUrl != null)
                 fileUtil.deleteFile(oldContentUrl);
 
             return Map.of("res", true, "Data", updateAsset);

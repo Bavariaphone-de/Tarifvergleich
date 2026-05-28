@@ -407,6 +407,7 @@ export class CustomerListComponent implements OnInit {
         newData.forEach((c) => {
           if (!(c.id in this.gdprContactStatus)) {
             this.gdprContactStatus[c.id] = false;
+        
           }
 
           if (!(c.id in this.customerNotes)) {
