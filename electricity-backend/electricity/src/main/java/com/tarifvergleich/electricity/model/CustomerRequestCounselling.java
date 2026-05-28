@@ -31,6 +31,7 @@ public class CustomerRequestCounselling {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
+	
 
 	@Column(name = "mobile_number")
 	private String mobileNumber;
