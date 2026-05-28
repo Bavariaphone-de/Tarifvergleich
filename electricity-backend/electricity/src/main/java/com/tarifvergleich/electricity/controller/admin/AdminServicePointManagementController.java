@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.tarifvergleich.electricity.dto.CustomerRequestCounsellingDto;
+import com.tarifvergleich.electricity.dto.EnergySupplierMessageCategoryDto;
 import com.tarifvergleich.electricity.dto.ListOfHolidaysDto;
 import com.tarifvergleich.electricity.dto.ManageAdminDocumentDto;
 import com.tarifvergleich.electricity.service.admin.AdminServicePointManagementService;
@@ -53,5 +54,19 @@ public class AdminServicePointManagementController {
 	@PostMapping("/fetch-admin-documents")
 	public ResponseEntity<?> fetchAdminDocument(@RequestBody ManageAdminDocumentDto adminDocDto) {
 		return ResponseEntity.ok(adminServicePointManagementService.fetchAllAdminDocuments(adminDocDto));
+	}
+
+	@PostMapping("/add-supplier-message-category")
+	public ResponseEntity<?> addSupplierMessageCategory(@RequestBody EnergySupplierMessageCategoryDto categoryDto) {
+		return ResponseEntity.ok(adminServicePointManagementService.addSupplierMessageCategory(categoryDto));
+	}
+
+	@PostMapping("/delete-supplier-message-category")
+	public ResponseEntity<?> deleteSupplierMessageCategory(@RequestBody EnergySupplierMessageCategoryDto categoryDto) {
+		return ResponseEntity.ok(adminServicePointManagementService.deleteEnergySupplierMessageCategory(categoryDto));
+	}
+
+	public ResponseEntity<?> fetchSupplierMessageCategory(@RequestBody EnergySupplierMessageCategoryDto categoryDto) {
+		return ResponseEntity.ok(adminServicePointManagementService.fetchAllEnergySupplierCategory(categoryDto));
 	}
 }

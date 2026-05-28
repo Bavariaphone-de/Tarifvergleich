@@ -12,8 +12,10 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.tarifvergleich.electricity.dto.EnergySupplierMessageCategoryDto;
 import com.tarifvergleich.electricity.dto.ListOfHolidaysDto;
 import com.tarifvergleich.electricity.service.customer.CustomerDetailService;
+import com.tarifvergleich.electricity.service.customer.CustomerEnergySupplierService;
 import com.tarifvergleich.electricity.service.customer.CustomerGeneralService;
 
 import lombok.RequiredArgsConstructor;
@@ -26,6 +28,7 @@ public class CustomerPublicController {
 
 	private final CustomerDetailService customerDetailService;
 	private final CustomerGeneralService customerGeneralService;
+	private final CustomerEnergySupplierService customerEnergySupplierService;
 
 	@PostMapping("/add-contract-signature")
 	public ResponseEntity<?> addCustomerContractSignatures(@RequestPart("data") String token,
@@ -50,5 +53,11 @@ public class CustomerPublicController {
 	@PostMapping("/list-of-working-days")
 	public ResponseEntity<?> getListOfWorkingDays(@RequestBody ListOfHolidaysDto listOfHolidaysDto) {
 		return ResponseEntity.ok(customerGeneralService.fetchWorkingDays(listOfHolidaysDto.getAdminId()));
+	}
+
+	@PostMapping("/fetch-supplier-message-category")
+	public ResponseEntity<?> fetchAllSupplierMessageCategory(
+			@RequestBody EnergySupplierMessageCategoryDto categoryDto) {
+		return ResponseEntity.ok(customerEnergySupplierService.fetchEnergySupplierMessageCategory(categoryDto));
 	}
 }

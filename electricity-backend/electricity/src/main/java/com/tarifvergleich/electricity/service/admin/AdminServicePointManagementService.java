@@ -20,6 +20,8 @@ import com.tarifvergleich.electricity.dto.CustomerRequestCounsellingDto;
 import com.tarifvergleich.electricity.dto.CustomerRequestCounsellingDto.CustomerRequestCousellingResponseForAdmin;
 import com.tarifvergleich.electricity.dto.CustomerServicesDto;
 import com.tarifvergleich.electricity.dto.CustomerServicesDto.CustomerListOfServiceForAdminResDto;
+import com.tarifvergleich.electricity.dto.EnergySupplierMessageCategoryDto;
+import com.tarifvergleich.electricity.dto.EnergySupplierMessageCategoryDto.EnergySupplierMessageCategoryAdminResponseDto;
 import com.tarifvergleich.electricity.dto.ListOfHolidaysDto;
 import com.tarifvergleich.electricity.dto.ListOfHolidaysDto.ListOfHolidaysResponseDto;
 import com.tarifvergleich.electricity.dto.ManageAdminDocumentDto;
@@ -28,11 +30,13 @@ import com.tarifvergleich.electricity.exception.InternalServerException;
 import com.tarifvergleich.electricity.model.AdminUser;
 import com.tarifvergleich.electricity.model.CustomerRequestCounselling;
 import com.tarifvergleich.electricity.model.CustomerServices;
+import com.tarifvergleich.electricity.model.EnergySupplierMessageCategory;
 import com.tarifvergleich.electricity.model.ListOfHolidays;
 import com.tarifvergleich.electricity.model.ManageAdminDocument;
 import com.tarifvergleich.electricity.repository.AdminUserRepository;
 import com.tarifvergleich.electricity.repository.CustomerRequestCounsellingRepository;
 import com.tarifvergleich.electricity.repository.CustomerServicesRepository;
+import com.tarifvergleich.electricity.repository.EnergySupplierMessageCategoryRepository;
 import com.tarifvergleich.electricity.repository.ListOfHolidaysRepository;
 import com.tarifvergleich.electricity.repository.ManageAdminDocumentRepository;
 import com.tarifvergleich.electricity.util.Helper;
@@ -50,6 +54,7 @@ public class AdminServicePointManagementService {
 	private final ListOfHolidaysRepository listOfHolidaysRepo;
 	private final CustomerRequestCounsellingRepository customerRequestCounsellingRepo;
 	private final ManageAdminDocumentRepository adminDocumentRepo;
+	private final EnergySupplierMessageCategoryRepository energySupplierMessageCategoryRepo;
 
 	@Transactional
 	public Map<String, Object> addCustomerServices(CustomerServicesDto servicesDto) {
@@ -71,7 +76,8 @@ public class AdminServicePointManagementService {
 		Optional<CustomerServices> existingServiceOpt = customerServicesRepo
 				.findByServiceNameIgnoreCaseAndAdminAdminId(servicesDto.getServiceName(), servicesDto.getAdminId());
 		if (existingServiceOpt.isPresent()) {
-			if (servicesDto.getServiceId() == null || !existingServiceOpt.get().getId().equals(servicesDto.getServiceId())) {
+			if (servicesDto.getServiceId() == null
+					|| !existingServiceOpt.get().getId().equals(servicesDto.getServiceId())) {
 				throw new InternalServerException("This service already exists", HttpStatus.OK);
 			}
 		}
@@ -439,4 +445,99 @@ public class AdminServicePointManagementService {
 
 		return Map.of("res", true, "data", adminDocsRes);
 	}
+
+	@Transactional
+	public Map<String, Object> addSupplierMessageCategory(EnergySupplierMessageCategoryDto energyMessageCategoryDto) {
+
+		if (energyMessageCategoryDto == null)
+			throw new InternalServerException("Category data missing", HttpStatus.OK);
+		if (energyMessageCategoryDto.getCategoryName() == null || energyMessageCategoryDto.getCategoryName().isEmpty())
+			throw new InternalServerException("Category name missing", HttpStatus.OK);
+		if (energyMessageCategoryDto.getAdminId() == null || energyMessageCategoryDto.getAdminId() <= 0)
+			throw new InternalServerException("Admin id missing", HttpStatus.OK);
+
+		EnergySupplierMessageCategory supplierMessageCategory = energySupplierMessageCategoryRepo
+				.findByCategoryNameLikeAndAdminAdminId(energyMessageCategoryDto.getCategoryName().toUpperCase(),
+						energyMessageCategoryDto.getAdminId())
+				.orElse(null);
+
+		if (supplierMessageCategory != null)
+			energyMessageCategoryDto.setSupplierMessageCategoryId(supplierMessageCategory.getId());
+
+		if (energyMessageCategoryDto.getSupplierMessageCategoryId() == null
+				|| energyMessageCategoryDto.getSupplierMessageCategoryId() <= 0) {
+
+			AdminUser admin = adminUserRepo.findById(energyMessageCategoryDto.getAdminId()).orElseThrow(
+					() -> new InternalServerException("Admin not found with this credential", HttpStatus.OK));
+
+			supplierMessageCategory = EnergySupplierMessageCategory.builder()
+					.categoryName(energyMessageCategoryDto.getCategoryName().toUpperCase()).admin(admin).build();
+		} else {
+			supplierMessageCategory = energySupplierMessageCategoryRepo
+					.findByIdAndAdminAdminId(energyMessageCategoryDto.getSupplierMessageCategoryId(),
+							energyMessageCategoryDto.getAdminId())
+					.orElseThrow(() -> new InternalServerException(
+							"Energy supplier message not found with this credential", HttpStatus.OK));
+
+			supplierMessageCategory.setCategoryName(energyMessageCategoryDto.getCategoryName().toUpperCase());
+		}
+
+		supplierMessageCategory = energySupplierMessageCategoryRepo.save(supplierMessageCategory);
+
+		return Map.of("res", true, "message", "Energy supplier message category added successfully");
+	}
+
+	@Transactional
+	public Map<String, Object> deleteEnergySupplierMessageCategory(
+			EnergySupplierMessageCategoryDto energyMessageCategoryDto) {
+
+		if (energyMessageCategoryDto == null)
+			throw new InternalServerException("Insufficient credential", HttpStatus.OK);
+		if (energyMessageCategoryDto.getAdminId() == null || energyMessageCategoryDto.getAdminId() <= 0)
+			throw new InternalServerException("Admin id missing", HttpStatus.OK);
+		if (energyMessageCategoryDto.getSupplierMessageCategoryId() == null
+				|| energyMessageCategoryDto.getSupplierMessageCategoryId() <= 0)
+			throw new InternalServerException("Energy supplier message id missing", HttpStatus.OK);
+
+		EnergySupplierMessageCategory messageCategory = energySupplierMessageCategoryRepo
+				.findByIdAndAdminAdminId(energyMessageCategoryDto.getSupplierMessageCategoryId(),
+						energyMessageCategoryDto.getAdminId())
+				.orElseThrow(() -> new InternalServerException(
+						"Energy supplier message category not found with this credential", HttpStatus.OK));
+
+		energySupplierMessageCategoryRepo.delete(messageCategory);
+
+		return Map.of("res", true, "message", "Energy supplier message category deleted successfully");
+	}
+
+	public Map<String, Object> fetchAllEnergySupplierCategory(
+			EnergySupplierMessageCategoryDto energySupplierMessageCategoryDto) {
+		if (energySupplierMessageCategoryDto == null || energySupplierMessageCategoryDto.getAdminId() == null
+				|| energySupplierMessageCategoryDto.getAdminId() <= 0)
+			throw new InternalServerException("Admin id missing", HttpStatus.OK);
+
+		if (energySupplierMessageCategoryDto.getSupplierMessageCategoryId() != null
+				&& energySupplierMessageCategoryDto.getSupplierMessageCategoryId() > 0) {
+			EnergySupplierMessageCategory category = energySupplierMessageCategoryRepo
+					.findByIdAndAdminAdminId(energySupplierMessageCategoryDto.getSupplierMessageCategoryId(),
+							energySupplierMessageCategoryDto.getAdminId())
+					.orElseThrow(() -> new InternalServerException(
+							"Energy supplier message category not found with this credential", HttpStatus.OK));
+
+			EnergySupplierMessageCategoryAdminResponseDto responseCategory = EnergySupplierMessageCategoryDto
+					.mapForAdmin(category);
+
+			return Map.of("res", true, "data", responseCategory);
+
+		}
+
+		List<EnergySupplierMessageCategory> categories = energySupplierMessageCategoryRepo
+				.findAllByAdminAdminIdOrderByCategoryNameAsc(energySupplierMessageCategoryDto.getAdminId());
+
+		List<EnergySupplierMessageCategoryAdminResponseDto> responseCategory = categories.stream()
+				.map(EnergySupplierMessageCategoryDto::mapForAdmin).toList();
+
+		return Map.of("res", true, "data", responseCategory);
+	}
+
 }

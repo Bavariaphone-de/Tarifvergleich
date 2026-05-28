@@ -79,7 +79,6 @@ public class AdminCustomerManagementService {
 	private final CustomerDetailsContactHistoryRepository customerDetailsContactHistoryRepo;
 	private final PdfGenerator pdfGenerator;
 	private final CustomerEmailSendHistoryRepository customerEmailSendHistoryRepo;
-	private final PdfGenerator pdfGenerator;
 
 	public Map<String, Object> getCustomers(CustomerDto customerReq) {
 
@@ -96,7 +95,7 @@ public class AdminCustomerManagementService {
 				throw new InternalServerException("Not authorised to access customer details", HttpStatus.OK);
 
 			SingleCustomerResponseDeliveryForAdmin customerRes = CustomerDto.getAdminSingleCustomerResponseDto(customer,
-					pdfGenerator, pdfGenerator);
+					pdfGenerator);
 
 			return Map.of("res", true, "data", customerRes);
 
