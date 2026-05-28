@@ -1,3 +1,5 @@
+
+
 package com.tarifvergleich.electricity.dto;
 
 import java.math.BigInteger;
