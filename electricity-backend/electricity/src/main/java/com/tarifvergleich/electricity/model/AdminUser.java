@@ -167,6 +167,10 @@ public class AdminUser {
 	@OneToOne(mappedBy = "admin", cascade = { CascadeType.PERSIST, CascadeType.MERGE })
 	@JsonIgnore
 	private AdminTaxManagement adminTax;
+	
+	@OneToMany(mappedBy = "admin", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, orphanRemoval = true)
+	@JsonIgnoreProperties("admin")
+	private List<EnergySupplierMessageCategory> energySupplierMessageCategories;
 
 	@PrePersist
 	protected void onCreate() {
@@ -308,5 +312,13 @@ public class AdminUser {
 
 		contact.setAdmin(this);
 		customerQueryContact.add(contact);
+	}
+	
+	public void addEnergySupplierMessageCategory(EnergySupplierMessageCategory category) {
+		if(energySupplierMessageCategories == null)
+			energySupplierMessageCategories = new LinkedList<EnergySupplierMessageCategory>();
+		
+		category.setAdmin(this);
+		energySupplierMessageCategories.add(category);
 	}
 }
