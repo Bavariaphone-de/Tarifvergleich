@@ -1,7 +1,6 @@
 <div class="container-callback" *ngIf="currentStep === 'callback'">
   <div class="container-wish">
-    <span
-      ><strong>Wünschen Sie eine persönliche Erstberatung per Telefon?</strong>
+    <span><strong>Wünschen Sie eine persönliche Erstberatung per Telefon?</strong>
       <br />
       <span class="center-text">Dann fordern Sie jetzt Ihren Rückrufwunsch an.</span>
     </span>
@@ -13,21 +12,13 @@
 
 <div class="container-callback" *ngIf="currentStep === 'telefon'">
   <div class="container-wish">
-    <span class="telefon"
-      ><strong
-        >Bitte geben Sie Ihre Telefonnummer an, <br />
-        unter der wir Sie erreichen können.</strong
-      >
+    <span class="telefon"><strong>Bitte geben Sie Ihre Telefonnummer an, <br />
+        unter der wir Sie erreichen können.</strong>
     </span>
   </div>
   <div class="container-phone">
     <input class="country-code" type="text" [(ngModel)]="countryCode" readonly />
-    <input
-      type="number"
-      placeholder="Mobilnummer oder Festnetznummer"
-      [(ngModel)]="phoneNumber"
-      class="number"
-    />
+    <input type="number" placeholder="Mobilnummer oder Festnetznummer" [(ngModel)]="phoneNumber" class="number" />
     <button class="callback" (click)="onNextPhone()">Rückrufzeit festlegen</button>
   </div>
   <div class="error" style="color: red" *ngIf="fieldErrors['phoneNumber']">
@@ -43,13 +34,9 @@
   </div>
 
   <div class="container-days">
-    <button
-      class="days"
-      *ngFor="let day of filteredDays; trackBy: trackByDay"
-      (click)="selectDay(day.value ?? '')"
-      [class.active]="selectedDay === (day.value ?? '')"
-    >
-      {{ getDayLabelByValue(day.value ?? '') }}
+    <button type="button" class="days" *ngFor="let day of filteredDays; trackBy: trackByDay" (click)="selectDay(day)"
+      [class.active]="selectedDay?.date === day.date">
+      {{ getDayLabel(day.date) }}
       ({{ day.label }})
     </button>
   </div>
@@ -70,14 +57,9 @@
     <span><strong>Bitte wählen Sie, zu welcher Uhrzeit wir Sie erreichen können.</strong> </span>
   </div>
   <div class="container-days">
-    <button
-      class="days"
-      *ngFor="let slot of timeSlots"
-      (click)="selectTimeSlot(slot.value)"
-      [class.active]="selectedTimeSlot === slot.value"
-      [disabled]="!isTimeSlotEnabled(slot.value)"
-      [class.disabled]="!isTimeSlotEnabled(slot.value)"
-    >
+    <button type="button" class="days" *ngFor="let slot of timeSlots" (click)="selectTimeSlot(slot.value)"
+      [class.active]="selectedTimeSlot === slot.value" [disabled]="!isTimeSlotEnabled(slot.value)"
+      [class.disabled]="!isTimeSlotEnabled(slot.value)">
       {{ slot.label }}
     </button>
   </div>
@@ -92,11 +74,8 @@
   <div class="container-wishlist">
     <span><strong>Möchten Sie noch weitere Informationen hinterlassen?</strong> </span>
     <div class="container-days">
-      <input
-        class="information-box"
-        placeholder="Platz für Infos, z.B. genaue Uhrzeit, an der Sie gut erreichbar sind"
-        [(ngModel)]="scheduleDescription"
-      />
+      <input class="information-box" placeholder="Platz für Infos, z.B. genaue Uhrzeit, an der Sie gut erreichbar sind"
+        [(ngModel)]="scheduleDescription" />
     </div>
   </div>
   <div class="item-callback">

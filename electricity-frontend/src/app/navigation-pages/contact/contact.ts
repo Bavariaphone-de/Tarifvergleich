@@ -5,13 +5,14 @@ import {
   ElementRef,
   Inject,
   OnInit,
+  OnDestroy, // Added for cleanup
   PLATFORM_ID,
   AfterViewInit,
   NgZone,
 } from '@angular/core';
 import { ContactPerson } from '../../layout/contact-person/contact-person';
 import { NeedSupport } from '../../layout/need-support/need-support';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DOCUMENT } from '@angular/common'; // Added DOCUMENT
 import { AuthService } from '../../services/auth.service';
 import { HttpClient } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -19,10 +20,8 @@ import { FormsModule } from '@angular/forms';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
+import { isPlatformBrowser } from '@angular/common'; // Added for SSR safety
 
-// ── reCAPTCHA v3 type ────────────────────────────────────────
-// Read from window (not `declare const`) to avoid ts(2774).
-// v3 has no widget — just ready() + execute() which returns a Promise<token>.
 type GrecaptchaV3 = {
   ready(callback: () => void): void;
   execute(siteKey: string, options: { action: string }): Promise<string>;
@@ -42,7 +41,9 @@ type GrecaptchaV3 = {
   templateUrl: './contact.html',
   styleUrl: './contact.css',
 })
-export class Contact implements OnInit, AfterViewInit {
+export class Contact implements OnInit, AfterViewInit, OnDestroy {
+  private scriptElement!: HTMLScriptElement;
+
   constructor(
     private http: HttpClient,
     private cdr: ChangeDetectorRef,
@@ -52,14 +53,13 @@ export class Contact implements OnInit, AfterViewInit {
     private router: Router,
     private ngZone: NgZone,
     @Inject(PLATFORM_ID) private platformId: Object,
+    @Inject(DOCUMENT) private document: Document, // Injected Document token safely
   ) {}
 
   // ── Config ───────────────────────────────────────────────────
-
-  readonly SITE_KEY = '6LfjDPcsAAAAAAVEKyj8xhgwgEXhfZ6G6H42papE'; // ← v3 site key (different from v2!)
+  readonly SITE_KEY = '6LfjDPcsAAAAAAVEKyj8xhgwgEXhfZ6G6H42papE';
 
   // ── UI state ─────────────────────────────────────────────────
-
   showDropdown = false;
   isSubmitting = false;
   successMessage = '';
@@ -82,15 +82,21 @@ export class Contact implements OnInit, AfterViewInit {
   isLoggedIn = computed(() => !!this.authService.currentUser()?.user_id);
 
   // ── reCAPTCHA v3 getter ──────────────────────────────────────
-  // Using a getter on window avoids ts(2774) completely.
-
   private get grecaptcha(): GrecaptchaV3 | undefined {
-    return (window as any).grecaptcha as GrecaptchaV3 | undefined;
+    if (isPlatformBrowser(this.platformId)) {
+      return (window as any).grecaptcha as GrecaptchaV3 | undefined;
+    }
+    return undefined;
   }
 
   // ── Lifecycle ────────────────────────────────────────────────
 
   ngOnInit(): void {
+    // 1. Dynamic Script Loader (Only runs in browser environments)
+    if (isPlatformBrowser(this.platformId)) {
+      this.loadReCaptchaScript();
+    }
+
     this.fetchCategories();
 
     if (this.isLoggedIn()) {
@@ -99,7 +105,6 @@ export class Contact implements OnInit, AfterViewInit {
 
     this.authService.getCustomerData().subscribe((data) => {
       if (!data) return;
-
 
       console.log(data);
       this.formData.salutation = data.salutation || '';
@@ -113,12 +118,40 @@ export class Contact implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    // v3 needs no widget rendered — the script loads silently in the background.
-    // Nothing to do here; execute() is called on form submit instead.
+    // Left empty deliberately as v3 functions on demand
+  }
+
+  ngOnDestroy(): void {
+    // 2. Cleanup to keep other pages light & remove the Google floating badge
+    if (isPlatformBrowser(this.platformId)) {
+      if (this.scriptElement) {
+        this.scriptElement.remove();
+      }
+      const badge = this.document.querySelector('.grecaptcha-badge');
+      if (badge) {
+        badge.remove();
+      }
+    }
+  }
+
+  // ── reCAPTCHA Script Controller ──────────────────────────────
+
+  private loadReCaptchaScript(): void {
+    // Avoid double injection if user flips back and forth rapidly
+    if (this.document.getElementById('recaptcha-v3-script')) {
+      return;
+    }
+
+    this.scriptElement = this.document.createElement('script');
+    this.scriptElement.id = 'recaptcha-v3-script';
+    this.scriptElement.src = `https://www.google.com/recaptcha/api.js?render=${this.SITE_KEY}`;
+    this.scriptElement.async = true;
+    this.scriptElement.defer = true;
+
+    this.document.body.appendChild(this.scriptElement);
   }
 
   // ── Dropdown ─────────────────────────────────────────────────
-
   toggleDropdown(event: Event): void {
     event.stopPropagation();
     this.showDropdown = !this.showDropdown;
@@ -130,10 +163,7 @@ export class Contact implements OnInit, AfterViewInit {
     this.showDropdown = false;
   }
 
-  // ── reCAPTCHA v3 ─────────────────────────────────────────────
-
-  // Returns a fresh token each time — v3 tokens are single-use.
-  // action is a label visible in the Google reCAPTCHA dashboard.
+  // ── reCAPTCHA v3 Execution ───────────────────────────────────
   private getRecaptchaToken(): Promise<string> {
     return new Promise((resolve, reject) => {
       const g = this.grecaptcha;
@@ -152,7 +182,6 @@ export class Contact implements OnInit, AfterViewInit {
   }
 
   // ── Validation ───────────────────────────────────────────────
-
   validate(): boolean {
     this.fieldErrors = {};
 
@@ -177,14 +206,10 @@ export class Contact implements OnInit, AfterViewInit {
       this.fieldErrors['inquiry'] = 'Bitte Nachricht eingeben';
     }
 
-    // No reCAPTCHA field error needed — v3 is invisible to the user.
-    // Token is fetched programmatically in submitForm().
-
     return Object.keys(this.fieldErrors).length === 0;
   }
 
   // ── API calls ────────────────────────────────────────────────
-
   fetchCategories(): void {
     this.http.post<any>('http://192.168.0.155:8080/fetch-contact-category', {}).subscribe({
       next: (res) => {
@@ -196,12 +221,10 @@ export class Contact implements OnInit, AfterViewInit {
     });
   }
 
-  // submitForm is async because getRecaptchaToken() returns a Promise
   async submitForm(): Promise<void> {
     this.successMessage = '';
     this.errorMessage = '';
 
-    // Validate fields first before even calling reCAPTCHA
     if (!this.validate()) return;
 
     this.isSubmitting = true;
@@ -209,10 +232,8 @@ export class Contact implements OnInit, AfterViewInit {
     let recaptchaToken: string;
 
     try {
-      // v3: get a fresh token silently — no user interaction needed
       recaptchaToken = await this.getRecaptchaToken();
     } catch (err) {
-      // reCAPTCHA script failed to load or network error
       this.ngZone.run(() => {
         this.errorMessage =
           typeof err === 'string' ? err : 'reCAPTCHA-Fehler. Bitte Seite neu laden.';
@@ -221,14 +242,12 @@ export class Contact implements OnInit, AfterViewInit {
       return;
     }
 
-    // Submit form + token to backend.
-    // Backend should verify the token with Google and check score >= 0.5.
     this.http
       .post('http://192.168.0.175:8080/save-customer-contact', {
         ...this.formData,
-        adminId: 1, // Assuming adminId is required; adjust as needed
+        adminId: 1,
         categoryId: this.selectedCategory.id,
-        recaptchaToken, // backend verifies this against Google's API
+        recaptchaToken,
       })
       .subscribe({
         next: () => {

@@ -50,7 +50,7 @@ export class BannersComponent implements OnInit {
         if (res.res && res.data && res.data.length > 0) {
           const banner = res.data[0];
           this.bannerId = banner.id;
-          this.currentBannerUrl = this.imgBase + banner.contentUrl;
+          this.currentBannerUrl = banner.contentUrl ? this.imgBase + banner.contentUrl : null;
         }
       },
       error: (err) => console.error("Could not load existing banner", err),

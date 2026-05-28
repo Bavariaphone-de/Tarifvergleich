@@ -199,6 +199,39 @@ export class ContactQueryComponent implements OnInit, OnDestroy {
     if (this.currentPage > 1) this.fetchQueries(this.currentPage - 1);
   }
 
+  toggleQueryStatus(entry: ContactQuery, event: Event): void {
+
+    event.stopPropagation();
+
+    const newStatus = !entry.isResolved;
+
+    const payload = {
+      queryId: entry.customerQueryContactId,
+      isResolved: newStatus,
+    };
+
+    this.api.post("/toggle-contact-query-status", payload).subscribe({
+
+      next: (res: any) => {
+
+        if (res?.res) {
+
+          entry.isResolved = newStatus;
+
+          if (newStatus) {
+            entry.resolvedOn = Date.now();
+          } else {
+            entry.resolvedOn = null;
+          }
+        }
+      },
+
+      error: (err) => {
+        console.error("Failed to update query status", err);
+      },
+    });
+  }
+
   get pageRangeFrom(): number {
     return (this.currentPage - 1) * this.PAGE_LIMIT + 1;
   }

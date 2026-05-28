@@ -719,10 +719,10 @@ export class BookingDetailComponent implements OnInit {
 
     const payload = {
       customerOrderId: this.booking.order.customerOrderId,
-      adminId: this.authService.getUserId() || 1,
+      adminId: 1,
     };
 
-    this.api.post("admin/send-contract-pdf", payload).subscribe({
+    this.api.post("admin/send-signed-contract-customer", payload).subscribe({
       next: (res: any) => {
         this.isSendingContractPdf = false;
         if (res?.res) {

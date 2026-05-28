@@ -379,7 +379,7 @@ export class CreateBookingComponent implements OnInit {
       adminId: this.authService.getUserId(),
     };
 
-    this.api.post("admin/get-rates", payload).subscribe({
+    this.api.post("api/get-rates", payload).subscribe({
       next: (res) => {
         this.isLoadingRates = false;
         this.rates = res?.rates?.result ?? [];
@@ -525,7 +525,7 @@ export class CreateBookingComponent implements OnInit {
       adminId: this.authService.getUserId(),
     };
 
-    this.api.post("admin/get-rates", payload).subscribe({
+    this.api.post("api/get-rates", payload).subscribe({
       next: (res) => {
         this.isLoadingRates = false;
         this.rates = res?.rates?.result ?? [];

@@ -1165,7 +1165,9 @@
                   </button>
                 </ng-template>
 
-                <button class="meter-blue-btn full">Nachricht an Energielieferanten senden</button>
+                <button class="meter-blue-btn full" (click)="messageEnergySupplier(item)">
+                  Nachricht an Energielieferanten senden
+                </button>
               </div>
 
               <!-- RIGHT -->
@@ -1236,7 +1238,8 @@
                   </p>
                 </div>
 
-                <button class="meter-orange-btn">Anfrage an Ihren Berater stellen</button>
+                <button class="meter-orange-btn" (click)="openRequestService(item)">Anfrage an Ihren Berater
+                  stellen</button>
 
                 <button class="meter-orange-btn" (click)="rerquestCallback(item)">Rückruf von Berater anfordern</button>
 
@@ -1912,188 +1915,187 @@
         <!-- CARD -->
         <div class="selected-contract-card">
           <!-- TOP -->
-          <div class="green-container">
-            <div class="contract-top">
-              <!-- LEFT -->
-              <div class="contract-left">
-                <img [src]="selectedMeter.meterIcon" alt="provider" class="provider-logo" />
+          <div class="contract-top">
+            <!-- LEFT -->
+            <div class="contract-left">
+              <img [src]="selectedMeter.meterIcon" alt="provider" class="provider-logo" />
 
-                <div class="provider-name">
-                  {{ selectedMeter.tariff }}
-                </div>
-
-                <div class="meter-provider-badge">
-                  <img [src]="selectedMeter.providerIcon" alt="" class="badge-icon" />
-
-                  <span>
-                    {{ selectedMeter.providerType }}
-                  </span>
-                </div>
+              <div class="provider-name">
+                {{ selectedMeter.tariff }}
               </div>
 
-              <!-- CENTER -->
-              <div class="contract-center">
-                <div class="contract-row-title">
-                  <strong>Zählerbezeichnung:</strong>
+              <div class="meter-provider-badge">
+                <img [src]="selectedMeter.providerIcon" alt="" class="badge-icon" />
 
-                  <a class="change-link" *ngIf="!isEditingSelectedMeterName" (click)="editSelectedMeterName()">
-                    ändern
-                    <img src="assets/icons/Bearbeiten_schwarz.png" alt="edit" />
-                  </a>
-                </div>
+                <span>
+                  {{ selectedMeter.providerType }}
+                </span>
+              </div>
+            </div>
 
-                <!-- TEXT VIEW -->
-                <div class="meter-id" *ngIf="!isEditingSelectedMeterName">
-                  {{ selectedMeter?.meterDesignation }}
-                </div>
+            <!-- CENTER -->
+            <div class="contract-center">
+              <div class="contract-row-title">
+                <strong>Zählerbezeichnung:</strong>
 
-                <!-- EDIT VIEW -->
-                <div class="meter-edit-box" *ngIf="isEditingSelectedMeterName">
-                  <input type="text" [(ngModel)]="selectedMeter.meterDesignation" class="meter-input"
-                    placeholder="Zählerbezeichnung" />
-
-                  <!-- SAVE -->
-                  <button type="button" class="icon-action save-icon" (click)="saveSelectedMeterName()">
-                    ✓
-                  </button>
-
-                  <!-- CANCEL -->
-                  <button type="button" class="icon-action cancel-icon" (click)="cancelSelectedMeterEdit()">
-                    ✕
-                  </button>
-                </div>
-                <div class="address-wrap">
-                  <p>
-                    <strong>Adresse:</strong>
-                    {{ selectedMeter.address.name }}
-                  </p>
-
-                  <p>
-                    {{ selectedMeter.address.street }}
-                  </p>
-
-                  <p>
-                    {{ selectedMeter.address.city }}
-                  </p>
-                </div>
+                <a class="change-link" *ngIf="!isEditingSelectedMeterName" (click)="editSelectedMeterName()">
+                  ändern
+                  <img src="assets/icons/Bearbeiten_schwarz.png" alt="edit" />
+                </a>
               </div>
 
-              <!-- RIGHT -->
-              <div class="contract-right">
+              <!-- TEXT VIEW -->
+              <div class="meter-id" *ngIf="!isEditingSelectedMeterName">
+                {{ selectedMeter?.meterDesignation }}
+              </div>
+
+              <!-- EDIT VIEW -->
+              <div class="meter-edit-box" *ngIf="isEditingSelectedMeterName">
+                <input type="text" [(ngModel)]="selectedMeter.meterDesignation" class="meter-input"
+                  placeholder="Zählerbezeichnung" />
+
+                <!-- SAVE -->
+                <button type="button" class="icon-action save-icon" (click)="saveSelectedMeterName()">
+                  ✓
+                </button>
+
+                <!-- CANCEL -->
+                <button type="button" class="icon-action cancel-icon" (click)="cancelSelectedMeterEdit()">
+                  ✕
+                </button>
+              </div>
+              <div class="address-wrap">
                 <p>
-                  Vertragsnummer:
-                  <strong>
-                    {{ selectedMeter.contractNumber }}
-                  </strong>
+                  <strong>Adresse:</strong>
+                  {{ selectedMeter.address.name }}
                 </p>
 
                 <p>
-                  Kundennummer:
-                  <strong>
-                    {{ selectedMeter.customerNumber }}
-                  </strong>
-                </p>
-
-                <br />
-
-                <p>
-                  Zählernummer:
-                  <strong>
-                    {{ selectedMeter.meterNumber }}
-                  </strong>
+                  {{ selectedMeter.address.street }}
                 </p>
 
                 <p>
-                  Marktlokation-ID:
-                  <strong>
-                    {{ selectedMeter.marketLocation }}
-                  </strong>
+                  {{ selectedMeter.address.city }}
                 </p>
               </div>
             </div>
 
-            <!-- FORM -->
-            <div class="meter-reading-section">
-              <h4>Rechnung anfordern</h4>
-
-              <p class="meter-subtext">
-                Bitte tragen Sie hier die Details Ihrer Rechnungsanfrage ein.
+            <!-- RIGHT -->
+            <div class="contract-right">
+              <p>
+                Vertragsnummer:
+                <strong>
+                  {{ selectedMeter.contractNumber }}
+                </strong>
               </p>
 
-              <!-- RECHNUNGSART -->
-              <div class="form-row">
-                <div class="form-group" style="flex: 1">
-                  <div class="input-field select-wrap" style="display: inline-block">
-                    <div>
-                      <span class="field-label" style="
+              <p>
+                Kundennummer:
+                <strong>
+                  {{ selectedMeter.customerNumber }}
+                </strong>
+              </p>
+
+              <br />
+
+              <p>
+                Zählernummer:
+                <strong>
+                  {{ selectedMeter.meterNumber }}
+                </strong>
+              </p>
+
+              <p>
+                Marktlokation-ID:
+                <strong>
+                  {{ selectedMeter.marketLocation }}
+                </strong>
+              </p>
+            </div>
+          </div>
+
+          <!-- FORM -->
+          <div class="meter-reading-section">
+            <h4>Rechnung anfordern</h4>
+
+            <p class="meter-subtext">
+              Bitte tragen Sie hier die Details Ihrer Rechnungsanfrage ein.
+            </p>
+
+            <!-- RECHNUNGSART -->
+            <div class="form-row">
+              <div class="form-group" style="flex: 1">
+                <div class="input-field select-wrap" style="display: inline-block">
+                  <div>
+                    <span class="field-label" style="
                         margin-left: 10px;
                         font-size: 12px;
                         font-weight: 500;
                         display: block;
                       ">
-                        Rechnungsart
-                      </span>
+                      Rechnungsart
+                    </span>
 
-                      <select class="styled-select" [(ngModel)]="invoiceCategory">
-                        <option value="">Bitte wählen...</option>
+                    <select class="styled-select" [(ngModel)]="invoiceCategory">
+                      <option value="">Bitte wählen...</option>
 
-                        <option value="Jahresrechnung">
-                          Jahresrechnung
-                        </option>
+                      <option value="Jahresrechnung">
+                        Jahresrechnung
+                      </option>
 
-                        <option value="Abschlussrechnung">
-                          Abschlussrechnung
-                        </option>
+                      <option value="Abschlussrechnung">
+                        Abschlussrechnung
+                      </option>
 
-                        <option value="Zwischenrechnung">
-                          Zwischenrechnung
-                        </option>
+                      <option value="Zwischenrechnung">
+                        Zwischenrechnung
+                      </option>
 
-                        <option value="Sonstiges">
-                          Sonstiges
-                        </option>
-                      </select>
+                      <option value="Sonstiges">
+                        Sonstiges
+                      </option>
+                    </select>
 
-                      <span class="material-symbols-outlined dropdown-arrow">
-                        expand_more
-                      </span>
-                    </div>
+                    <span class="material-symbols-outlined dropdown-arrow">
+                      expand_more
+                    </span>
                   </div>
                 </div>
               </div>
+            </div>
 
-              <!-- MESSAGE -->
-              <div class="form-group full-width">
-                <div class="tab-heading">Rechnungstext</div>
+            <!-- MESSAGE -->
+            <div class="form-group full-width">
+              <div class="tab-heading">Rechnungstext</div>
 
-                <textarea rows="5" [(ngModel)]="invoiceMessage" class="textarea"
-                  placeholder="Bitte geben Sie genau an, welche Rechnung Sie anfordern möchten...."></textarea>
+              <textarea rows="5" [(ngModel)]="invoiceMessage" class="textarea"
+                placeholder="Bitte geben Sie genau an, welche Rechnung Sie anfordern möchten...."></textarea>
 
-                <div class="field-error-msg" *ngIf="fieldErrors['inquiryText']">
-                  {{ fieldErrors['inquiryText'] }}
-                </div>
+              <div class="field-error-msg" *ngIf="fieldErrors['inquiryText']">
+                {{ fieldErrors['inquiryText'] }}
               </div>
-
             </div>
 
-            <br />
-
-            <!-- BUTTONS -->
-            <div class="meter-btn-row">
-
-
-
-              <button type="button" class="btn-primary" [disabled]="isLoadingNewReq" (click)="submitInvoiceRequest()">
-                <span *ngIf="isLoadingNewReq; else normal">
-                  <span class="spinner"></span> Einreichen...
-                </span>
-
-                <ng-template #normal>
-                  <span> Anfrage senden</span>
-                </ng-template>
-              </button>
-            </div>
           </div>
+
+          <br />
+
+          <!-- BUTTONS -->
+          <div class="meter-btn-row">
+
+
+
+            <button type="button" class="btn-primary" [disabled]="isLoadingNewReq" (click)="submitInvoiceRequest()">
+              <span *ngIf="isLoadingNewReq; else normal">
+                <span class="spinner"></span> Einreichen...
+              </span>
+
+              <ng-template #normal>
+                <span> Anfrage senden</span>
+              </ng-template>
+            </button>
+          </div>
+
         </div>
       </div>
 
@@ -2120,254 +2122,459 @@
     </div>
 
     <!--══════════ Request a callback ══════════-->
-    <!-- <div *ngIf="activeTab === 1 && currentStep === 5">
+    <div *ngIf="activeTab === 1 && currentStep === 5">
       <div class="login-berich">Rückruf von Berater anfordern</div>
       <br />
 
-      <div class="selected-contract-wrapper" *ngIf="!submittedInvoice">
-       
+      <div class="selected-contract-wrapper" *ngIf="!submittedCallback">
+
         <div class="selected-contract-header">Ausgewählter Vertrag</div>
 
-        
+
         <div class="selected-contract-card">
-         
-          <div class="green-container">
-            <div class="contract-top">
-             
-              <div class="contract-left">
-                <img [src]="selectedMeter.meterIcon" alt="provider" class="provider-logo" />
 
-                <div class="provider-name">
-                  {{ selectedMeter.tariff }}
-                </div>
 
-                <div class="meter-provider-badge">
-                  <img [src]="selectedMeter.providerIcon" alt="" class="badge-icon" />
+          <div class="contract-top">
 
-                  <span>
-                    {{ selectedMeter.providerType }}
-                  </span>
-                </div>
+            <div class="contract-left">
+              <img [src]="selectedMeter.meterIcon" alt="provider" class="provider-logo" />
+
+              <div class="provider-name">
+                {{ selectedMeter.tariff }}
               </div>
 
-              
-              <div class="contract-center">
-                <div class="contract-row-title">
-                  <strong>Zählerbezeichnung:</strong>
+              <div class="meter-provider-badge">
+                <img [src]="selectedMeter.providerIcon" alt="" class="badge-icon" />
 
-                  <a class="change-link" *ngIf="!isEditingSelectedMeterName" (click)="editSelectedMeterName()">
-                    ändern
-                    <img src="assets/icons/Bearbeiten_schwarz.png" alt="edit" />
-                  </a>
-                </div>
+                <span>
+                  {{ selectedMeter.providerType }}
+                </span>
+              </div>
+            </div>
 
-                
-                <div class="meter-id" *ngIf="!isEditingSelectedMeterName">
-                  {{ selectedMeter?.meterDesignation }}
-                </div>
 
-                
-                <div class="meter-edit-box" *ngIf="isEditingSelectedMeterName">
-                  <input type="text" [(ngModel)]="selectedMeter.meterDesignation" class="meter-input"
-                    placeholder="Zählerbezeichnung" />
+            <div class="contract-center">
+              <div class="contract-row-title">
+                <strong>Zählerbezeichnung:</strong>
 
-                 
-                  <button type="button" class="icon-action save-icon" (click)="saveSelectedMeterName()">
-                    ✓
-                  </button>
-
-                 
-                  <button type="button" class="icon-action cancel-icon" (click)="cancelSelectedMeterEdit()">
-                    ✕
-                  </button>
-                </div>
-                <div class="address-wrap">
-                  <p>
-                    <strong>Adresse:</strong>
-                    {{ selectedMeter.address.name }}
-                  </p>
-
-                  <p>
-                    {{ selectedMeter.address.street }}
-                  </p>
-
-                  <p>
-                    {{ selectedMeter.address.city }}
-                  </p>
-                </div>
+                <a class="change-link" *ngIf="!isEditingSelectedMeterName" (click)="editSelectedMeterName()">
+                  ändern
+                  <img src="assets/icons/Bearbeiten_schwarz.png" alt="edit" />
+                </a>
               </div>
 
-            
-              <div class="contract-right">
+
+              <div class="meter-id" *ngIf="!isEditingSelectedMeterName">
+                {{ selectedMeter?.meterDesignation }}
+              </div>
+
+
+              <div class="meter-edit-box" *ngIf="isEditingSelectedMeterName">
+                <input type="text" [(ngModel)]="selectedMeter.meterDesignation" class="meter-input"
+                  placeholder="Zählerbezeichnung" />
+
+
+                <button type="button" class="icon-action save-icon" (click)="saveSelectedMeterName()">
+                  ✓
+                </button>
+
+
+                <button type="button" class="icon-action cancel-icon" (click)="cancelSelectedMeterEdit()">
+                  ✕
+                </button>
+              </div>
+              <div class="address-wrap">
                 <p>
-                  Vertragsnummer:
-                  <strong>
-                    {{ selectedMeter.contractNumber }}
-                  </strong>
+                  <strong>Adresse:</strong>
+                  {{ selectedMeter.address.name }}
                 </p>
 
                 <p>
-                  Kundennummer:
-                  <strong>
-                    {{ selectedMeter.customerNumber }}
-                  </strong>
-                </p>
-
-                <br />
-
-                <p>
-                  Zählernummer:
-                  <strong>
-                    {{ selectedMeter.meterNumber }}
-                  </strong>
+                  {{ selectedMeter.address.street }}
                 </p>
 
                 <p>
-                  Marktlokation-ID:
-                  <strong>
-                    {{ selectedMeter.marketLocation }}
-                  </strong>
+                  {{ selectedMeter.address.city }}
                 </p>
               </div>
             </div>
 
-           
-            <div class="meter-reading-section">
-              <h4>Rechnung anfordern</h4>
 
-              <p class="meter-subtext">
-                Bitte tragen Sie hier die Details Ihrer Rechnungsanfrage ein.
+            <div class="contract-right">
+              <p>
+                Vertragsnummer:
+                <strong>
+                  {{ selectedMeter.contractNumber }}
+                </strong>
               </p>
 
+              <p>
+                Kundennummer:
+                <strong>
+                  {{ selectedMeter.customerNumber }}
+                </strong>
+              </p>
 
-              <div class="container-callback">
-                <div class="container-wish">
-                  <span class="telefon"><strong>Bitte geben Sie Ihre Telefonnummer an, <br />
-                      unter der wir Sie erreichen können.</strong>
-                  </span>
-                </div>
-                <div class="container-phone">
-                  <input class="country-code" type="text" [(ngModel)]="countryCode" readonly />
-                  <input type="number" placeholder="Mobilnummer oder Festnetznummer" [(ngModel)]="phoneNumber"
-                    class="number" />
-                  <button class="callback" (click)="onNextPhone()">Rückrufzeit festlegen</button>
-                </div>
-                <div class="error" style="color: red" *ngIf="fieldErrors['phoneNumber']">
-                  {{ fieldErrors['phoneNumber'] }}
-                </div>
-              </div>
+              <br />
 
-              <div class="container-callback">
-                <div class="container-wishlist">
-                  <span>
-                    <strong> Bitte wählen Sie, an welchem Wochentag wir Sie erreichen können. </strong>
-                  </span>
-                </div>
+              <p>
+                Zählernummer:
+                <strong>
+                  {{ selectedMeter.meterNumber }}
+                </strong>
+              </p>
 
-                <div class="container-days">
-                  <button class="days" *ngFor="let day of filteredDays; trackBy: trackByDay"
-                    (click)="selectDay(day.value ?? '')" [class.active]="selectedDay === (day.value ?? '')">
-                    {{ getDayLabelByValue(day.value ?? '') }}
-                    ({{ day.label }})
-                  </button>
-                </div>
+              <p>
+                Marktlokation-ID:
+                <strong>
+                  {{ selectedMeter.marketLocation }}
+                </strong>
+              </p>
+            </div>
+          </div>
 
-                <div class="item-callback">
-                  <button class="callback btn-time" [disabled]="!selectedDay" (click)="submitDay()">
-                    Wochentag festlagen
-                  </button>
-                </div>
 
-                <div class="api-message api-error" style="color: red" *ngIf="scheduleErrorMessage">
-                  {{ scheduleErrorMessage }}
-                </div>
-              </div>
+          <div class="meter-reading-section">
+            <h4>Rückruf von Berater anfordern</h4>
 
-              <div class="container-callback">
-                <div class="container-wishlist">
-                  <span><strong>Bitte wählen Sie, zu welcher Uhrzeit wir Sie erreichen können.</strong> </span>
-                </div>
-                <div class="container-days">
-                  <button class="days" *ngFor="let slot of timeSlots" (click)="selectTimeSlot(slot.value)"
-                    [class.active]="selectedTimeSlot === slot.value" [disabled]="!isTimeSlotEnabled(slot.value)"
-                    [class.disabled]="!isTimeSlotEnabled(slot.value)">
-                    {{ slot.label }}
-                  </button>
-                </div>
-                <div class="item-callback">
-                  <button class="callback btn-time" [disabled]="!selectedTimeSlot">
-                    Uhrzeit festlegen
-                  </button>
-                </div>
-              </div>
+            <p class="meter-subtext">
+              Bitte tragen Sie hier die Details Ihres Rückrufs ein.
+            </p>
 
-              <div class="container-callback">
-                <div class="container-wishlist">
-                  <span><strong>Möchten Sie noch weitere Informationen hinterlassen?</strong> </span>
-                  <div class="container-days">
-                    <input class="information-box"
-                      placeholder="Platz für Infos, z.B. genaue Uhrzeit, an der Sie gut erreichbar sind"
-                      [(ngModel)]="scheduleDescription" />
-                  </div>
-                </div>
-                <div class="item-callback">
-                  <button class="callback btn-time" (click)="submitCallback()">
-                    Infos absenden & Rückruf erhalten
-                  </button>
-                </div>
-                <div class="api-message success" *ngIf="scheduleSuccessMessage">
-                  {{ scheduleSuccessMessage }}
-                </div>
-
-                <div class="api-message error" *ngIf="scheduleErrorMessage">
-                  {{ scheduleErrorMessage }}
-                </div>
-              </div>
-
+            <!-- Phone Number -->
+            <div class="container-wish">
+              <span class="telefon">Bitte geben Sie Ihre Telefonnummer an, <br />
+                unter der wir Sie erreichen können.
+              </span>
+            </div>
+            <div class="container-phone">
+              <input class="country-code" type="text" [(ngModel)]="countryCode" readonly />
+              <input type="number" placeholder="Mobilnummer oder Festnetznummer" [(ngModel)]="phoneNumber"
+                class="number" />
             </div>
 
-            <br />
+            <div class="field-error-msg" *ngIf="fieldErrors['phoneNumber']">
+              {{ fieldErrors['phoneNumber'] }}
+            </div>
 
-          
+
+            <!-- Day Selection -->
+
+            <span class="field-label">
+              Bitte wählen Sie den Wochentag
+            </span>
+            <div class="container-days">
+              <button type="button" class="days" *ngFor="let day of filteredDays; trackBy: trackByDay"
+                (click)="selectDay(day)" [class.active]="selectedDay?.date === day.date">
+                {{ getDayLabel(day.date) }}
+                ({{ day.label }})
+              </button>
+            </div>
+
+
+
+            <!-- Time Selection -->
+
+            <span class="field-label">
+              Bitte wählen Sie die Uhrzeit
+            </span>
+
+            <div class="container-days">
+              <button type="button" class="days" *ngFor="let slot of timeSlots" (click)="selectTimeSlot(slot.value)"
+                [class.active]="selectedTimeSlot === slot.value" [disabled]="!isTimeSlotEnabled(slot.value)"
+                [class.disabled]="!isTimeSlotEnabled(slot.value)">
+                {{ slot.label }}
+              </button>
+            </div>
+
+
+            <!-- Additional Information -->
+
+            <span class="field-label">
+              Weitere Informationen
+            </span>
+
+            <textarea class="information-box" rows="4"
+              placeholder="Platz für Infos, z.B. genaue Uhrzeit, an der Sie gut erreichbar sind"
+              [(ngModel)]="scheduleDescription"></textarea>
+
+
+
+            <!-- Success/Error -->
+            <div class="api-message success" *ngIf="scheduleSuccessMessage">
+              {{ scheduleSuccessMessage }}
+            </div>
+
+            <div class="field-error-msg" *ngIf="scheduleErrorMessage">
+              {{ scheduleErrorMessage }}
+            </div>
+
+            <!-- Single Submit Button -->
             <div class="meter-btn-row">
-
-
-
-              <button type="button" class="btn-primary" [disabled]="isLoadingNewReq" (click)="submitInvoiceRequest()">
-                <span *ngIf="isLoadingNewReq; else normal">
-                  <span class="spinner"></span> Einreichen...
+              <button type="button" class="btn-primary" [disabled]="isLoadingCallback" (click)="submitCallback()">
+                <span *ngIf="isLoadingCallback; else normal">
+                  <span class="spinner"></span>
+                  Einreichen...
                 </span>
 
                 <ng-template #normal>
-                  <span> Anfrage senden</span>
+                  <span>Anfrage senden</span>
                 </ng-template>
               </button>
             </div>
           </div>
+
+
         </div>
       </div>
 
-      <div class="success-box" style="width: auto" *ngIf="submittedInvoice">
+      <div class="success-box" style="width: auto" *ngIf="submittedCallback">
         <div class="success-content">
           <div class="success-row">
             <img src="assets/icons/Kreis_Haken_gruen.png" alt="success" />
 
             <div class="text-block">
-              <div class="tab-header">Rechnungsanfrage erfolgreich gesendet!</div>
-
-              <div class="tab-text">
-                Ihre Anfrage zur Rechnung wurde erfolgreich übermittelt.
-                Unser Team prüft diese und bearbeitet sie so schnell wie möglich.
+              <div class="tab-header">
+                Rückruf erfolgreich angefragt!
               </div>
 
               <div class="tab-text">
-                Sie erhalten eine Rückmeldung per E-Mail, sobald Ihre Anfrage bearbeitet wurde.
+                Ihre Rückrufanfrage wurde erfolgreich übermittelt.
+                Unser Berater wird Sie zum gewünschten Zeitpunkt kontaktieren.
+              </div>
+
+              <div class="tab-text">
+                Vielen Dank für Ihre Anfrage.
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div> -->
+    </div>
+
+    <!--══════════ Send Message to energy supplier ══════════-->
+    <div *ngIf="activeTab === 1 && currentStep === 6">
+      <div class="login-berich">
+        Nachricht an den Energieversorger senden
+      </div>
+
+      <br />
+
+      <div class="selected-contract-wrapper" *ngIf="!submittedEnergyMessage">
+
+        <!-- HEADER -->
+        <div class="selected-contract-header">
+          Ausgewählter Vertrag
+        </div>
+
+        <!-- CARD -->
+        <div class="selected-contract-card">
+
+          <!-- TOP -->
+          <div class="contract-top">
+
+            <!-- LEFT -->
+            <div class="contract-left">
+              <img [src]="selectedMeter.meterIcon" alt="provider" class="provider-logo" />
+
+              <div class="provider-name">
+                {{ selectedMeter.tariff }}
+              </div>
+
+              <div class="meter-provider-badge">
+                <img [src]="selectedMeter.providerIcon" alt="" class="badge-icon" />
+
+                <span>
+                  {{ selectedMeter.providerType }}
+                </span>
+              </div>
+            </div>
+
+            <!-- CENTER -->
+            <div class="contract-center">
+              <div class="contract-row-title">
+                <strong>Zählerbezeichnung:</strong>
+
+                <a class="change-link" *ngIf="!isEditingSelectedMeterName" (click)="editSelectedMeterName()">
+                  ändern
+                  <img src="assets/icons/Bearbeiten_schwarz.png" alt="edit" />
+                </a>
+              </div>
+
+              <!-- TEXT VIEW -->
+              <div class="meter-id" *ngIf="!isEditingSelectedMeterName">
+                {{ selectedMeter?.meterDesignation }}
+              </div>
+
+              <!-- EDIT VIEW -->
+              <div class="meter-edit-box" *ngIf="isEditingSelectedMeterName">
+                <input type="text" [(ngModel)]="selectedMeter.meterDesignation" class="meter-input"
+                  placeholder="Zählerbezeichnung" />
+
+                <button type="button" class="icon-action save-icon" (click)="saveSelectedMeterName()">
+                  ✓
+                </button>
+
+                <button type="button" class="icon-action cancel-icon" (click)="cancelSelectedMeterEdit()">
+                  ✕
+                </button>
+              </div>
+
+              <div class="address-wrap">
+                <p>
+                  <strong>Adresse:</strong>
+                  {{ selectedMeter.address.name }}
+                </p>
+
+                <p>
+                  {{ selectedMeter.address.street }}
+                </p>
+
+                <p>
+                  {{ selectedMeter.address.city }}
+                </p>
+              </div>
+            </div>
+
+            <!-- RIGHT -->
+            <div class="contract-right">
+              <p>
+                Vertragsnummer:
+                <strong>
+                  {{ selectedMeter.contractNumber }}
+                </strong>
+              </p>
+
+              <p>
+                Kundennummer:
+                <strong>
+                  {{ selectedMeter.customerNumber }}
+                </strong>
+              </p>
+
+              <br />
+
+              <p>
+                Zählernummer:
+                <strong>
+                  {{ selectedMeter.meterNumber }}
+                </strong>
+              </p>
+
+              <p>
+                Marktlokation-ID:
+                <strong>
+                  {{ selectedMeter.marketLocation }}
+                </strong>
+              </p>
+            </div>
+          </div>
+
+          <!-- FORM -->
+          <div class="meter-reading-section">
+
+            <h4>Nachricht an den Energieversorger</h4>
+
+            <p class="meter-subtext">
+              Bitte wählen Sie eine Kategorie aus und beschreiben Sie Ihr Anliegen.
+            </p>
+
+
+            <!-- CATEGORY -->
+            <div class="form-row">
+              <div class="form-group" style="flex: 1">
+                <div class="input-field select-wrap" style="display: inline-block">
+                  <div>
+                    <span class="field-label" style="
+                      margin-left: 10px;
+                      font-size: 12px;
+                      font-weight: 500;
+                      display: block;
+                    ">
+                      Kategorie / Betreff
+                    </span>
+
+                    <select class="styled-select" [(ngModel)]="supplierMessageCategory">
+                      <option value="">
+                        Bitte wählen...
+                      </option>
+
+                      <option *ngFor="let item of supplierMessageCategories" [value]="item.value">
+                        {{ item.label }}
+                      </option>
+                    </select>
+
+                    <span class="material-symbols-outlined dropdown-arrow">
+                      expand_more
+                    </span>
+                  </div>
+                </div>
+
+                <div class="field-error-msg" *ngIf="fieldErrors['supplierMessageCategory']">
+                  {{ fieldErrors['supplierMessageCategory'] }}
+                </div>
+              </div>
+            </div>
+
+            <!-- MESSAGE -->
+            <div class="form-group full-width">
+              <div class="tab-heading">
+                Nachricht an den Anbieter
+              </div>
+
+              <textarea rows="5" [(ngModel)]="supplierMessage" class="textarea"
+                placeholder="Bitte geben Sie hier die Nachricht ein, die Sie an den Anbieter senden möchten."></textarea>
+
+              <div class="field-error-msg" *ngIf="fieldErrors['supplierMessage']">
+                {{ fieldErrors['supplierMessage'] }}
+              </div>
+            </div>
+          </div>
+
+          <br />
+
+          <!-- BUTTON -->
+          <div class="meter-btn-row">
+            <button type="button" class="btn-primary" [disabled]="isLoadingEnergySupplierMessage"
+              (click)="submitEnergySupplierMessage()">
+              <span *ngIf="isLoadingEnergySupplierMessage; else normal">
+                <span class="spinner"></span>
+                Einreichen...
+              </span>
+
+              <ng-template #normal>
+                <span>Nachricht senden</span>
+              </ng-template>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- SUCCESS -->
+      <div class="success-box" style="width: auto" *ngIf="submittedEnergyMessage">
+        <div class="success-content">
+          <div class="success-row">
+            <img src="assets/icons/Kreis_Haken_gruen.png" alt="success" />
+
+            <div class="text-block">
+              <div class="tab-header">
+                Nachricht erfolgreich gesendet!
+              </div>
+
+              <div class="tab-text">
+                Ihre Nachricht wurde erfolgreich an den
+                Energieversorger übermittelt.
+              </div>
+
+              <div class="tab-text">
+                Der Anbieter wird Ihre Anfrage prüfen und sich
+                schnellstmöglich bei Ihnen melden.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!--══════════ Meters Section End ══════════-->
 
