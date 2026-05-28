@@ -1,5 +1,6 @@
 package com.tarifvergleich.electricity.controller.common;
 
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,12 +11,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
 import com.tarifvergleich.electricity.dto.request.CustomerQueryContactRequestDTO;
 import com.tarifvergleich.electricity.service.RecaptchaService;
 import com.tarifvergleich.electricity.service.common.CommonService;
+
 import lombok.RequiredArgsConstructor;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @CrossOrigin(origins = "*")
 @RestController

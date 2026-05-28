@@ -1,11 +1,15 @@
 package com.tarifvergleich.electricity.service.customer;
 
 import java.math.BigInteger;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.context.ApplicationEventPublisher;
@@ -43,6 +47,7 @@ import com.tarifvergleich.electricity.model.CustomerOrder;
 import com.tarifvergleich.electricity.model.CustomerServiceRequest;
 import com.tarifvergleich.electricity.model.CustomerServiceRequestMessages;
 import com.tarifvergleich.electricity.model.CustomerServices;
+import com.tarifvergleich.electricity.model.ManageAdminDocument;
 import com.tarifvergleich.electricity.model.ReportMeterReading;
 import com.tarifvergleich.electricity.model.TokenManagement;
 import com.tarifvergleich.electricity.repository.AdminSignatureRepository;
@@ -200,11 +205,21 @@ public class CustomerDetailService {
 			attornyEntity.setLegalRepresentativeLastName(attornyDto.getLegalRepresentativeLastName());
 		}
 
-		String emailBody = emailBodyRender.beratervollmachtBody(customerAttorny);
+		Map<String, Object> emailTemplate = emailBodyRender.beratervollmachtBody(customerAttorny);
+
+		Set<ManageAdminDocument> docs = new HashSet<ManageAdminDocument>();
+		if (emailTemplate.get("docs") instanceof Collection<?> rawCollection) {
+			for (Object obj : rawCollection) {
+				if (obj instanceof ManageAdminDocument doc) {
+					docs.add(doc);
+				}
+			}
+		}
+
 		String base64PdfContent = pdfGenerator.generateVollmachtDocument(customerAttorny);
 
-		AttornyEmailDto mailEvent = new AttornyEmailDto(customer.getEmail(), emailBody, base64PdfContent,
-				"BERATERVOLLMACHT.pdf");
+		AttornyEmailDto mailEvent = new AttornyEmailDto(customer.getEmail(), emailTemplate.get("body").toString(),
+				base64PdfContent, "BERATERVOLLMACHT.pdf", docs);
 		eventPublisher.publishEvent(mailEvent);
 
 		customerAttornyRepo.save(attornyEntity);
@@ -443,7 +458,7 @@ public class CustomerDetailService {
 		customerServiceRequest = customerServiceRequestRepo.save(customerServiceRequest);
 		AdminUser admin = customer.getAdmin();
 
-		String customerBody = "";
+		Map<String, Object> customerBody = new HashMap<String, Object>();
 		String adminBody = "";
 		String customerSubject = "";
 		String adminSubject = "";
@@ -480,8 +495,17 @@ public class CustomerDetailService {
 					customerServiceRequest.getService().getServiceName(), serviceRequestDto.getMessage());
 		}
 
+		Set<ManageAdminDocument> docs = new HashSet<ManageAdminDocument>();
+		if (customerBody.get("docs") instanceof Collection<?> rawCollection) {
+			for (Object obj : rawCollection) {
+				if (obj instanceof ManageAdminDocument doc) {
+					docs.add(doc);
+				}
+			}
+		}
+
 		ServiceRequestEmailEvent emailEvent = new ServiceRequestEmailEvent(customerMailId, customerSubject,
-				customerBody, adminMailId, adminSubject, adminBody);
+				customerBody.get("body").toString(), adminMailId, adminSubject, adminBody, docs);
 
 		eventPublisher.publishEvent(emailEvent);
 
@@ -678,9 +702,19 @@ public class CustomerDetailService {
 		Customer customer = customerRepo.findByCustomerIdAndAdminAdminId(customerId, adminId).orElseThrow(
 				() -> new InternalServerException("Customer not found with this credential", HttpStatus.OK));
 
+		Set<ManageAdminDocument> docs = new HashSet<ManageAdminDocument>();
+//		if (emailTemplate.get("docs") instanceof Collection<?> rawCollection) {
+//			for (Object obj : rawCollection) {
+//				if (obj instanceof ManageAdminDocument doc) {
+//					docs.add(doc);
+//				}
+//			}
+//		}
+
 		ServiceResponseEmailEvent mailEvent = new ServiceResponseEmailEvent(customer.getEmail(), "Attorny Signing",
 				customEmailTemplate.generateEmailHtml("Power of Attorney for your energy contracts", "", emailTemplate
-						.getPowerOfAttorneyEmailTemplate(customer.getFirstName() + " " + customer.getLastName())));
+						.getPowerOfAttorneyEmailTemplate(customer.getFirstName() + " " + customer.getLastName())),
+				docs);
 
 		eventPublisher.publishEvent(mailEvent);
 
@@ -761,53 +795,53 @@ public class CustomerDetailService {
 
 	public Map<String, Object> fetchCustomerContractPageDetails(String token) {
 
-			if (token == null || token.isEmpty())
-				throw new InternalServerException("Security token missing", HttpStatus.OK);
+		if (token == null || token.isEmpty())
+			throw new InternalServerException("Security token missing", HttpStatus.OK);
 
-			Integer customerOrderId = 0;
-			try {
-				String tokenId = aesEncryptionService.decrypt(token);
+		Integer customerOrderId = 0;
+		try {
+			String tokenId = aesEncryptionService.decrypt(token);
 
-				TokenManagement validToken = contractTokenRespo.findByToken(tokenId)
-						.orElseThrow(() -> new InternalServerException("Invalid token", HttpStatus.OK));
+			TokenManagement validToken = contractTokenRespo.findByToken(tokenId)
+					.orElseThrow(() -> new InternalServerException("Invalid token", HttpStatus.OK));
 
-				if (validToken.getUsed())
-					return Map.of("res", true, "submitted", true);
+			if (validToken.getUsed())
+				return Map.of("res", true, "submitted", true);
 
 //				if (validToken.getExpiryDate().compareTo(Helper.getCurrentTimeBerlin()) < 0)
 //					throw new InternalServerException("Token expired", HttpStatus.OK);
 
-				customerOrderId = validToken.getOrderId();
+			customerOrderId = validToken.getOrderId();
 
-			} catch (Exception e) {
-				e.printStackTrace();
-				throw new InternalServerException("Invalid token", HttpStatus.OK);
-			}
-
-			if (customerOrderId == null || customerOrderId <= 0)
-				throw new InternalServerException("Invalid token, order details not found", HttpStatus.OK);
-
-			CustomerOrder order = customerOrderRepo.findById(customerOrderId).orElseThrow(
-					() -> new InternalServerException("Customer order not found with this credential", HttpStatus.OK));
-
-			CustomerDelivery delivery = order.getDelivery();
-
-			CustomerDeliveryResponseAll resp = CustomerDeliveryResponseDto.getDeliveryResponse(delivery);
-
-			String adminSignaturePath = null;
-			AdminSignature adminSignature = null;
-
-			if (delivery != null && delivery.getAdmin() != null) {
-
-				Integer adminId = delivery.getAdmin().getAdminId();
-
-				adminSignature = adminSignatureRepository.findByAdminAdminId(adminId).orElse(null);
-
-				if (adminSignature != null)
-					adminSignaturePath = adminSignature.getFilePath();
-			}
-
-			return Map.of("res", true, "data", resp, "adminSignaturePath", adminSignaturePath);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new InternalServerException("Invalid token", HttpStatus.OK);
 		}
+
+		if (customerOrderId == null || customerOrderId <= 0)
+			throw new InternalServerException("Invalid token, order details not found", HttpStatus.OK);
+
+		CustomerOrder order = customerOrderRepo.findById(customerOrderId).orElseThrow(
+				() -> new InternalServerException("Customer order not found with this credential", HttpStatus.OK));
+
+		CustomerDelivery delivery = order.getDelivery();
+
+		CustomerDeliveryResponseAll resp = CustomerDeliveryResponseDto.getDeliveryResponse(delivery);
+
+		String adminSignaturePath = null;
+		AdminSignature adminSignature = null;
+
+		if (delivery != null && delivery.getAdmin() != null) {
+
+			Integer adminId = delivery.getAdmin().getAdminId();
+
+			adminSignature = adminSignatureRepository.findByAdminAdminId(adminId).orElse(null);
+
+			if (adminSignature != null)
+				adminSignaturePath = adminSignature.getFilePath();
+		}
+
+		return Map.of("res", true, "data", resp, "adminSignaturePath", adminSignaturePath);
+	}
 
 }

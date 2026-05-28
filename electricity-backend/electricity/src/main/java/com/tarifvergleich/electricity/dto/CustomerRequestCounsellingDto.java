@@ -20,6 +20,7 @@ public class CustomerRequestCounsellingDto {
 	
 	private Long egonOrderId;
 	private Integer counsellingId;
+	private Long egonOrderId;
     private String mobileNumber;
     private String weekDay;
     private String timeSlot;

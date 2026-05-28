@@ -1,8 +1,11 @@
 package com.tarifvergleich.electricity.service.admin;
 
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.context.ApplicationEventPublisher;
@@ -42,6 +45,7 @@ import com.tarifvergleich.electricity.model.CustomerNote;
 import com.tarifvergleich.electricity.model.CustomerOrder;
 import com.tarifvergleich.electricity.model.CustomerServiceRequest;
 import com.tarifvergleich.electricity.model.CustomerServiceRequestMessages;
+import com.tarifvergleich.electricity.model.ManageAdminDocument;
 import com.tarifvergleich.electricity.repository.CustomerAttornyRepository;
 import com.tarifvergleich.electricity.repository.CustomerComparingEnergyRepository;
 import com.tarifvergleich.electricity.repository.CustomerDeliveryRepository;
@@ -73,6 +77,7 @@ public class AdminCustomerManagementService {
 	private final ObjectMapper objectMapper;
 	private final CustomerOrderRepository customerOrderRepository;
 	private final CustomerDetailsContactHistoryRepository customerDetailsContactHistoryRepo;
+	private final PdfGenerator pdfGenerator;
 	private final CustomerEmailSendHistoryRepository customerEmailSendHistoryRepo;
 	private final PdfGenerator pdfGenerator;
 
@@ -90,8 +95,8 @@ public class AdminCustomerManagementService {
 			if (customer.getAdmin().getAdminId() != customerReq.getAdminId())
 				throw new InternalServerException("Not authorised to access customer details", HttpStatus.OK);
 
-			SingleCustomerResponseDeliveryForAdmin customerRes = CustomerDto
-					.getAdminSingleCustomerResponseDto(customer, pdfGenerator);
+			SingleCustomerResponseDeliveryForAdmin customerRes = CustomerDto.getAdminSingleCustomerResponseDto(customer,
+					pdfGenerator, pdfGenerator);
 
 			return Map.of("res", true, "data", customerRes);
 
@@ -213,7 +218,7 @@ public class AdminCustomerManagementService {
 
 			long totalDeliveries = customerDeliveryRepo.countByAdminAdminId(deliveryReq.getAdminId());
 			long totalCompleted = customerOrderRepository.countOrderCreatedStatus(deliveryReq.getAdminId());
-			
+
 			return Map.of("res", true, "data", customerDeliveryResponse.getContent(), "page",
 					customerDeliveryResponse.getPageable().getPageNumber() + 1, "totalPage",
 					customerDeliveryResponse.getTotalPages(), "totalRecord", totalDeliveries, "totalComplete",
@@ -308,8 +313,17 @@ public class AdminCustomerManagementService {
 
 		String subject = "Received  a  response  from  the  consultant on ticket-No. "
 				+ serviceRequest.getTicketNumber();
-		String body = emailBodyRender.serviceRequestResponseBody(serviceRequest);
-		ServiceResponseEmailEvent serviceEventData = new ServiceResponseEmailEvent(customer.getEmail(), subject, body);
+		Map<String, Object> emailTemplate = emailBodyRender.serviceRequestResponseBody(serviceRequest);
+		Set<ManageAdminDocument> docs = new HashSet<ManageAdminDocument>();
+		if (emailTemplate.get("docs") instanceof Collection<?> rawCollection) {
+			for (Object obj : rawCollection) {
+				if (obj instanceof ManageAdminDocument doc) {
+					docs.add(doc);
+				}
+			}
+		}
+		ServiceResponseEmailEvent serviceEventData = new ServiceResponseEmailEvent(customer.getEmail(), subject,
+				emailTemplate.get("body").toString(), docs);
 		eventPublisher.publishEvent(serviceEventData);
 
 		return Map.of("res", true, "ticketNo", serviceRequest.getTicketNumber(), "message",
@@ -564,36 +578,6 @@ public class AdminCustomerManagementService {
 		return Map.of("res", true, "message", "lexoffice_Number added successfully");
 	}
 
-	@Transactional
-	public Object sendCustomerEmail(CustomerSendEmailRequestDto request) {
-		
-		if (request.getTitle() == null || request.getTitle().trim().isEmpty())
-			throw new InternalServerException("Title cannot be empty", HttpStatus.OK);
-		if (request.getSubtitle() == null || request.getSubtitle().trim().isEmpty())
-			throw new InternalServerException("Subtitle cannot be empty", HttpStatus.OK);
-		if (request.getEmailContent() == null || request.getEmailContent().trim().isEmpty())
-			throw new InternalServerException("Email content cannot be empty", HttpStatus.OK);
-		
-	    Customer customer = customerRepo
-	            .findById(request.getCustomerId().intValue())
-	            .orElseThrow(() -> new InternalServerException("Customer not found", HttpStatus.OK));
-
-	    String toEmail = customer.getEmail();
-	    CustomerEmailSendHistory history = new CustomerEmailSendHistory();
-
-	    history.setCustomerId(request.getCustomerId());
-	    history.setAdminId(request.getAdminId());
-	    history.setTitle(request.getTitle());
-	    history.setSubtitle(request.getSubtitle());
-	    history.setEmailContent(request.getEmailContent());
-	    history.setSentOn(Helper.getCurrentTimeBerlin());
-
-	    customerEmailSendHistoryRepo.save(history);
-	    return Map.of(
-	            "res", true,
-	            "email", toEmail
-	    );
-	}
 	public Map<String, Object> fetchAllPdfOfCustomer(CustomerDto customerDto) {
 
 		if (customerDto.getAdminId() == null || customerDto.getAdminId() <= 0)
@@ -634,5 +618,36 @@ public class AdminCustomerManagementService {
 		}
 
 		return Map.of("res", true, "data", Map.of("ContractSignedDocument", orderDocs, "AttornyDoc", pdfUrl));
+	}
+
+	@Transactional
+	public Object sendCustomerEmail(CustomerSendEmailRequestDto request) {
+		
+		if (request.getTitle() == null || request.getTitle().trim().isEmpty())
+			throw new InternalServerException("Title cannot be empty", HttpStatus.OK);
+		if (request.getSubtitle() == null || request.getSubtitle().trim().isEmpty())
+			throw new InternalServerException("Subtitle cannot be empty", HttpStatus.OK);
+		if (request.getEmailContent() == null || request.getEmailContent().trim().isEmpty())
+			throw new InternalServerException("Email content cannot be empty", HttpStatus.OK);
+		
+	    Customer customer = customerRepo
+	            .findById(request.getCustomerId().intValue())
+	            .orElseThrow(() -> new InternalServerException("Customer not found", HttpStatus.OK));
+
+	    String toEmail = customer.getEmail();
+	    CustomerEmailSendHistory history = new CustomerEmailSendHistory();
+
+	    history.setCustomerId(request.getCustomerId());
+	    history.setAdminId(request.getAdminId());
+	    history.setTitle(request.getTitle());
+	    history.setSubtitle(request.getSubtitle());
+	    history.setEmailContent(request.getEmailContent());
+	    history.setSentOn(Helper.getCurrentTimeBerlin());
+
+	    customerEmailSendHistoryRepo.save(history);
+	    return Map.of(
+	            "res", true,
+	            "email", toEmail
+	    );
 	}
 }

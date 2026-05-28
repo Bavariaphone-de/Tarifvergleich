@@ -134,4 +134,42 @@ public class MailService {
 			throw new RuntimeException("Error processing email transmission queues", e);
 		}
 	}
+
+	@Async
+	public void sendEmailWithBase64Attachment(String to, String body, String pdfBase64String, String attachmentFileName,
+			List<String> localFilePaths) {
+
+		try {
+			if (localFilePaths == null || localFilePaths.isEmpty())
+				throw new InternalServerException("File path not found", HttpStatus.BAD_REQUEST);
+			byte[] pdfBytes = Base64.getDecoder().decode(pdfBase64String);
+
+			MimeMessage message = mailSender.createMimeMessage();
+			MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+			helper.setFrom(sendFrom);
+			helper.setTo(to);
+			helper.setSubject("Ihre unterschriebene Beratervollmacht - Tarifvergleich");
+
+			helper.setText(body, true);
+
+			ByteArrayResource attachmentResource = new ByteArrayResource(pdfBytes);
+			helper.addAttachment(attachmentFileName, attachmentResource);
+
+			for (String localFilePath : localFilePaths) {
+				Path path = Paths.get(localFilePath);
+				if (Files.exists(path)) {
+					FileSystemResource file = new FileSystemResource(path.toFile());
+
+					helper.addAttachment(file.getFilename(), file);
+				} else
+					throw new InternalServerException("File path does not exits", HttpStatus.BAD_REQUEST);
+			}
+
+			mailSender.send(message);
+
+		} catch (Exception e) {
+			throw new RuntimeException("Error processing email transmission queues", e);
+		}
+	}
 }
