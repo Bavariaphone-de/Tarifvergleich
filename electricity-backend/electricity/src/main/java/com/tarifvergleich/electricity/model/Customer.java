@@ -68,7 +68,7 @@ public class Customer {
 
 	@Column(name = "mobile_number")
 	private String mobileNumber;
-	
+
 	@Column(name = "telephone_number")
 	private String telephone;
 
@@ -162,6 +162,10 @@ public class Customer {
 	@OneToMany(mappedBy = "customer", cascade = { CascadeType.PERSIST, CascadeType.MERGE })
 	@JsonIgnoreProperties("customer")
 	private List<CustomerBankAccount> bankAccounts;
+
+	@OneToMany(mappedBy = "customer", cascade = { CascadeType.PERSIST, CascadeType.MERGE })
+	@JsonIgnoreProperties("customer")
+	private List<EnergySupplierMessage> energySupplierMessages;
 
 	@ManyToOne
 	@JoinColumn(name = "admin_id")

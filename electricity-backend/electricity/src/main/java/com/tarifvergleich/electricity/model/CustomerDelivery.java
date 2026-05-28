@@ -137,6 +137,10 @@ public class CustomerDelivery {
 	@JsonIgnoreProperties("customerDelivery")
 	private List<CustomerServiceRequest> customerServiceRequests;
 	
+	@OneToMany(mappedBy = "customerDelivery")
+	@JsonIgnoreProperties("customerDelivery")
+	private List<EnergySupplierMessage> energySupplierMessages;
+	
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "admin_id")
 	@JsonIgnore

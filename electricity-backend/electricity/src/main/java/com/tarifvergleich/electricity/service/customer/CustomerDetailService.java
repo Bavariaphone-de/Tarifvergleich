@@ -104,8 +104,7 @@ public class CustomerDetailService {
 
 		Customer customer = customerRepo.findById(customerId).orElseThrow(
 				() -> new InternalServerException("Customer missing with this credentials", HttpStatus.OK));
-
-		return Map.of("res", true, "data", CustomerDto.getCustomerResponseDto(customer));
+		return Map.of("res", true, "data", CustomerDto.getCustomerResponseDto(customer, pdfGenerator));
 	}
 
 	@Transactional
@@ -136,7 +135,7 @@ public class CustomerDetailService {
 			throw new InternalServerException("Place and date missing", HttpStatus.OK);
 		if (file == null || file.isEmpty())
 			throw new InternalServerException("Signature missing", HttpStatus.OK);
-		if (file.getContentType().equals("image/png") || file.getContentType().equals("image/jpeg"))
+		if (!file.getContentType().equals("image/png") && !file.getContentType().equals("image/jpeg"))
 			throw new InternalServerException("Content type mismatch", HttpStatus.OK);
 
 		if (attornyDto.getUserType().toUpperCase().equals("BUSINESS")) {
@@ -205,7 +204,7 @@ public class CustomerDetailService {
 			attornyEntity.setLegalRepresentativeLastName(attornyDto.getLegalRepresentativeLastName());
 		}
 
-		Map<String, Object> emailTemplate = emailBodyRender.beratervollmachtBody(customerAttorny);
+		Map<String, Object> emailTemplate = emailBodyRender.beratervollmachtBody(attornyEntity);
 
 		Set<ManageAdminDocument> docs = new HashSet<ManageAdminDocument>();
 		if (emailTemplate.get("docs") instanceof Collection<?> rawCollection) {
@@ -216,7 +215,7 @@ public class CustomerDetailService {
 			}
 		}
 
-		String base64PdfContent = pdfGenerator.generateVollmachtDocument(customerAttorny);
+		String base64PdfContent = pdfGenerator.generateVollmachtDocument(attornyEntity);
 
 		AttornyEmailDto mailEvent = new AttornyEmailDto(customer.getEmail(), emailTemplate.get("body").toString(),
 				base64PdfContent, "BERATERVOLLMACHT.pdf", docs);
