@@ -14,9 +14,11 @@ import com.tarifvergleich.electricity.repository.CustomerQueryContactRepository;
 import com.tarifvergleich.electricity.repository.CustomerRepository;
 import com.tarifvergleich.electricity.util.Helper;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -160,6 +162,28 @@ public class CommonService {
         Map<String, Object> map = new HashMap<>();
         map.put("res", true);
         map.put("data", mapToCustomerQueryContactDto(saved));
+        return map;
+    }
+    
+    
+    @Transactional
+    public Map<String, Object> toggleContactQueryStatus(
+            Integer queryId,
+            Boolean isResolved
+    ) {
+
+        BigInteger resolvedOn = isResolved ? Helper.getCurrentTimeBerlin() : null;
+
+        Integer updated = queryContactRepository.updateQueryStatus(
+                queryId,
+                isResolved,
+                resolvedOn
+        );
+
+        Map<String, Object> map = new HashMap<>();
+
+        map.put("res", updated > 0);
+
         return map;
     }
 }

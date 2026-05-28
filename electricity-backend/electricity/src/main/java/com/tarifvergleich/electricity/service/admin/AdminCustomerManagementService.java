@@ -26,6 +26,7 @@ import com.tarifvergleich.electricity.dto.CustomerDto;
 import com.tarifvergleich.electricity.dto.CustomerDto.AdminCustomerResponse;
 import com.tarifvergleich.electricity.dto.CustomerDto.SingleCustomerResponseDeliveryForAdmin;
 import com.tarifvergleich.electricity.dto.CustomerNoteDto;
+import com.tarifvergleich.electricity.dto.CustomerSendEmailRequestDto;
 import com.tarifvergleich.electricity.dto.CustomerServiceRequestDto;
 import com.tarifvergleich.electricity.dto.CustomerServiceRequestDto.CustomerServiceRequestResDtoForAdmin;
 import com.tarifvergleich.electricity.dto.CustomerServiceRequestDto.CustomerServiceRequestResDtoForListing;
@@ -36,6 +37,7 @@ import com.tarifvergleich.electricity.model.CustomerAttorny;
 import com.tarifvergleich.electricity.model.CustomerComparingEnergy;
 import com.tarifvergleich.electricity.model.CustomerDelivery;
 import com.tarifvergleich.electricity.model.CustomerDetailsContactHistory;
+import com.tarifvergleich.electricity.model.CustomerEmailSendHistory;
 import com.tarifvergleich.electricity.model.CustomerNote;
 import com.tarifvergleich.electricity.model.CustomerServiceRequest;
 import com.tarifvergleich.electricity.model.CustomerServiceRequestMessages;
@@ -43,6 +45,7 @@ import com.tarifvergleich.electricity.repository.CustomerAttornyRepository;
 import com.tarifvergleich.electricity.repository.CustomerComparingEnergyRepository;
 import com.tarifvergleich.electricity.repository.CustomerDeliveryRepository;
 import com.tarifvergleich.electricity.repository.CustomerDetailsContactHistoryRepository;
+import com.tarifvergleich.electricity.repository.CustomerEmailSendHistoryRepository;
 import com.tarifvergleich.electricity.repository.CustomerOrderRepository;
 import com.tarifvergleich.electricity.repository.CustomerRepository;
 import com.tarifvergleich.electricity.repository.CustomerServiceRequestRepository;
@@ -69,6 +72,7 @@ public class AdminCustomerManagementService {
 	private final ObjectMapper objectMapper;
 	private final CustomerOrderRepository customerOrderRepository;
 	private final CustomerDetailsContactHistoryRepository customerDetailsContactHistoryRepo;
+	private final CustomerEmailSendHistoryRepository customerEmailSendHistoryRepo;
 
 	public Map<String, Object> getCustomers(CustomerDto customerReq) {
 
@@ -210,11 +214,6 @@ public class AdminCustomerManagementService {
 			long totalDeliveries = customerDeliveryRepo.countByAdminAdminId(deliveryReq.getAdminId());
 			long totalCompleted = customerOrderRepository.countOrderCreatedStatus(deliveryReq.getAdminId());
 			
-
-
-			long totalDeliveries = customerDeliveryRepo.countByAdminAdminId(deliveryReq.getAdminId());
-			long totalCompleted = customerOrderRepo.countOrderCreatedStatus(deliveryReq.getAdminId());
-
 			return Map.of("res", true, "data", customerDeliveryResponse.getContent(), "page",
 					customerDeliveryResponse.getPageable().getPageNumber() + 1, "totalPage",
 					customerDeliveryResponse.getTotalPages(), "totalRecord",
@@ -565,4 +564,34 @@ public class AdminCustomerManagementService {
 		return Map.of("res", true, "message", "lexoffice_Number added successfully");
 	}
 
+	@Transactional
+	public Object sendCustomerEmail(CustomerSendEmailRequestDto request) {
+		
+		if (request.getTitle() == null || request.getTitle().trim().isEmpty())
+			throw new InternalServerException("Title cannot be empty", HttpStatus.OK);
+		if (request.getSubtitle() == null || request.getSubtitle().trim().isEmpty())
+			throw new InternalServerException("Subtitle cannot be empty", HttpStatus.OK);
+		if (request.getEmailContent() == null || request.getEmailContent().trim().isEmpty())
+			throw new InternalServerException("Email content cannot be empty", HttpStatus.OK);
+		
+	    Customer customer = customerRepo
+	            .findById(request.getCustomerId().intValue())
+	            .orElseThrow(() -> new InternalServerException("Customer not found", HttpStatus.OK));
+
+	    String toEmail = customer.getEmail();
+	    CustomerEmailSendHistory history = new CustomerEmailSendHistory();
+
+	    history.setCustomerId(request.getCustomerId());
+	    history.setAdminId(request.getAdminId());
+	    history.setTitle(request.getTitle());
+	    history.setSubtitle(request.getSubtitle());
+	    history.setEmailContent(request.getEmailContent());
+	    history.setSentOn(Helper.getCurrentTimeBerlin());
+
+	    customerEmailSendHistoryRepo.save(history);
+	    return Map.of(
+	            "res", true,
+	            "email", toEmail
+	    );
+	}
 }
