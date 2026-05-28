@@ -7,6 +7,7 @@ import { RouterModule } from "@angular/router";
 import { Router } from "@angular/router";
 import { CKEditorModule } from "@ckeditor/ckeditor5-angular";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
+import { HttpClient } from "@angular/common/http";
 
 export interface PasswordHistory {
   email: string;
@@ -102,6 +103,8 @@ export class CustomerListComponent implements OnInit {
   emailTitle = "";
   emailSubtitle = "";
   emailMessage = "";
+  successMessage = "";
+  errorMessageEmail = "";
 
   Editor = ClassicEditor;
   emailcontent: string = "";
@@ -149,12 +152,12 @@ export class CustomerListComponent implements OnInit {
   constructor(
     private api: ApiService,
     private authService: AuthService,
+    private http: HttpClient,
     private router: Router,
   ) {}
 
   ngOnInit(): void {
     this.fetchCustomers();
-    this.fetchPdfList();
   }
 
   onFilterChange(): void {
@@ -260,21 +263,12 @@ export class CustomerListComponent implements OnInit {
   closeSendEmailModal(): void {
     this.isSendEmailModalOpen = false;
     this.selectedEmailCustomer = null;
-  }
 
-  fetchPdfList(): void {
-    this.api.post('admin/fetch-all-pdf', {}).subscribe({
-      next: (res: any) => {
-        this.pdfList = res?.data || [];
-        console.log(this.pdfList);
-        
-      },
-      error: (err) => {
-        // this.pdfList = [];
-        console.log(err);
-        
-      }
-    });
+    this.emailTitle = "";
+    this.emailSubtitle = "";
+    this.emailMessage = "";
+    this.selectedPdfIds.clear();
+    this.uploadDocuments = [{ file: null }];
   }
 
   togglePdfDropdown(): void {
@@ -325,8 +319,42 @@ export class CustomerListComponent implements OnInit {
     return `${count} PDFs ausgewählt`;
   }
 
+  uploadDocuments: any[] = [{ file: null }];
+
+  onUploadDocumentSelect(event: any, index: number): void {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const allowedTypes = ['application/pdf','image/png','image/jpeg'];
+    if (!allowedTypes.includes(file.type)) {
+      alert('Only PDF, JPG, JPEG and PNG files are allowed');
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      alert('File size must be less than 10MB');
+      return;
+    }
+    this.uploadDocuments[index].file = file;
+  }
+
+  addUploadDocumentField(): void {
+    this.uploadDocuments.push({ file: null });
+  }
+
+  removeUploadDocumentField(index: number): void {
+    this.uploadDocuments.splice(index, 1);
+      if (this.uploadDocuments.length === 0) {
+        this.uploadDocuments.push({ file: null });
+      }
+  }
+
   submitSendEmail(): void {
+
     if (!this.selectedEmailCustomer) return;
+
+    this.errorMessageEmail = "";
+    this.successMessage = "";
 
     const payload = {
       adminId: this.authService.getUserId(),
@@ -334,20 +362,46 @@ export class CustomerListComponent implements OnInit {
       title: this.emailTitle,
       subtitle: this.emailSubtitle,
       emailContent: this.emailMessage,
-      pdfIds: Array.from(this.selectedPdfIds),
+
+      // changed from pdfIds
+      documentIds: Array.from(this.selectedPdfIds),
     };
 
-    this.api.post("admin/send-customer-email", payload)
+    const formData = new FormData();
+    formData.append("data", JSON.stringify(payload));
+
+    // upload files
+    this.uploadDocuments.forEach((doc: any) => {
+      if (doc.file) {
+        formData.append("uploadDocuments", doc.file);
+      }
+    });
+
+    this.api.post("/admin/send-customer-email", formData)
       .subscribe({
-        next: () => {
-          alert("Email sent successfully");
-          this.closeSendEmailModal();
+        next: (res: any) => {
+
+          if (res?.res) {
+            this.errorMessageEmail = "";
+            this.closeSendEmailModal();
+            this.successMessage = "Email sent successfully";
+
+            setTimeout(() => {
+              this.successMessage = "";
+              this.fetchCustomers();
+            }, 2000);
+
+          } else {
+            this.errorMessageEmail =
+              res?.errorMessage || "Email not sent";
+          }
         },
 
-        error: (err) => {
-          console.log(err);
-          alert("Failed to send email");
-        }
+        // error: (err) => {
+        //   console.log(err);
+        //   this.successMessage = "";
+        //   this.errorMessageEmail = "Email not sent";
+        // }
       });
   }
 

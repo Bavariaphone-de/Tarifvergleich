@@ -1,10 +1,16 @@
 package com.tarifvergleich.electricity.dto;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class CustomerSendEmailRequestDto {
 
     private Long adminId;
@@ -17,5 +23,5 @@ public class CustomerSendEmailRequestDto {
 
     private String emailContent;
 
-    private List<Long> pdfIds;
+    private List<Long> documentIds;
 }
