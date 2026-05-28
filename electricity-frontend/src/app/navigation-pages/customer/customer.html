@@ -1149,7 +1149,9 @@
 
                 <button class="meter-blue-btn">Zähleraustausch melden</button>
 
-                <button class="meter-blue-btn">Vertragsdetails ändern</button>
+                <button class="meter-blue-btn" (click)="changeContractDetails(item)">
+                  Vertragsdetails ändern
+                </button>
 
                 <button class="meter-blue-btn">Abschlag ändern</button>
 
@@ -1165,9 +1167,16 @@
                   </button>
                 </ng-template>
 
-                <button class="meter-blue-btn full" (click)="messageEnergySupplier(item)">
+                <button *ngIf="!item.supplierMessage || item.supplierMessage.length === 0" class="meter-blue-btn full"
+                  (click)="messageEnergySupplier(item)">
                   Nachricht an Energielieferanten senden
                 </button>
+
+                <div *ngIf="item.supplierMessage && item.supplierMessage.length > 0" class="status-badge">
+                  Nachricht an Energielieferanten senden
+                  {{ getSupplierMessageStatus(item) }}
+                </div>
+
               </div>
 
               <!-- RIGHT -->
@@ -1358,6 +1367,7 @@
       </div> -->
     </div>
 
+    <!--══════════ Report meter reading ══════════-->
     <div *ngIf="activeTab === 1 && currentStep === 2">
       <div class="login-berich">Zählerstand melden</div>
       <br />
@@ -1811,6 +1821,7 @@
       </div>
     </div>
 
+    <!--══════════ Report meter reading ══════════-->
     <div *ngIf="activeTab === 1 && currentStep === 3">
       <div class="login-berich">Zählerstand melden</div>
 
@@ -2575,6 +2586,572 @@
         </div>
       </div>
     </div>
+
+    <!--══════════ Change contract details ══════════-->
+
+    <div *ngIf="activeTab === 1 && currentStep === 7">
+      <div class="login-berich">
+        Vertragsdetails ändern
+      </div>
+
+      <br />
+
+      <div class="selected-contract-wrapper">
+
+        <!-- HEADER -->
+        <div class="selected-contract-header">
+          Ausgewählter Vertrag
+        </div>
+
+        <!-- CARD -->
+        <div class="selected-contract-card">
+
+          <!-- TOP -->
+          <div class="contract-top">
+
+            <!-- LEFT -->
+            <div class="contract-left">
+              <img [src]="selectedMeter.meterIcon" alt="provider" class="provider-logo" />
+
+              <div class="provider-name">
+                {{ selectedMeter.tariff }}
+              </div>
+
+              <div class="meter-provider-badge">
+                <img [src]="selectedMeter.providerIcon" alt="" class="badge-icon" />
+
+                <span>
+                  {{ selectedMeter.providerType }}
+                </span>
+              </div>
+            </div>
+
+            <!-- CENTER -->
+            <div class="contract-center">
+              <div class="contract-row-title">
+                <strong>Zählerbezeichnung:</strong>
+
+                <a class="change-link" *ngIf="!isEditingSelectedMeterName" (click)="editSelectedMeterName()">
+                  ändern
+                  <img src="assets/icons/Bearbeiten_schwarz.png" alt="edit" />
+                </a>
+              </div>
+
+              <!-- TEXT VIEW -->
+              <div class="meter-id" *ngIf="!isEditingSelectedMeterName">
+                {{ selectedMeter?.meterDesignation }}
+              </div>
+
+              <!-- EDIT VIEW -->
+              <div class="meter-edit-box" *ngIf="isEditingSelectedMeterName">
+                <input type="text" [(ngModel)]="selectedMeter.meterDesignation" class="meter-input"
+                  placeholder="Zählerbezeichnung" />
+
+                <button type="button" class="icon-action save-icon" (click)="saveSelectedMeterName()">
+                  ✓
+                </button>
+
+                <button type="button" class="icon-action cancel-icon" (click)="cancelSelectedMeterEdit()">
+                  ✕
+                </button>
+              </div>
+
+              <div class="address-wrap">
+                <p>
+                  <strong>Adresse:</strong>
+                  {{ selectedMeter.address.name }}
+                </p>
+
+                <p>
+                  {{ selectedMeter.address.street }}
+                </p>
+
+                <p>
+                  {{ selectedMeter.address.city }}
+                </p>
+              </div>
+            </div>
+
+            <!-- RIGHT -->
+            <div class="contract-right">
+              <p>
+                Vertragsnummer:
+                <strong>
+                  {{ selectedMeter.contractNumber }}
+                </strong>
+              </p>
+
+              <p>
+                Kundennummer:
+                <strong>
+                  {{ selectedMeter.customerNumber }}
+                </strong>
+              </p>
+
+              <br />
+
+              <p>
+                Zählernummer:
+                <strong>
+                  {{ selectedMeter.meterNumber }}
+                </strong>
+              </p>
+
+              <p>
+                Marktlokation-ID:
+                <strong>
+                  {{ selectedMeter.marketLocation }}
+                </strong>
+              </p>
+            </div>
+          </div>
+
+          <!-- CHANGE CONTRACT DETAILS SECTION -->
+
+          <div class="contract-change-section">
+
+            <!-- HEADING -->
+            <div class="contract-change-heading">
+              Vertragsdetails ändern
+            </div>
+
+            <!-- SUB HEADING -->
+            <div class="contract-change-subheading">
+              Welche Daten möchten Sie aktualisieren?
+            </div>
+
+            <!-- DROPDOWN -->
+            <div class="contract-change-dropdown">
+
+              <!-- SELECT BOX -->
+              <div class="contract-change-select-box" (click)="toggleContractDropdown()">
+
+                <div class="contract-change-selected-values">
+
+                  <span class="contract-change-placeholder" *ngIf="selectedContractOptions.length === 0">
+                    Vertragsdetails auswählen
+                  </span>
+
+                  <span class="contract-change-tag" *ngFor="let item of selectedContractOptions">
+                    {{ getContractOptionLabel(item) }}
+
+                  </span>
+
+                </div>
+
+                <span class="contract-change-arrow">
+                  {{ contractDropdownOpen ? '▲' : '▼' }}
+                </span>
+
+              </div>
+
+              <!-- DROPDOWN -->
+              <div class="contract-change-dropdown-menu" *ngIf="contractDropdownOpen">
+
+                <div class="contract-change-dropdown-item" *ngFor="let option of contractOptionsList"
+                  (click)="toggleContractSelection(option.id, $event)">
+
+                  <input type="checkbox" [checked]="selectedContractOptions.includes(option.id)" />
+
+                  <span>
+                    {{ option.label }}
+                  </span>
+
+                </div>
+
+              </div>
+
+            </div>
+
+
+
+            <!-- SUBMIT BUTTON -->
+            <button type="button" class="btn-primary" (click)="submitContractSelection()">
+              Weiter
+            </button>
+
+            <!-- DYNAMIC FORM FIELDS -->
+
+            <!-- LAST NAME -->
+            <div class="contract-change-form-box" *ngIf="submittedSelections.includes(1)" id="last-name-section">
+
+              <div class="contract-change-form-title">
+                Nachname ändern
+              </div>
+
+              <div class="contract-change-subheading">
+                Bitte geben Sie Ihren neuen Nachnamen ein und laden Sie einen Nachweis hoch.
+              </div>
+
+              <!-- INPUT -->
+              <div class="form-row">
+
+                <div class="form-group">
+
+                  <div class="field-wrap">
+
+                    <span class="field-label">
+                      Neuer Nachname *
+                    </span>
+
+                    <input type="text" [(ngModel)]="contractChangeData.lastName" placeholder="Neuer Nachname" />
+
+                  </div>
+
+                </div>
+
+              </div>
+
+              <!-- FILE UPLOAD -->
+
+              <div class="contract-change-upload-box">
+
+                <div class="contract-change-upload-title">
+                  Erforderlicher Nachweis
+                </div>
+
+                <div class="contract-change-upload-text">
+                  Heiratsurkunde oder Scheidungsurkunde hochladen
+                </div>
+
+                <input type="file" (change)="onContractDocumentUpload($event, 'lastName')" />
+
+              </div>
+
+            </div>
+
+            <!-- COMPANY NAME -->
+            <div class="contract-change-form-box" *ngIf="submittedSelections.includes(2)" id="company-name-section">
+
+              <div class="contract-change-form-title">
+                Firmenname ändern
+              </div>
+
+              <div class="contract-change-subheading">
+                Bitte laden Sie einen gültigen Nachweis hoch.
+              </div>
+
+              <input type="text" [(ngModel)]="contractChangeData.companyName" placeholder="Firmenname"
+                class="contract-change-input" />
+
+              <div class="contract-change-upload-box">
+
+                <div class="contract-change-upload-text">
+                  Gewerbeummeldung oder Handelsregisterauszug hochladen
+                </div>
+
+                <input type="file" (change)="onContractDocumentUpload($event, 'companyName')" />
+
+              </div>
+
+            </div>
+
+            <!-- TITLE -->
+            <div class="contract-change-form-box" *ngIf="submittedSelections.includes(3)" id="title-section">
+
+              <div class="contract-change-form-title">
+                Titel ändern
+              </div>
+
+              <input type="text" [(ngModel)]="contractChangeData.title" placeholder="Neuer Titel"
+                class="contract-change-input" />
+
+              <div class="contract-change-upload-box">
+
+                <div class="contract-change-upload-text">
+                  Titelnachweis hochladen
+                </div>
+
+                <input type="file" (change)="onContractDocumentUpload($event, 'title')" />
+
+              </div>
+
+            </div>
+
+            <!-- FIRST NAME / SALUTATION -->
+            <div class="contract-change-form-box"
+              *ngIf="submittedSelections.includes(4) || submittedSelections.includes(5)"
+              id="firstname-salutation-section">
+
+              <div class="contract-change-form-title">
+                Vorname / Anrede ändern
+              </div>
+
+              <!-- FIRST NAME -->
+              <div *ngIf="submittedSelections.includes(4)">
+
+                <input type="text" [(ngModel)]="contractChangeData.firstName" placeholder="Neuer Vorname"
+                  class="contract-change-input" />
+
+              </div>
+
+              <!-- SALUTATION -->
+              <div *ngIf="submittedSelections.includes(5)">
+
+                <input type="text" [(ngModel)]="contractChangeData.salutation" placeholder="Neue Anrede"
+                  class="contract-change-input" />
+
+              </div>
+
+              <div class="contract-change-upload-box">
+
+                <div class="contract-change-upload-text">
+                  Kopie des Personalausweises hochladen
+                </div>
+
+                <input type="file" (change)="onContractDocumentUpload($event, 'personData')" />
+
+              </div>
+
+            </div>
+
+            <!-- DATE OF BIRTH -->
+            <div class="contract-change-form-box" *ngIf="submittedSelections.includes(6)" id="dob-section">
+
+              <div class="contract-change-form-title">
+                Geburtsdatum ändern
+              </div>
+
+              <input type="date" [(ngModel)]="contractChangeData.dateOfBirth" class="contract-change-input" />
+
+              <div class="contract-change-upload-box">
+
+                <div class="contract-change-upload-text">
+                  Kopie des Personalausweises hochladen
+                </div>
+
+                <input type="file" (change)="onContractDocumentUpload($event, 'dateOfBirth')" />
+
+              </div>
+
+            </div>
+
+
+            <!-- BILLING ADDRESS -->
+            <div class="contract-change-form-box" *ngIf="submittedSelections.includes(7)" id="billing-address-section">
+
+              <div class="contract-change-form-title">
+                Rechnungsadresse ändern
+              </div>
+
+              <div class="form-row">
+                <div class="form-group" style="flex: 0 0 160px">
+                  <div class="field-wrap" [class.field-error]="fieldErrors['billingPLZ']">
+                    <span class="field-label">Ihre PLZ *</span>
+                    <input />
+                    <span *ngIf="fieldErrors['billingPLZ']" class="error-hint">{{
+                      fieldErrors['billingPLZ']
+                      }}</span>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <div class="field-wrap" [class.field-error]="fieldErrors['billingOrt']">
+                    <span class="field-label">Ort *</span>
+                    <input />
+                    <span *ngIf="fieldErrors['billingOrt']" class="error-hint">{{
+                      fieldErrors['billingOrt']
+                      }}</span>
+                  </div>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <div class="field-wrap" [class.field-error]="fieldErrors['billingStreet']">
+                    <span class="field-label">Ihre Straße *</span>
+                    <input />
+                    <span *ngIf="fieldErrors['billingStreet']" class="error-hint">{{
+                      fieldErrors['billingStreet']
+                      }}</span>
+                  </div>
+                </div>
+                <div class="form-group" style="flex: 0 0 160px">
+                  <div class="field-wrap" [class.field-error]="fieldErrors['billingHouseNumber']">
+                    <span class="field-label">Hausnummer *</span>
+                    <input />
+                    <span *ngIf="fieldErrors['billingHouseNumber']" class="error-hint">{{
+                      fieldErrors['billingHouseNumber']
+                      }}</span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- CUSTOMER ADDRESS -->
+            <div class="contract-change-form-box" *ngIf="submittedSelections.includes(8)" id="customer-address-section">
+
+              <div class="contract-change-form-title">
+                Kundenadresse ändern
+              </div>
+              <div class="contract-change-subheading">
+                <strong>
+                  Achtung: Steht ein Umzug an? Falls ja, ist dies die falsche Funktion! Verwenden Sie in diesem Fall
+                  bitte
+                  stattdessen die Option „Umzug melden“.
+                </strong>
+              </div>
+
+              <!-- ZIP + CITY -->
+              <div class="form-row">
+
+                <!-- ZIP -->
+                <div class="form-group postcode">
+                  <div class="field-wrap">
+                    <span class="field-label">Ihre PLZ</span>
+
+                    <input type="text" maxlength="5" [value]="customerData.address.zip" placeholder="12345" />
+                  </div>
+
+                  <div class="field-error-msg" *ngIf="addressFieldErrors['zip']">
+                    {{ addressFieldErrors['zip'] }}
+                  </div>
+                </div>
+
+                <!-- CITY -->
+                <div class="form-group">
+                  <div class="field-wrap dropdown-wrapper">
+
+                    <span class="field-label">Ort</span>
+
+                    <input type="text" placeholder="Musterhausen" (input)="onEditCityInput($event)"
+                      (focus)="showEditCityDropdown = true" (click)="$event.stopPropagation()" />
+
+                    <div class="dropdown" *ngIf="showEditCityDropdown">
+
+                      <div *ngIf="editFilteredCityOptions.length === 0" class="dropdown-item disabled">
+                        Keine Orte gefunden
+                      </div>
+
+                      <div *ngFor="let c of editFilteredCityOptions" class="dropdown-item" (click)="selectEditCity(c)">
+                        {{ c.city }}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="field-error-msg" *ngIf="addressFieldErrors['city']">
+                    {{ addressFieldErrors['city'] }}
+                  </div>
+                </div>
+              </div>
+
+
+              <!-- STREET + HOUSE NUMBER -->
+              <div class="form-row">
+
+                <!-- STREET -->
+                <div class="form-group">
+                  <div class="field-wrap dropdown-wrapper">
+
+                    <span class="field-label">Ihre Straße</span>
+
+                    <input type="text" placeholder="Mustermannstraße" (input)="onEditStreetInput($event)"
+                      (focus)="showEditStreetDropdown = true" (click)="$event.stopPropagation()"
+                      [disabled]="!customerData.address.city" />
+
+                    <div class="dropdown" *ngIf="showEditStreetDropdown">
+
+                      <div *ngIf="isEditStreetLoading" class="dropdown-item">
+                        Laden...
+                      </div>
+
+                      <div *ngIf="!isEditStreetLoading && editFilteredStreetOptions.length === 0"
+                        class="dropdown-item disabled">
+                        Keine Straße gefunden
+                      </div>
+
+                      <div *ngFor="let s of editFilteredStreetOptions" class="dropdown-item"
+                        (click)="selectEditStreet(s)">
+                        {{ s.street }}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="field-error-msg" *ngIf="addressFieldErrors['street']">
+                    {{ addressFieldErrors['street'] }}
+                  </div>
+                </div>
+
+                <!-- HOUSE NUMBER -->
+                <div class="form-group postcode">
+                  <div class="field-wrap">
+                    <span class="field-label">Hausnummer</span>
+
+                    <input type="text" placeholder="456" />
+                  </div>
+
+                  <div class="field-error-msg" *ngIf="addressFieldErrors['houseNumber']">
+                    {{ addressFieldErrors['houseNumber'] }}
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- EMAIL -->
+            <div class="contract-change-form-box" *ngIf="submittedSelections.includes(9)" id="email-address-section">
+
+              <div class="contract-change-form-title">
+                E-Mail-Adresse ändern
+              </div>
+
+              <input type="email" placeholder="Neue E-Mail-Adresse" class="contract-change-input" />
+
+            </div>
+
+            <!-- BANK -->
+            <div class="contract-change-form-box" *ngIf="submittedSelections.includes(10)" id="bank-details-section">
+
+              <div class="contract-change-form-title">
+                Bankdaten ändern
+              </div>
+
+              <input type="text" placeholder="IBAN" class="contract-change-input" />
+
+              <input type="text" placeholder="Kontoinhaber" class="contract-change-input" />
+
+            </div>
+
+            <!-- OTHER -->
+            <div class="contract-change-form-box" *ngIf="submittedSelections.includes(11)" id="other-section">
+
+              <div class="contract-change-form-title">
+                Sonstige Änderung
+              </div>
+
+              <textarea placeholder="Bitte geben Sie Ihre Anfrage ein" class="contract-change-textarea"></textarea>
+
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- SUCCESS -->
+      <!-- <div class="success-box" style="width: auto" *ngIf="submittedEnergyMessage">
+        <div class="success-content">
+          <div class="success-row">
+            <img src="assets/icons/Kreis_Haken_gruen.png" alt="success" />
+
+            <div class="text-block">
+              <div class="tab-header">
+                Nachricht erfolgreich gesendet!
+              </div>
+
+              <div class="tab-text">
+                Ihre Nachricht wurde erfolgreich an den
+                Energieversorger übermittelt.
+              </div>
+
+              <div class="tab-text">
+                Der Anbieter wird Ihre Anfrage prüfen und sich
+                schnellstmöglich bei Ihnen melden.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div> -->
+    </div>
+
 
     <!--══════════ Meters Section End ══════════-->
 

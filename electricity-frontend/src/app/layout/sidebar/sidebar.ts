@@ -51,16 +51,16 @@ export class Sidebar implements OnChanges {
   isEco: boolean = false;
 
   /** Minimum contract term, e.g. "12 Monate" */
-  minTerm: string = '–';
+  minTerm: string = '';
 
   /** Annual consumption in kWh used for the calculation */
-  annualUsage: string = '–';
+  annualUsage: string = '';
 
   /** Monthly base price with annual equivalent, e.g. "14,70 €/Monat (176,40 €/Jahr)" */
-  basePriceDisplay: string = '–';
+  basePriceDisplay: string = '';
 
   /** Work price in Cent/kWh */
-  workPriceDisplay: string = '–';
+  workPriceDisplay: string = '';
 
   /** New-customer bonus (optBonus) */
   bonusDisplay: string | null = null;
@@ -94,9 +94,9 @@ export class Sidebar implements OnChanges {
     this.savingPerYear = this.formatEuro(Math.abs(saving - totalCommission));
 
     // Tariff details
-    this.rateName = p.rateName ?? '–';
+    this.rateName = p.rateName ?? '';
     this.isEco = !!p.optEco;
-    this.minTerm = p.optTerm ? `${p.optTerm} Monate` : '–';
+    this.minTerm = p.optTerm ? `${p.optTerm} Monate` : '';
 
     // Tariff overview — the API doesn't return kWh usage directly;
     // we back-calculate it from totalPrice and per-unit prices if needed.
@@ -110,7 +110,7 @@ export class Sidebar implements OnChanges {
 
     // Work price (Cent/kWh)
     this.workPriceDisplay =
-      typeof p.workPrice === 'number' ? `${this.formatCent(p.workPrice)} Cent/kWh` : '–';
+      typeof p.workPrice === 'number' ? `${this.formatCent(p.workPrice)} Cent/kWh` : '';
 
     // Bonus
     this.bonusDisplay =

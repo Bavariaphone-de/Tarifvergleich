@@ -22,6 +22,8 @@ import { ActivatedRoute } from '@angular/router';
 import { Router } from '@angular/router';
 import { NeedSupport } from '../../layout/need-support/need-support';
 import { AddressService } from '../../services/address.service';
+import { MatSelectModule } from '@angular/material/select';
+import { NgSelectModule } from '@ng-select/ng-select';
 
 const API_BASE = 'http://192.168.0.155:8080';
 interface Card {
@@ -48,6 +50,8 @@ interface Card {
     QRCodeComponent,
     ContactPerson,
     NeedSupport,
+    MatSelectModule,
+    NgSelectModule,
   ],
   templateUrl: './customer.html',
   styleUrl: './customer.css',
@@ -221,6 +225,14 @@ export class Customer {
     this.cdr.detectChanges();
   }
 
+  changeContractDetails(item?: any) {
+    this.nextStep(7);
+    if (item) {
+      this.selectedMeter = item;
+    }
+    this.cdr.detectChanges();
+  }
+
   showLogoutModal: boolean = false;
 
   openLogoutModal() {
@@ -254,6 +266,7 @@ export class Customer {
       this.handleQRLogin(data);
     }
 
+    this.fetchSupplierMessageCategories();
     this.loadAvailableDays();
     this.checkDevice();
     this.fetchAllRequests();
@@ -830,7 +843,7 @@ export class Customer {
     });
   }
 
-  // Request Invoice
+  /*--- Request Invoice ---*/
   invoiceCategory: string = '';
   invoiceMessage: string = '';
   submittedInvoice: boolean = false;
@@ -879,7 +892,7 @@ export class Customer {
     });
   }
 
-  // Request Callback
+  /*--- Request Callback ---*/
 
   selectedDay: any = null;
   selectedTimeSlot: string = '';
@@ -1391,37 +1404,56 @@ export class Customer {
 
     this.cdr.detectChanges();
   }
-
+  /*──  Send Message to energy supplier ──*/
   // CATEGORY OPTIONS
-  supplierMessageCategories = [
-    {
-      label: 'Abrechnung',
-      value: 'Billing',
-    },
-    {
-      label: 'Lastschrift',
-      value: 'Direct Debit',
-    },
-    {
-      label: 'Zahlungsaufschub',
-      value: 'Payment Deferral',
-    },
-    {
-      label: 'Vertrag',
-      value: 'Contract',
-    },
-    {
-      label: 'Sonstiges',
-      value: 'Other',
-    },
-  ];
 
   // FORM VALUES
-  supplierMessageCategory: string = '';
+  supplierMessageCategories: any[] = [];
+
+  supplierMessageCategory: number | null = null;
   supplierMessage: string = '';
 
   submittedEnergyMessage: boolean = false;
   isLoadingEnergySupplierMessage: boolean = false;
+
+  getSupplierMessageStatus(item: any): string {
+
+    const status = Number(item?.supplierMessage?.[0]?.status);
+
+    if (status === 0) {
+      return 'In Progress';
+    }
+
+    if (status === 1) {
+      return 'Forwarded';
+    }
+
+    return '';
+
+  }
+
+  fetchSupplierMessageCategories(): void {
+    this.http
+      .post<any>(`${API_BASE}/customer/fetch-supplier-message-category`, { adminId: 1 })
+      .subscribe({
+        next: (res: any) => {
+          if (res?.res) {
+            this.supplierMessageCategories = res.data.map((item: any) => {
+              return {
+                label: item.categoryName,
+                value: item.supplierMessageCategoryId,
+              };
+            });
+          }
+
+          this.cdr.detectChanges();
+        },
+
+        error: (err: any) => {
+          console.error(err);
+        },
+      });
+  }
 
   // SUBMIT
   submitEnergySupplierMessage(): void {
@@ -1432,12 +1464,14 @@ export class Customer {
     // CATEGORY VALIDATION
     if (!this.supplierMessageCategory) {
       this.fieldErrors['supplierMessageCategory'] = 'Bitte wählen Sie eine Kategorie aus.';
+
       hasError = true;
     }
 
     // MESSAGE VALIDATION
     if (!this.supplierMessage?.trim()) {
       this.fieldErrors['supplierMessage'] = 'Bitte geben Sie eine Nachricht ein.';
+
       hasError = true;
     }
 
@@ -1451,34 +1485,139 @@ export class Customer {
 
     // PAYLOAD
     const payload = {
-      customerId: this.authService.getUserId(),
-      category: this.supplierMessageCategory,
+      supplierMessageCategoryId: Number(this.supplierMessageCategory),
+
+      orderId: this.selectedMeter?.order?.orderId,
+
       message: this.supplierMessage.trim(),
 
-      deliveryId: this.selectedMeter?.deliveryId,
-      orderId: this.selectedMeter?.orderId,
+      adminId: 1,
 
-      // contractNumber: this.selectedMeter?.contractNumber,
-      // customerNumber: this.selectedMeter?.customerNumber,
-      // meterNumber: this.selectedMeter?.meterNumber,
+      customerId: Number(this.authService.getUserId()),
     };
 
-    console.log('Energy Supplier Message Payload:', payload);
+    console.log('Supplier Message Payload:', payload);
 
-    // DEMO SUCCESS
-    setTimeout(() => {
-      this.isLoadingEnergySupplierMessage = false;
+    this.http.post<any>(`${API_BASE}/customer/add-supplier-message`, payload).subscribe({
+      next: (res: any) => {
+        this.isLoadingEnergySupplierMessage = false;
 
-      this.submittedEnergyMessage = true;
+        this.submittedEnergyMessage = true;
 
-      // RESET FORM
-      this.supplierMessageCategory = '';
-      this.supplierMessage = '';
+        // RESET FORM
+        this.supplierMessageCategory = 0;
+        this.supplierMessage = '';
 
-      this.cdr.detectChanges();
-    }, 1000);
+        this.cdr.detectChanges();
+      },
+
+      error: (err: any) => {
+        console.error(err);
+
+        this.isLoadingEnergySupplierMessage = false;
+
+        this.cdr.detectChanges();
+      },
+    });
   }
 
+  /* Change contract details */
+  // component.ts
+
+  contractDropdownOpen = false;
+  contractOptionsList = [
+    {
+      id: 1,
+      label: 'Last Name',
+    },
+    {
+      id: 2,
+      label: 'Company Name',
+    },
+    {
+      id: 3,
+      label: 'Title',
+    },
+    {
+      id: 4,
+      label: 'First Name',
+    },
+    {
+      id: 5,
+      label: 'Salutation',
+    },
+    {
+      id: 6,
+      label: 'Date of Birth',
+    },
+    {
+      id: 7,
+      label: 'Billing Address',
+    },
+    {
+      id: 8,
+      label: 'Delivery Address',
+    },
+    {
+      id: 9,
+      label: 'Change Email Address',
+    },
+    {
+      id: 10,
+      label: 'Change Bank Details',
+    },
+    {
+      id: 11,
+      label: 'Other',
+    },
+  ];
+
+  selectedContractOptions: number[] = [];
+
+  submittedSelections: number[] = [];
+
+  contractChangeData: any = {
+    lastName: '',
+    companyName: '',
+    title: '',
+    firstName: '',
+    salutation: '',
+    dateOfBirth: '',
+  };
+
+  uploadedContractDocuments: any = {};
+
+  onContractDocumentUpload(event: any, type: string): void {
+    const file = event.target.files?.[0];
+
+    if (!file) return;
+
+    this.uploadedContractDocuments[type] = file;
+  }
+  getContractOptionLabel(id: number): string {
+    return this.contractOptionsList.find((x: any) => x.id === id)?.label || '';
+  }
+  toggleContractDropdown(): void {
+    this.contractDropdownOpen = !this.contractDropdownOpen;
+  }
+
+  toggleContractSelection(optionId: number, event: Event): void {
+    event.stopPropagation();
+
+    const index = this.selectedContractOptions.indexOf(optionId);
+
+    if (index > -1) {
+      this.selectedContractOptions.splice(index, 1);
+    } else {
+      this.selectedContractOptions.push(optionId);
+    }
+  }
+
+  submitContractSelection(): void {
+    this.submittedSelections = [...this.selectedContractOptions];
+
+    this.contractDropdownOpen = false;
+  }
   /*── Meter Section end ──*/
   /* ════════════════════════════════════════════════════════════════════════════════════════════════*/
   /*── Reminder Section Start ──*/
@@ -2397,6 +2536,7 @@ export class Customer {
               invoiceRequests: item.invoiceRequests,
 
               reportMeterReadings: item.reportMeterReadings,
+              supplierMessage: item.order.supplierMessage,
 
               address: {
                 name: `${customer?.firstName || ''} ${customer?.lastName || ''}`.trim(),
@@ -2405,10 +2545,34 @@ export class Customer {
 
                 city: `${address?.zip || ''} ${address?.city || ''}`,
               },
+
+              billingAddressData: {
+                zip: item?.billingAddress?.zip || '',
+                city: item?.billingAddress?.city || '',
+                street: item?.billingAddress?.street || '',
+                houseNumber: item?.billingAddress?.houseNumber || '',
+              },
+
+              deliveryAddressData: {
+                zip: item?.customerAddress?.zip || '',
+                city: item?.customerAddress?.city || '',
+                street: item?.customerAddress?.street || '',
+                houseNumber: item?.customerAddress?.houseNumber || '',
+              },
+
+              emailData: {
+                email: item?.email || '',
+              },
+
+              bankData: {
+                iban: item?.payment?.iban || '',
+                firstName: item?.payment?.firstName || '',
+                lastName: item?.payment?.lastName || '',
+              },
             };
           });
 
-        // console.log('electricityList', this.electricityList);
+        console.log('electricityList', this.electricityList);
 
         this.meterList = res.delivery
           .filter((item: any) => item?.order?.orderId) // only valid contracts
@@ -3547,7 +3711,5 @@ export class Customer {
   }
 
   /* ──  Profile Information Section End ──*/
-
-  /* ──  Profile Information Section Start ──*/
   /* ════════════════════════════════════════════════════════════════════════════════════════════════*/
 }
