@@ -125,6 +125,7 @@ export class Customer {
     additionalMeters: [], // ← add (further meters table)
     standardBankAccounts: [], // ← add (SEPA cards)
     additionalBankAccounts: [], // ← add (further payment table)
+    subAccounts: [], // ← sub-account contact profiles
     deliveryDetails: [],
   };
 
@@ -355,6 +356,7 @@ export class Customer {
           additionalMeters: data.additionalMeters || [], // ← add
           standardBankAccounts: data.standardBankAccounts || [], // ← add
           additionalBankAccounts: data.additionalBankAccounts || [], // ← add
+          subAccounts: data.subAccounts || [], // ← sub-account contact profiles
 
           deliveryDetails: data.deliveryDetails || [],
           attornyPdfUrl: data.attornyPdfUrl || '',
@@ -3744,5 +3746,158 @@ export class Customer {
   }
 
   /* ──  Profile Information Section End ──*/
+
+  /* ════════════════════════════════════════════════════════════════════════════════════════════════*/
+  /* ──  Sub-Account Section Start ──*/
+
+  /** Index of the currently expanded sub-account card (-1 = none) */
+  expandedSubAccount: number = -1;
+
+  /** Whether the add/edit form is visible */
+  showSubAccountForm: boolean = false;
+
+  /** Index being edited, or null when creating a new one */
+  editingSubAccountIndex: number | null = null;
+
+  isSavingSubAccount: boolean = false;
+  subAccountApiError: string = '';
+  subAccountFieldErrors: Record<string, string> = {};
+
+  /** Blank sub-account shape reused for new / edit forms */
+  private blankSubAccountForm() {
+    return {
+      companyName: '',
+      salutation: '',
+      title: '',
+      firstName: '',
+      lastName: '',
+      email: '',
+      mobileNumber: '',
+      phoneNumber: '',
+      address: { zip: '', city: '', street: '', houseNumber: '' },
+      billingAddressDiffers: false,
+      billingAddress: { zip: '', city: '', street: '', houseNumber: '' },
+      bankDetails: { bankName: '', iban: '', bic: '', accountNumber: '', bankCode: '' },
+    };
+  }
+
+  subAccountForm: ReturnType<Customer['blankSubAccountForm']> = this.blankSubAccountForm();
+
+  toggleSubAccount(index: number): void {
+    this.expandedSubAccount = this.expandedSubAccount === index ? -1 : index;
+  }
+
+  openAddSubAccount(): void {
+    this.editingSubAccountIndex = null;
+    this.subAccountForm = this.blankSubAccountForm();
+    this.subAccountFieldErrors = {};
+    this.subAccountApiError = '';
+    this.showSubAccountForm = true;
+    this.cdr.detectChanges();
+  }
+
+  editSubAccount(index: number, event: Event): void {
+    event.stopPropagation();
+    const sub = this.customerData.subAccounts[index];
+    this.editingSubAccountIndex = index;
+    this.subAccountForm = {
+      companyName: sub.companyName || '',
+      salutation: sub.salutation || '',
+      title: sub.title || '',
+      firstName: sub.firstName || '',
+      lastName: sub.lastName || '',
+      email: sub.email || '',
+      mobileNumber: sub.mobileNumber || '',
+      phoneNumber: sub.phoneNumber || '',
+      address: sub.address
+        ? { ...sub.address }
+        : { zip: '', city: '', street: '', houseNumber: '' },
+      billingAddressDiffers: sub.billingAddressDiffers || false,
+      billingAddress: sub.billingAddress
+        ? { ...sub.billingAddress }
+        : { zip: '', city: '', street: '', houseNumber: '' },
+      bankDetails: sub.bankDetails
+        ? { ...sub.bankDetails }
+        : { bankName: '', iban: '', bic: '', accountNumber: '', bankCode: '' },
+    };
+    this.subAccountFieldErrors = {};
+    this.subAccountApiError = '';
+    this.showSubAccountForm = true;
+    this.expandedSubAccount = -1;
+    this.cdr.detectChanges();
+  }
+
+  cancelSubAccountForm(): void {
+    this.showSubAccountForm = false;
+    this.editingSubAccountIndex = null;
+    this.subAccountForm = this.blankSubAccountForm();
+    this.subAccountFieldErrors = {};
+    this.subAccountApiError = '';
+    this.cdr.detectChanges();
+  }
+
+  private validateSubAccountForm(): boolean {
+    this.subAccountFieldErrors = {};
+    if (!this.subAccountForm.salutation?.trim()) {
+      this.subAccountFieldErrors['salutation'] = 'Bitte Anrede auswählen';
+    }
+    if (!this.subAccountForm.firstName?.trim()) {
+      this.subAccountFieldErrors['firstName'] = 'Vorname ist erforderlich';
+    }
+    if (!this.subAccountForm.lastName?.trim()) {
+      this.subAccountFieldErrors['lastName'] = 'Nachname ist erforderlich';
+    }
+    if (!this.subAccountForm.address?.zip?.trim()) {
+      this.subAccountFieldErrors['zip'] = 'PLZ ist erforderlich';
+    }
+    return Object.keys(this.subAccountFieldErrors).length === 0;
+  }
+
+  saveSubAccount(): void {
+    if (!this.validateSubAccountForm()) return;
+
+    this.isSavingSubAccount = true;
+    this.subAccountApiError = '';
+
+    const customerId = this.authService.getUserId() || 0;
+    const payload = {
+      customerId: Number(customerId),
+      adminId: 1,
+      subAccount: { ...this.subAccountForm },
+      subAccountIndex: this.editingSubAccountIndex,
+    };
+
+    this.http.post<any>(`${API_BASE}/customer/save-sub-account`, payload).subscribe({
+      next: (res) => {
+        this.isSavingSubAccount = false;
+        if (res?.res) {
+          // Optimistically update local list
+          if (!this.customerData.subAccounts) {
+            this.customerData.subAccounts = [];
+          }
+          if (this.editingSubAccountIndex !== null) {
+            this.customerData.subAccounts[this.editingSubAccountIndex] = { ...this.subAccountForm };
+          } else {
+            this.customerData.subAccounts.push({ ...this.subAccountForm });
+          }
+          this.cancelSubAccountForm();
+        } else {
+          this.subAccountApiError = res?.errMessage || 'Fehler beim Speichern.';
+        }
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.isSavingSubAccount = false;
+        this.subAccountApiError =
+          err?.error?.message || 'Fehler beim Speichern. Bitte erneut versuchen.';
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  /* ──  Sub-Account Section End ──*/
+  /* ════════════════════════════════════════════════════════════════════════════════════════════════*/
+
+  /* ──  Profile Information Section Start ──*/
   /* ════════════════════════════════════════════════════════════════════════════════════════════════*/
 }
