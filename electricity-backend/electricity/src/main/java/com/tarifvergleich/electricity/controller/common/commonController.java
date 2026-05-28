@@ -65,4 +65,25 @@ public class commonController {
         }
         return ResponseEntity.ok(commonService.linkCustomersToQuery(queryId, customerIds));
     }
+    
+    @PostMapping("/toggle-contact-query-status")
+    public ResponseEntity<?> toggleContactQueryStatus(
+            @RequestBody Map<String, Object> payload
+    ) {
+
+        Integer queryId = payload.get("queryId") != null
+                ? ((Number) payload.get("queryId")).intValue()
+                : null;
+
+        Boolean isResolved = payload.get("isResolved") != null
+                ? (Boolean) payload.get("isResolved")
+                : false;
+
+        return ResponseEntity.ok(
+                commonService.toggleContactQueryStatus(
+                        queryId,
+                        isResolved
+                )
+        );
+    }
 }

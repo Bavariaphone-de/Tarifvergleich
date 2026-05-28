@@ -106,9 +106,9 @@
           <tbody>
             @for (customer of customers; track customer.id) {
             <tr
-              class="border-t border-gray-100 dark:border-gray-700/60 hover:bg-brand-50/50 dark:hover:bg-gray-800/50 transition-colors cursor-pointer"
+              class="border-t border-gray-100 dark:border-gray-700/60 hover:bg-brand-50/50 dark:hover:bg-gray-800/50 transition-colors"
               [class.bg-brand-50]="selectedCustomer?.id === customer.id"
-              [class.dark:bg-gray-800]="selectedCustomer?.id === customer.id" (click)="selectCustomer(customer)">
+              [class.dark:bg-gray-800]="selectedCustomer?.id === customer.id">
 
               <!-- ID -->
               <td class="px-4 py-3.5">
@@ -247,6 +247,20 @@
                         d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
                     </svg>
                     <span>{{ customerLexofficeNumbers[customer.id] ? 'Lexoffice bearbeiten' : 'Lexoffice' }}</span>
+                  </button>
+
+                  <button (click)="openSendEmailModal(customer); $event.stopPropagation()"
+                    class="inline-flex items-center gap-1.5 text-xs font-medium text-blue-500 hover:text-blue-700 transition-colors px-2.5 py-1.5 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20">
+                    <span>Email senden</span>
+                    <svg xmlns="http://www.w3.org/2000/svg"
+                      class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8m-18 8h18a2 2 0 002-2V8a2 2 0 00-2-2H3a2 2 0 00-2 2v6a2 2 0 002 2z"
+                      />
+                    </svg>
                   </button>
 
                   <button
@@ -954,4 +968,203 @@
     </div>
   </div>
 </div>
+}
+
+@if (isSendEmailModalOpen) {
+  <div class="fixed inset-0 z-99999 flex items-center justify-center p-4 absolute inset-0 bg-black/50">
+    <div class="bg-white rounded-2xl w-full max-w-2xl shadow-xl">
+
+      <!-- Header -->
+      <div class="flex items-center justify-between px-6 py-4 border-b">
+        <div>
+          <h2 class="text-lg font-semibold">E-Mail senden</h2>
+          <p class="text-xs text-gray-500">
+            {{ selectedEmailCustomer?.email }} · #{{ selectedEmailCustomer?.uniqueCustomerId }}
+          </p>
+        </div>
+        <button (click)="closeSendEmailModal()">✕</button>
+      </div>
+
+      <!-- Body -->
+      <div class="p-6 space-y-4">
+        
+        <!-- TITLE -->
+          <div>
+            <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
+            Titel *
+            </label>
+            <input type="text" [(ngModel)]="emailTitle" placeholder="Titel"
+              class="w-full border rounded-lg px-4 py-2"/>
+          </div>
+
+        <!-- SUBTITLE -->
+          <div>
+            <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
+              Untertitel *
+            </label>
+            <input type="text" [(ngModel)]="emailSubtitle" placeholder="Subtitel"
+              class="w-full border rounded-lg px-4 py-2"/>
+          </div>
+
+        <!-- EMAIL CONTENT -->
+          <div>
+
+            <div class="flex items-center justify-between mb-2">
+
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                E-Mail Inhalte *
+              </label>
+
+              <span class="text-xs text-gray-400">
+                Rich Text Editor
+              </span>
+
+            </div>
+
+            <div class="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden bg-white dark:bg-gray-900">
+
+              <ckeditor
+                [editor]="Editor"
+                [(ngModel)]="emailMessage"
+                name="emailMessage"
+                [config]="{
+                  shouldNotGroupWhenFull: true,
+                  placeholder: 'E-Mail-Inhalte schreiben...',
+                  toolbar: [
+                    'heading',
+                    '|',
+                    'bold',
+                    'italic',
+                    'underline',
+                    '|',
+                    'bulletedList',
+                    'numberedList',
+                    '|',
+                    'link',
+                    'blockQuote',
+                    'insertTable',
+                    '|',
+                    'undo',
+                    'redo'
+                  ]
+                }"
+                class="block"
+              >
+              </ckeditor>
+
+            </div>
+
+          </div>
+
+        <!-- PDF Dropdown -->
+        <div class="pb-6">
+
+          <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
+            Wählen PDFs (optional)
+          </label>
+
+          <div class="relative">
+
+            <!-- Trigger -->
+            <button
+              type="button"
+              (click)="togglePdfDropdown()"
+              class="w-full border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded-lg px-4 py-3 flex items-center justify-between text-left"
+            >
+
+              <span
+                [class.text-gray-400]="selectedPdfIds.size === 0"
+                [class.text-gray-800]="selectedPdfIds.size > 0"
+                class="dark:text-white text-sm truncate"
+              >
+
+                @if (selectedPdfIds.size === 0) {
+                  Wählen dein PDF
+                } @else {
+                  {{ selectedPdfIds.size }} PDF(s) ausgewählt
+                }
+
+              </span>
+
+              <svg
+                class="w-4 h-4 text-gray-400 transition-transform duration-200"
+                [class.rotate-180]="isPdfDropdownOpen"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M19 9l-7 7-7-7"
+                />
+              </svg>
+
+            </button>
+
+            <!-- Dropdown -->
+            @if (isPdfDropdownOpen) {
+
+            <div
+              class="absolute z-50 mt-2 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg max-h-60 overflow-y-auto"
+            >
+
+              @if (pdfList.length === 0) {
+
+              <div class="px-4 py-3 text-sm text-gray-400">
+                Keine PDFs verfügbar
+              </div>
+
+              }
+
+              @for (pdf of pdfList; track pdf.adminDocId) {
+
+              <label
+                class="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer border-b dark:border-gray-700"
+              >
+
+                <input
+                  type="checkbox"
+                  [checked]="selectedPdfIds.has(pdf.adminDocId)"
+                  (change)="togglePdfSelection(pdf.adminDocId)"
+                  class="w-4 h-4 rounded border-gray-300"
+                />
+
+                <span class="text-sm text-gray-700 dark:text-gray-300">
+                  {{ pdf.documentCategory }} ({{ pdf.originalFileName }})
+                </span>
+
+              </label>
+
+              }
+
+            </div>
+
+            }
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- Footer -->
+      <div class="flex justify-end gap-3 px-6 py-4 border-t">
+
+        <button (click)="closeSendEmailModal()" class="px-4 py-2 rounded-lg border">
+          Cancel
+        </button>
+
+        <button type="submit"
+        class="px-5 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white flex items-center justify-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M3 20l18-8L3 4v6l13 2-13 2v6z"/>
+          </svg>
+        </button>
+
+      </div>
+    </div>
+  </div>
 }

@@ -212,6 +212,7 @@ export class CustomerDetailsComponent implements OnInit {
 
   isTogglingGdpr = false;
   popupError = "";
+  gdprSuccessMessage = "";
 
   closePopupError(): void {
     this.popupError = "";
@@ -233,6 +234,13 @@ export class CustomerDetailsComponent implements OnInit {
       next: (res: any) => {
         if (res?.res) {
           this.customer.isNotificationEnabled = newStatus;
+          this.gdprSuccessMessage = newStatus 
+            ? "GDPR successfully activated" 
+            : "GDPR successfully inactivated";
+          
+          setTimeout(() => {
+            this.gdprSuccessMessage = "";
+          }, 3000);
         } else {
           this.popupError =
             res.errMessage ||
@@ -246,5 +254,40 @@ export class CustomerDetailsComponent implements OnInit {
         this.isTogglingGdpr = false;
       },
     });
+  }
+
+  // --- Document Methods ---
+  documents: any[] = [];
+
+  getFullUrl(url: string): string {
+    if (!url) return '';
+    if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) {
+      return url;
+    }
+    const baseUrl = this.api.baseUrl.endsWith('/') ? this.api.baseUrl.slice(0, -1) : this.api.baseUrl;
+    const path = url.startsWith('/') ? url : `/${url}`;
+    return `${baseUrl}/assets/customers${path}`;
+  }
+
+  viewDocument(url: string): void {
+    if (url) {
+      window.open(this.getFullUrl(url), '_blank');
+    }
+  }
+
+  downloadDocument(url: string, fileName: string): void {
+    if (!url) return;
+    const a = document.createElement('a');
+    a.href = this.getFullUrl(url);
+    a.download = fileName || 'document.pdf';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
+
+  getFileName(url: any): string {
+    if (!url || typeof url !== 'string') return 'Dokument';
+    if (url.startsWith('data:')) return 'Document.pdf';
+    return url.split('/').pop() || 'Dokument';
   }
 }

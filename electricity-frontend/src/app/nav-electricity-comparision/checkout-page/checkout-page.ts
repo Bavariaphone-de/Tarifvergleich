@@ -93,7 +93,7 @@ export class CheckoutPage implements OnInit {
   private isJourneyCompleted = false;
 
   // Schedule / callback time-slot state
-  selectedDay: string = '';
+  selectedDay: any = null;
   selectedTimeSlot: string = '';
   scheduleDescription: string = '';
   isScheduleLoading = false;
@@ -290,7 +290,9 @@ export class CheckoutPage implements OnInit {
       },
     });
   }
-
+  trackByDay(index: number, item: any): string {
+    return item.date;
+  }
   get enabledDays(): Set<string> {
     const now = new Date();
 
@@ -339,8 +341,29 @@ export class CheckoutPage implements OnInit {
   }
   private setDefaultSelectedDay(): void {
     if (this.filteredDays.length > 0) {
-      this.selectedDay = this.filteredDays[0].value ?? '';
+      this.selectedDay = this.filteredDays[0];
     }
+  }
+
+  getDayLabel(dateStr: string): string {
+    const today = new Date(new Date().toLocaleString('en-US', { timeZone: 'Europe/Berlin' }));
+
+    today.setHours(0, 0, 0, 0);
+
+    const target = new Date(dateStr);
+    target.setHours(0, 0, 0, 0);
+
+    const diffTime = target.getTime() - today.getTime();
+    const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays === 0) return 'Heute';
+    if (diffDays === 1) return 'Morgen';
+    if (diffDays === 2) return 'Übermorgen';
+
+    return target.toLocaleDateString('de-DE', {
+      day: '2-digit',
+      month: '2-digit',
+    });
   }
   /**
    * A time slot is enabled when:
@@ -377,30 +400,36 @@ export class CheckoutPage implements OnInit {
   }
 
   isTimeSlotEnabled(slotValue: string): boolean {
-    if (!this.selectedDay) return true;
+    if (!this.selectedDay?.date) return true;
 
-    const now = new Date();
-    const germanNow = new Date(now.toLocaleString('en-US', { timeZone: 'Europe/Berlin' }));
+    const germanNow = new Date(
+      new Date().toLocaleString('en-US', {
+        timeZone: 'Europe/Berlin',
+      }),
+    );
 
-    let todayJs = germanNow.getDay();
-    if (todayJs === 0) todayJs = 1;
+    const todayStr = germanNow.toISOString().split('T')[0];
 
-    const selectedJsDay = this.dayValueToJsDay[this.selectedDay];
+    const selectedDate = this.selectedDay.date;
 
-    if (selectedJsDay !== todayJs) return true;
+    // future dates → all enabled
+    if (selectedDate !== todayStr) {
+      return true;
+    }
 
     const currentHour = germanNow.getHours() + germanNow.getMinutes() / 60;
 
     const slot = this.getSlotTime(slotValue);
+
     if (!slot) return false;
 
-    if (currentHour >= slot.end) return false;
+    // already started
+    if (currentHour >= slot.start) {
+      return false;
+    }
 
-    const remainingTime = slot.end - currentHour;
-
-    if (remainingTime < 2) return false;
-
-    return true;
+    // minimum 2h before
+    return slot.start - currentHour >= 2;
   }
 
   getDateFromDay(dayValue: string): string {
@@ -422,13 +451,8 @@ export class CheckoutPage implements OnInit {
 
     return targetDate.toISOString().split('T')[0];
   }
-  selectDay(day: string): void {
-    if (!this.isDayEnabled(day)) return;
+  selectDay(day: any): void {
     this.selectedDay = day;
-    // Clear time slot if it is no longer valid for the newly selected day
-    if (this.selectedTimeSlot && !this.isTimeSlotEnabled(this.selectedTimeSlot)) {
-      this.selectedTimeSlot = '';
-    }
     this.cdr.detectChanges();
   }
 
@@ -468,7 +492,7 @@ export class CheckoutPage implements OnInit {
       adminId: 1,
       dayOfWeek: this.selectedDay,
       timeSlot: this.selectedTimeSlot,
-      scheduleDate: this.getDateFromDay(this.selectedDay),
+      scheduleDate: this.selectedDay?.date,
       description: this.scheduleDescription ?? '',
     };
 
@@ -489,7 +513,7 @@ export class CheckoutPage implements OnInit {
         } else if (res?.res === false && res?.holidayDated?.length) {
           this.isScheduleLoading = false;
           this.overrideStartDay = res.nextDay;
-          this.selectedDay = '';
+          this.selectedDay = null;
 
           const holidayDates = res.holidayDated.map((d: string) => this.formatDateDE(d)).join(', ');
 
@@ -537,10 +561,10 @@ export class CheckoutPage implements OnInit {
     return d.toLocaleDateString('de-DE'); // 01.05.2026
   }
 
-  getDayLabel(dayValue: string): string {
-    const found = this.daysOfWeek.find((d) => d.value === dayValue);
-    return found ? found.label : dayValue;
-  }
+  // getDayLabel(dayValue: string): string {
+  //   const found = this.daysOfWeek.find((d) => d.value === dayValue);
+  //   return found ? found.label : dayValue;
+  // }
 
   skipSchedule(): void {
     this.scheduleErrorMessage = '';

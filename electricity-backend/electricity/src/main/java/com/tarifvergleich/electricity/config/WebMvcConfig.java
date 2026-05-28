@@ -15,6 +15,9 @@ public class WebMvcConfig implements WebMvcConfigurer {
 		
 		registry.addResourceHandler("/static-content/**")
 				.addResourceLocations("file:static-content/");
+
+		registry.addResourceHandler("/customer-signed-documents/**")
+				.addResourceLocations("file:customer-signed-documents/");
 	}
 	
 }

@@ -88,7 +88,7 @@ export class CustomerServiceFormComponent implements OnInit {
         this.isLoading = false;
 
         if (res?.res) {
-          this.successMessage = res.message || 'Saved successfully';
+          this.successMessage = this.serviceId ? 'Service updated successfully' : (res.message || 'Service added successfully');
 
           if (!this.serviceId) {
             this.resetForm();

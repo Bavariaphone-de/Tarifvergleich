@@ -17,6 +17,7 @@ import com.tarifvergleich.electricity.dto.CustomerDetailsContactHistoryDto;
 import com.tarifvergleich.electricity.dto.CustomerDto;
 import com.tarifvergleich.electricity.dto.CustomerNoteDto;
 import com.tarifvergleich.electricity.dto.CustomerOrderDto;
+import com.tarifvergleich.electricity.dto.CustomerSendEmailRequestDto;
 import com.tarifvergleich.electricity.dto.CustomerServiceRequestDto;
 import com.tarifvergleich.electricity.dto.CustomerServicesDto;
 import com.tarifvergleich.electricity.service.admin.AdminCustomerDeliveryManagementService;
@@ -190,5 +191,9 @@ public class AdminCustomerManagementController {
 	@PostMapping("/fetch-all-customer-doc")
 	public ResponseEntity<?> fetchAllCustomerDoc(@RequestBody CustomerDto customerDto) {
 		return ResponseEntity.ok(adminCustomerManagementService.fetchAllPdfOfCustomer(customerDto));
+	
+	@PostMapping("/send-customer-email")
+	public ResponseEntity<?> sendCustomerEmail(@RequestBody CustomerSendEmailRequestDto request) {
+	    return ResponseEntity.ok(adminCustomerManagementService.sendCustomerEmail(request));
 	}
 }

@@ -321,38 +321,6 @@ public class AdminCustomerDeliveryManagementService {
 
 		CustomerDelivery delivery = order.getDelivery();
 
-//		CustomerSelectedProvider provider = delivery.getCustomerProvider();
-//
-//		LocalDate expiry;
-//		BigInteger totalTerm;
-//
-//		try {
-//			expiry = helper.flexibleDateParser(provider.getRaw().get("optTerm").asText())
-//					.atStartOfDay(ZoneId.of("Europe/Berlin")).minusDays(1).toLocalDate();
-//		} catch (DateTimeParseException | IllegalArgumentException e) {
-//			Long expireDuration = provider.getRaw().get("optTerm").asLong();
-//			expiry = LocalDate.now().atStartOfDay().atZone(ZoneId.of("Europe/Berlin")).plusMonths(expireDuration)
-//					.minusDays(1).toLocalDate();
-//		}
-//
-//		totalTerm = BigInteger.valueOf(ChronoUnit.SECONDS.between(expiry.atStartOfDay(ZoneId.of("Europe/Berlin")),
-//				ZonedDateTime.now(ZoneId.of("Europe/Berlin"))));
-//
-//		BigInteger cancelTime = BigInteger.valueOf(0);
-//		if (provider.getRaw().path("cancel") != null && provider.getRaw().path("cancelType") != null) {
-//			Integer cancel = provider.getRaw().path("cancel").asInt();
-//			Integer cancelType = provider.getRaw().path("cancelType").asInt();
-//			BigInteger expiryBigInt = helper.toGermamUnixTimestamp(expiry);
-//
-//			if (cancelType.equals(0))
-//				cancelTime = expiryBigInt.subtract(helper.getSecondValueOfDuration(0, 0, 0, 0, 0, 0));
-//			else if (cancelType.equals(1))
-//				cancelTime = expiryBigInt.subtract(helper.getSecondValueOfDuration(0, 0, cancel, 0, 0, 0));
-//			else if (cancelType.equals(2))
-//				cancelTime = expiryBigInt.subtract(helper.getSecondValueOfDuration(0, 0, cancel * 7, 0, 0, 0));
-//			else if (cancelType.equals(3))
-//				cancelTime = expiryBigInt.subtract(helper.getSecondValueOfDuration(0, cancel, 0, 0, 0, 0));
-//		}
 
 		/* Map egon place order payload */
 		AdminCreateOrderEgonDto placeOrderRequest = AdminCreateOrderEgonDto.mapToEgonRequest(delivery, "new");

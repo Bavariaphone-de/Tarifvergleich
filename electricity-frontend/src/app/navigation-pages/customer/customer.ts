@@ -78,7 +78,7 @@ export class Customer {
   ];
 
   /* ── Tab control ──────────────────────────────────────────────── */
-  activeTab: number = 0;
+  activeTab: number = 1;
   serviceTab: number = 1;
   documentTab: number = 0;
 
@@ -126,6 +126,7 @@ export class Customer {
 
   isLoading = true;
   isLoadingNewReq: boolean = false;
+  isLoadingCallback: boolean = false;
   isLoadingNewMsg: boolean = false;
   isLoadingReopen: boolean = false;
 
@@ -211,6 +212,15 @@ export class Customer {
     this.cdr.detectChanges();
   }
 
+  messageEnergySupplier(item?: any) {
+    this.nextStep(6);
+
+    if (item) {
+      this.selectedMeter = item;
+    }
+    this.cdr.detectChanges();
+  }
+
   showLogoutModal: boolean = false;
 
   openLogoutModal() {
@@ -244,6 +254,7 @@ export class Customer {
       this.handleQRLogin(data);
     }
 
+    this.loadAvailableDays();
     this.checkDevice();
     this.fetchAllRequests();
     this.fetchServiceCount();
@@ -870,7 +881,7 @@ export class Customer {
 
   // Request Callback
 
-  selectedDay: string = '';
+  selectedDay: any = null;
   selectedTimeSlot: string = '';
   scheduleDescription: string = '';
   isScheduleLoading = false;
@@ -879,6 +890,7 @@ export class Customer {
   overrideStartDay: string | null = null;
   countryCode: string = '+49';
   phoneNumber: string = '';
+  submittedCallback: boolean = false;
 
   readonly daysOfWeek = [
     { label: 'Montag', value: 'MONDAY' },
@@ -982,8 +994,29 @@ export class Customer {
 
   private setDefaultSelectedDay(): void {
     if (this.filteredDays.length > 0) {
-      this.selectedDay = this.filteredDays[0].value ?? '';
+      this.selectedDay = this.filteredDays[0];
     }
+  }
+
+  getDayLabel(dateStr: string): string {
+    const today = new Date(new Date().toLocaleString('en-US', { timeZone: 'Europe/Berlin' }));
+
+    today.setHours(0, 0, 0, 0);
+
+    const target = new Date(dateStr);
+    target.setHours(0, 0, 0, 0);
+
+    const diffTime = target.getTime() - today.getTime();
+    const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays === 0) return 'Heute';
+    if (diffDays === 1) return 'Morgen';
+    if (diffDays === 2) return 'Übermorgen';
+
+    return target.toLocaleDateString('de-DE', {
+      day: '2-digit',
+      month: '2-digit',
+    });
   }
 
   getDayLabelByValue(dayValue: string): string {
@@ -1014,7 +1047,7 @@ export class Customer {
     }); // e.g. 10.05
   }
   trackByDay(index: number, item: any) {
-    return item.value;
+    return item.date;
   }
 
   getSlotTime(slotValue: string): { start: number; end: number } | null {
@@ -1029,29 +1062,36 @@ export class Customer {
   }
 
   isTimeSlotEnabled(slotValue: string): boolean {
-    if (!this.selectedDay) return true;
+    if (!this.selectedDay?.date) return true;
 
-    const germanNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'Europe/Berlin' }));
+    const germanNow = new Date(
+      new Date().toLocaleString('en-US', {
+        timeZone: 'Europe/Berlin',
+      }),
+    );
 
-    let todayJs = germanNow.getDay();
-    if (todayJs === 0) todayJs = 1;
+    const todayStr = germanNow.toISOString().split('T')[0];
 
-    const selectedJsDay = this.dayValueToJsDay[this.selectedDay];
+    const selectedDate = this.selectedDay.date;
 
-    // If NOT today → all slots enabled
-    if (selectedJsDay !== todayJs) return true;
+    // future dates → all enabled
+    if (selectedDate !== todayStr) {
+      return true;
+    }
 
     const currentHour = germanNow.getHours() + germanNow.getMinutes() / 60;
 
     const slot = this.getSlotTime(slotValue);
+
     if (!slot) return false;
 
-    // Disable if slot already started OR less than 2 hours left
-    if (currentHour >= slot.start) return false;
+    // already started
+    if (currentHour >= slot.start) {
+      return false;
+    }
 
-    const hoursBeforeStart = slot.start - currentHour;
-
-    return hoursBeforeStart >= 2;
+    // minimum 2h before
+    return slot.start - currentHour >= 2;
   }
 
   getDateFromDay(dayValue: string): string {
@@ -1074,13 +1114,8 @@ export class Customer {
     return targetDate.toISOString().split('T')[0];
   }
 
-  selectDay(day: string): void {
-    if (!this.isDayEnabled(day)) return;
+  selectDay(day: any): void {
     this.selectedDay = day;
-    // Clear time slot if it is no longer valid for the newly selected day
-    if (this.selectedTimeSlot && !this.isTimeSlotEnabled(this.selectedTimeSlot)) {
-      this.selectedTimeSlot = '';
-    }
     this.cdr.detectChanges();
   }
 
@@ -1139,7 +1174,7 @@ export class Customer {
 
     const payload = {
       adminId: 1,
-      scheduleDate: this.getDateFromDay(this.selectedDay),
+      scheduleDate: this.selectedDay?.date,
     };
 
     // console.log('Schedule payload:', JSON.stringify(payload, null, 2));
@@ -1207,47 +1242,61 @@ export class Customer {
   }
 
   submitCallback() {
-    if (!this.phoneNumber || !this.selectedDay || !this.selectedTimeSlot) {
-      this.scheduleErrorMessage = 'Bitte füllen Sie alle erforderlichen Felder aus.';
+    this.scheduleErrorMessage = '';
+    this.scheduleSuccessMessage = '';
+
+    if (!this.validatePhone()) {
       return;
     }
-    if (!this.scheduleDescription || !this.scheduleDescription.trim()) {
+
+    if (!this.selectedDay?.date) {
+      this.scheduleErrorMessage = 'Bitte wählen Sie einen Wochentag aus.';
+      return;
+    }
+
+    if (!this.selectedTimeSlot) {
+      this.scheduleErrorMessage = 'Bitte wählen Sie eine Uhrzeit aus.';
+      return;
+    }
+
+    if (!this.scheduleDescription?.trim()) {
       this.scheduleErrorMessage = 'Bitte geben Sie zusätzliche Informationen ein.';
       return;
     }
 
-    this.isScheduleLoading = true;
-    this.scheduleErrorMessage = '';
-    this.scheduleSuccessMessage = '';
+    this.isLoadingCallback = true;
 
     const payload = {
       mobileNumber: this.countryCode + this.phoneNumber,
-      day: this.selectedDay,
-      scheduleDate: this.getDateFromDay(this.selectedDay),
-      weekDay: this.selectedDay,
+
+      // actual backend values
+      day: this.selectedDay.value,
+      weekDay: this.selectedDay.label,
+      scheduleDate: this.selectedDay.date,
+
       timeSlot: this.selectedTimeSlot,
-      description: this.scheduleDescription,
+      description: this.scheduleDescription.trim(),
+
       customerId: this.authService.getUserId() || 0,
       adminId: 1,
+      egon_order_id: this.selectedMeter?.order?.orderId,
     };
 
-    // console.log('Final Payload:', payload);
+    console.log('Final Payload:', payload);
 
-    const submit = (apiBase: string) =>
-      this.http.post<any>(`${apiBase}/api/add-counselling-request`, payload);
-
-    submit(API_BASE).subscribe({
+    this.http.post<any>(`${API_BASE}/api/add-counselling-request`, payload).subscribe({
       next: (res) => {
-        this.isScheduleLoading = false;
+        this.isLoadingCallback = false;
 
         if (res?.res === true) {
           this.scheduleSuccessMessage = 'Ihr Rückruf wurde erfolgreich geplant.';
 
+          // reset form
           this.phoneNumber = '';
-          this.selectedDay = '';
+          this.selectedDay = null;
           this.selectedTimeSlot = '';
           this.scheduleDescription = '';
-
+          this.submittedCallback = true;
           this.cdr.detectChanges();
         } else {
           this.scheduleErrorMessage =
@@ -1258,24 +1307,176 @@ export class Customer {
       },
 
       error: (err) => {
-        submit(API_BASE).subscribe({
-          next: (res2) => {
-            this.isScheduleLoading = false;
-            this.scheduleSuccessMessage = 'Ihr Rückruf wurde erfolgreich geplant.';
-            this.cdr.detectChanges();
-          },
-          error: (err2) => {
-            this.isScheduleLoading = false;
-            this.scheduleErrorMessage =
-              err2?.error?.message ||
-              err?.error?.message ||
-              'Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.';
-            console.error('API error:', err, err2);
-            this.cdr.detectChanges();
-          },
-        });
+        this.isLoadingCallback = false;
+
+        this.scheduleErrorMessage =
+          err?.error?.message || 'Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.';
+
+        console.error('API error:', err);
+
+        this.cdr.detectChanges();
       },
     });
+  }
+
+  openRequestService(item: any): void {
+    // open service section
+    this.activeTab = 3;
+    this.currentStep = 1;
+
+    console.log('==============================');
+    console.log('Clicked Request Item:', item);
+    console.log('Available Cards:', this.cards);
+
+    // find matching card index safely
+    const index = this.cards.findIndex((card: any, i: number) => {
+      console.log('Checking Card Index:', i);
+      console.log('Card Data:', card);
+
+      const deliveryMatch =
+        item?.deliveryId && card?.deliveryId && Number(card.deliveryId) === Number(item.deliveryId);
+
+      const orderMatch =
+        item?.orderId && card?.orderId && Number(card.orderId) === Number(item.orderId);
+
+      console.log('Delivery Match:', deliveryMatch);
+      console.log('Order Match:', orderMatch);
+
+      return deliveryMatch || orderMatch;
+    });
+
+    console.log('Final Matched Index:', index);
+
+    if (index !== -1) {
+      this.selectedIndex = index;
+
+      console.log('Selected Card:', this.cards[index]);
+
+      // existing card select function
+      this.selectCard(index, this.cards[index].deliveryId);
+
+      // horizontal auto scroll
+      setTimeout(() => {
+        const cards = document.querySelectorAll('.contract-service-card');
+
+        const selectedCard = cards[index] as HTMLElement;
+
+        if (selectedCard) {
+          selectedCard.scrollIntoView({
+            behavior: 'smooth',
+            inline: 'center',
+            block: 'nearest',
+          });
+
+          console.log('Scrolled to selected card');
+        }
+      }, 200);
+    } else {
+      console.warn('No matching card found');
+    }
+
+    // vertical scroll to section
+    setTimeout(() => {
+      const section = document.querySelector('.scroll-wrapper');
+
+      if (section) {
+        section.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start',
+        });
+
+        console.log('Scrolled to service section');
+      }
+    }, 100);
+
+    this.cdr.detectChanges();
+  }
+
+  // CATEGORY OPTIONS
+  supplierMessageCategories = [
+    {
+      label: 'Abrechnung',
+      value: 'Billing',
+    },
+    {
+      label: 'Lastschrift',
+      value: 'Direct Debit',
+    },
+    {
+      label: 'Zahlungsaufschub',
+      value: 'Payment Deferral',
+    },
+    {
+      label: 'Vertrag',
+      value: 'Contract',
+    },
+    {
+      label: 'Sonstiges',
+      value: 'Other',
+    },
+  ];
+
+  // FORM VALUES
+  supplierMessageCategory: string = '';
+  supplierMessage: string = '';
+
+  submittedEnergyMessage: boolean = false;
+  isLoadingEnergySupplierMessage: boolean = false;
+
+  // SUBMIT
+  submitEnergySupplierMessage(): void {
+    this.fieldErrors = {};
+
+    let hasError = false;
+
+    // CATEGORY VALIDATION
+    if (!this.supplierMessageCategory) {
+      this.fieldErrors['supplierMessageCategory'] = 'Bitte wählen Sie eine Kategorie aus.';
+      hasError = true;
+    }
+
+    // MESSAGE VALIDATION
+    if (!this.supplierMessage?.trim()) {
+      this.fieldErrors['supplierMessage'] = 'Bitte geben Sie eine Nachricht ein.';
+      hasError = true;
+    }
+
+    if (hasError) {
+      this.cdr.detectChanges();
+      return;
+    }
+
+    // LOADING
+    this.isLoadingEnergySupplierMessage = true;
+
+    // PAYLOAD
+    const payload = {
+      customerId: this.authService.getUserId(),
+      category: this.supplierMessageCategory,
+      message: this.supplierMessage.trim(),
+
+      deliveryId: this.selectedMeter?.deliveryId,
+      orderId: this.selectedMeter?.orderId,
+
+      // contractNumber: this.selectedMeter?.contractNumber,
+      // customerNumber: this.selectedMeter?.customerNumber,
+      // meterNumber: this.selectedMeter?.meterNumber,
+    };
+
+    console.log('Energy Supplier Message Payload:', payload);
+
+    // DEMO SUCCESS
+    setTimeout(() => {
+      this.isLoadingEnergySupplierMessage = false;
+
+      this.submittedEnergyMessage = true;
+
+      // RESET FORM
+      this.supplierMessageCategory = '';
+      this.supplierMessage = '';
+
+      this.cdr.detectChanges();
+    }, 1000);
   }
 
   /*── Meter Section end ──*/
