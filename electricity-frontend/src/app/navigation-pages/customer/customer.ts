@@ -1420,7 +1420,6 @@ export class Customer {
   isLoadingEnergySupplierMessage: boolean = false;
 
   getSupplierMessageStatus(item: any): string {
-
     const status = Number(item?.supplierMessage?.[0]?.status);
 
     if (status === 0) {
@@ -1432,7 +1431,6 @@ export class Customer {
     }
 
     return '';
-
   }
 
   fetchSupplierMessageCategories(): void {
@@ -2946,24 +2944,28 @@ export class Customer {
 
   /* ════════════════════════════════════════════════════════════════════════════════════════════════*/
   /* ──  Document Section Start ──*/
-  orderDocuments = [
-    {
-      logo: 'assets/icons/Icons_energyprovider/eon.png',
-      title: 'E.ON ÖkoStrom Extra 12',
-      workPrice: '26,80',
-      basePrice: '14,90',
-      contractNumber: '0215/123456789',
-      monthly: '68,40',
-    },
-    {
-      logo: 'assets/icons/Icons_energyprovider/vattenfall.png',
-      title: 'Strom XXL Extra 12',
-      workPrice: '11,72',
-      basePrice: '21,90',
-      contractNumber: '012455-64564564k1245',
-      monthly: '151,40',
-    },
-  ];
+  // orderDocuments = [
+  //   {
+  //     logo: 'assets/icons/Icons_energyprovider/eon.png',
+  //     title: 'E.ON ÖkoStrom Extra 12',
+  //     workPrice: '26,80',
+  //     basePrice: '14,90',
+  //     contractNumber: '0215/123456789',
+  //     monthly: '68,40',
+  //   },
+  //   {
+  //     logo: 'assets/icons/Icons_energyprovider/vattenfall.png',
+  //     title: 'Strom XXL Extra 12',
+  //     workPrice: '11,72',
+  //     basePrice: '21,90',
+  //     contractNumber: '012455-64564564k1245',
+  //     monthly: '151,40',
+  //   },
+  // ];
+
+  orderDocuments: any[] = [];
+  isOrderDocumentsLoading: boolean = false;
+  noOrderDocumentsFound: boolean = false;
 
   attorneyDocuments = [
     {
@@ -3025,6 +3027,82 @@ export class Customer {
 
   toggleDocument(step: number) {
     this.documentTab = step;
+
+    // Trigger API call when Auftragsdokumente is clicked
+    if (step === 1) {
+      this.fetchOrderDocuments();
+    }
+  }
+
+  fetchOrderDocuments() {
+    const customerId = this.authService.getUserId() || 0;
+    const payload = { id: customerId, adminId: 1 };
+
+    this.isOrderDocumentsLoading = true;
+    this.noOrderDocumentsFound = false;
+
+    this.http.post<any>(`${API_BASE}/customer/fetch-placed-deliveries`, payload).subscribe({
+      next: (res) => {
+        this.isOrderDocumentsLoading = false;
+
+        // Use res.delivery instead of res.data
+        if (res && res.delivery && Array.isArray(res.delivery) && res.delivery.length > 0) {
+          this.orderDocuments = res.delivery
+            // Check if order exists and if doc is present
+            .filter((item: any) => item.order && item.order.doc)
+            .map((item: any) => {
+              const provider = item.provider || {};
+              const order = item.order || {};
+
+              return {
+                id: item.deliveryId, // Using deliveryId as a unique identifier
+                logo: provider.providerSVG || 'assets/icons/default.png',
+                title: provider.rateName || 'N/A',
+                workPrice: provider.workPrice || '0,00',
+                basePrice: provider.basePrice || '0,00',
+                contractNumber: item.uniqueDeliveryId || 'N/A',
+                monthly: provider.totalPriceMonth || '0,00', // Mapped from totalPriceMonth based on your JSON
+                orderData: order, // Save order object for button actions
+              };
+            });
+
+          // Show 'no order data found' if list is empty after filtering
+          if (this.orderDocuments.length === 0) {
+            this.noOrderDocumentsFound = true;
+          }
+        } else {
+          this.orderDocuments = [];
+          this.noOrderDocumentsFound = true;
+        }
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('API Error:', err);
+        this.isOrderDocumentsLoading = false;
+        this.noOrderDocumentsFound = true;
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  viewOrderDetails(doc: any) {
+    if (doc.orderData?.doc?.signedFileUrl) {
+      // Insert /assets/customers/ before the signedFileUrl
+      const fileUrl = `${API_BASE}/assets/customers/${doc.orderData.doc.signedFileUrl}`;
+      window.open(fileUrl, '_blank');
+    } else {
+      console.log('No document URL found');
+    }
+  }
+
+  downloadOrderDocument(doc: any) {
+    if (doc.orderData?.doc?.signedFileUrl) {
+      // Insert /assets/customers/ before the signedFileUrl
+      const fileUrl = `${API_BASE}/assets/customers/${doc.orderData.doc.signedFileUrl}`;
+      window.open(fileUrl, '_blank');
+    } else {
+      console.log('No document URL found');
+    }
   }
 
   viewDocument() {

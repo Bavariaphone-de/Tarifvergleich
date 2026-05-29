@@ -34,6 +34,8 @@ import { StaticContentComponent } from "./pages/contents/static-content/static-c
 import { EmailTemplateListComponent } from "./pages/email/email-template-list/email-template-list.component";
 import { TaxManagementComponent } from "./pages/credentials/tax-management/tax-management.component";
 import { ContactQueryComponent } from "./pages/customer-query/contact-query/contact-query.component";
+import { EnergyCategoriesComponent } from "./pages/categories/energy-categories/energy-categories.component";
+import { InvoiceCategoriesComponent } from "./pages/categories/invoice-categories/invoice-categories.component";
 
 export const routes: Routes = [
   {
@@ -224,6 +226,16 @@ export const routes: Routes = [
         path: "static-content",
         component: StaticContentComponent,
         title: "Static Content",
+      },
+      {
+        path: "categories",
+        component: EnergyCategoriesComponent,
+        title: "Categories",
+      },
+      {
+        path: "invoice-categories",
+        component: InvoiceCategoriesComponent,
+        title: "Invoice Categories",
       },
       {
         path: "credentials/admin-signature",
