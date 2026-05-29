@@ -4,11 +4,16 @@ import { FormsModule } from "@angular/forms";
 import { ActivatedRoute, Router } from "@angular/router";
 import { ApiService } from "../../../shared/services/api.service";
 import { AuthService } from "../../../shared/services/auth.service";
+import { RouterModule } from "@angular/router";
+import { CKEditorModule } from "@ckeditor/ckeditor5-angular";
+import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
+import { HttpClient } from "@angular/common/http";
+import { AdminCustomer } from "../customer-list/customer-list.component";
 
 @Component({
   selector: "app-customer-details",
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule, CKEditorModule],
   templateUrl: "./customer-details.component.html",
   styleUrl: "./customer-details.component.css",
 })
@@ -25,6 +30,7 @@ export class CustomerDetailsComponent implements OnInit {
 
   isContactHistoryModalOpen = false;
   contactHistoryText = "";
+
   // currentContactHistory: any[] = [];
   isSavingContactHistory = false;
   contactHistoryCustomer: any = null;
@@ -34,11 +40,30 @@ export class CustomerDetailsComponent implements OnInit {
   lexofficeInput = "";
   isSavingLexoffice = false;
 
+    //For Send email
+    isSendEmailModalOpen = false;
+    selectedEmailCustomer: AdminCustomer | null = null;
+  
+    emailTitle = "";
+    emailSubtitle = "";
+    emailMessage = "";
+    successMessage = "";
+    errorMessageEmail = "";
+  
+    Editor = ClassicEditor;
+    emailcontent: string = "";
+  
+    selectedPdfId: number | null = null;
+    pdfList: any[] = [];
+    isPdfDropdownOpen = false;
+    selectedPdfIds: Set<number> = new Set();
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private api: ApiService,
     private authService: AuthService,
+    private http: HttpClient,
   ) {}
 
   ngOnInit(): void {
@@ -290,4 +315,166 @@ export class CustomerDetailsComponent implements OnInit {
     if (url.startsWith('data:')) return 'Document.pdf';
     return url.split('/').pop() || 'Dokument';
   }
+
+  /** For Send Email */
+    openSendEmailModal(customer: AdminCustomer): void {
+      console.log(customer);
+      
+      this.selectedEmailCustomer = customer;
+      this.isSendEmailModalOpen = true;
+      this.loadPdfs();
+    }
+
+    closeSendEmailModal(): void {
+      this.isSendEmailModalOpen = false;
+      this.selectedEmailCustomer = null;
+  
+      this.emailTitle = "";
+      this.emailSubtitle = "";
+      this.emailMessage = "";
+      this.selectedPdfIds.clear();
+      this.uploadDocuments = [{ file: null }];
+    }
+  
+    togglePdfDropdown(): void {
+      this.isPdfDropdownOpen = !this.isPdfDropdownOpen;
+    }
+  
+    togglePdfSelection(pdfId: number): void {
+      if (this.selectedPdfIds.has(pdfId)) {
+        this.selectedPdfIds.delete(pdfId);
+      } else {
+        this.selectedPdfIds.add(pdfId);
+      }
+    }
+  
+    loadPdfs(): void {
+        const payload = {
+          adminId: this.authService.getUserId(),
+          page: 0,
+          size: 100,
+        };
+  
+        this.api
+          .post("admin/fetch-admin-documents", payload)
+          .subscribe({
+            next: (res: any) => {
+              console.log(res);
+              this.pdfList = res.data || res.content || res;
+            },
+            error: (err) => {
+              console.log(err);
+            },
+          });
+      }
+  
+    isPdfSelected(pdfId: number): boolean {
+      return this.selectedPdfIds.has(pdfId);
+    }
+  
+    get selectedPdfsLabel(): string {
+      const count = this.selectedPdfIds.size;
+      if (count === 0) return "Wählen dein PDF";
+      if (count === 1) {
+        const pdf = this.pdfList.find((p) =>
+          this.selectedPdfIds.has(p.adminDocId),
+        );
+        return pdf?.type || pdf?.documentType || "1 PDF ausgewählt";
+      }
+      return `${count} PDFs ausgewählt`;
+    }
+  
+    uploadDocuments: any[] = [{ file: null }];
+  
+    onUploadDocumentSelect(event: any, index: number): void {
+      const file = event.target.files[0];
+      if (!file) return;
+  
+      const allowedTypes = ['application/pdf','image/png','image/jpeg'];
+      if (!allowedTypes.includes(file.type)) {
+        alert('Only PDF, JPG, JPEG and PNG files are allowed');
+        return;
+      }
+  
+      if (file.size > 10 * 1024 * 1024) {
+        alert('File size must be less than 10MB');
+        return;
+      }
+      this.uploadDocuments[index].file = file;
+    }
+  
+    addUploadDocumentField(): void {
+      this.uploadDocuments.push({ file: null });
+    }
+  
+    removeUploadDocumentField(index: number): void {
+      this.uploadDocuments.splice(index, 1);
+        if (this.uploadDocuments.length === 0) {
+          this.uploadDocuments.push({ file: null });
+        }
+    }
+  
+    submitSendEmail(): void {
+  
+      if (!this.selectedEmailCustomer) return;
+  
+      this.errorMessageEmail = "";
+      this.successMessage = "";
+  
+      const payload = {
+        adminId: this.authService.getUserId(),
+        customerId: this.selectedEmailCustomer.id,
+        title: this.emailTitle,
+        subtitle: this.emailSubtitle,
+        emailContent: this.emailMessage,
+        // email: this.selectedEmailCustomer.email,
+  
+        documentIds: Array.from(this.selectedPdfIds),
+      };
+  
+      const formData = new FormData();
+      formData.append("data", JSON.stringify(payload));
+  
+      // upload files
+      this.uploadDocuments.forEach((doc: any) => {
+        if (doc.file) {
+          formData.append("uploadDocuments", doc.file);
+        }
+      });
+  
+      this.api.post("admin/send-customer-email", formData)
+        .subscribe({
+          next: (res: any) => {
+  
+            if (res?.res) {
+              this.errorMessageEmail = "";
+              this.successMessage = "E-Mail erfolgreich gesendet";
+  
+              setTimeout(() => {
+                this.closeSendEmailModal();
+                this.successMessage = "";
+              }, 2000);
+  
+            } else {
+              this.successMessage = "";
+              this.errorMessageEmail =
+                res?.errorMessage || "E-Mail nicht gesendet";
+  
+              setTimeout(() => {
+                this.errorMessageEmail ="";
+              }, 3000);
+            }
+          },
+  
+          error: (err) => {
+            console.log(err);
+            this.successMessage = "";
+            this.errorMessageEmail = err?.error?.errorMessage || err?.error?.message ||"E-Mail nicht gesendet";
+  
+            setTimeout(() => {
+              this.errorMessageEmail ="";
+            }, 3000);
+          }
+        });
+    }
 }

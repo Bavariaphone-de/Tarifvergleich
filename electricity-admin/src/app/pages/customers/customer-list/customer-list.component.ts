@@ -97,22 +97,22 @@ export class CustomerListComponent implements OnInit {
   isSavingNote = false;
 
   //For Send email
-  isSendEmailModalOpen = false;
-  selectedEmailCustomer: AdminCustomer | null = null;
+  // isSendEmailModalOpen = false;
+  // selectedEmailCustomer: AdminCustomer | null = null;
 
-  emailTitle = "";
-  emailSubtitle = "";
-  emailMessage = "";
-  successMessage = "";
-  errorMessageEmail = "";
+  // emailTitle = "";
+  // emailSubtitle = "";
+  // emailMessage = "";
+  // successMessage = "";
+  // errorMessageEmail = "";
 
-  Editor = ClassicEditor;
-  emailcontent: string = "";
+  // Editor = ClassicEditor;
+  // emailcontent: string = "";
 
-  selectedPdfId: number | null = null;
-  pdfList: any[] = [];
-  isPdfDropdownOpen = false;
-  selectedPdfIds: Set<number> = new Set();
+  // selectedPdfId: number | null = null;
+  // pdfList: any[] = [];
+  // isPdfDropdownOpen = false;
+  // selectedPdfIds: Set<number> = new Set();
 
   /** Stores multiple admin note per customer id */
   customerNotes: Record<string | number, any[]> = {};
@@ -253,157 +253,168 @@ export class CustomerListComponent implements OnInit {
   }
 
   /** For Send Email */
-  openSendEmailModal(customer: AdminCustomer): void {
-    console.log(customer);
+  // openSendEmailModal(customer: AdminCustomer): void {
+  //   console.log(customer);
     
-    this.selectedEmailCustomer = customer;
-    this.isSendEmailModalOpen = true;
-    this.loadPdfs();
-  }
-  closeSendEmailModal(): void {
-    this.isSendEmailModalOpen = false;
-    this.selectedEmailCustomer = null;
+  //   this.selectedEmailCustomer = customer;
+  //   this.isSendEmailModalOpen = true;
+  //   this.loadPdfs();
+  // }
+  // closeSendEmailModal(): void {
+  //   this.isSendEmailModalOpen = false;
+  //   this.selectedEmailCustomer = null;
 
-    this.emailTitle = "";
-    this.emailSubtitle = "";
-    this.emailMessage = "";
-    this.selectedPdfIds.clear();
-    this.uploadDocuments = [{ file: null }];
-  }
+  //   this.emailTitle = "";
+  //   this.emailSubtitle = "";
+  //   this.emailMessage = "";
+  //   this.selectedPdfIds.clear();
+  //   this.uploadDocuments = [{ file: null }];
+  // }
 
-  togglePdfDropdown(): void {
-    this.isPdfDropdownOpen = !this.isPdfDropdownOpen;
-  }
+  // togglePdfDropdown(): void {
+  //   this.isPdfDropdownOpen = !this.isPdfDropdownOpen;
+  // }
 
-  togglePdfSelection(pdfId: number): void {
-    if (this.selectedPdfIds.has(pdfId)) {
-      this.selectedPdfIds.delete(pdfId);
-    } else {
-      this.selectedPdfIds.add(pdfId);
-    }
-  }
+  // togglePdfSelection(pdfId: number): void {
+  //   if (this.selectedPdfIds.has(pdfId)) {
+  //     this.selectedPdfIds.delete(pdfId);
+  //   } else {
+  //     this.selectedPdfIds.add(pdfId);
+  //   }
+  // }
 
-  loadPdfs(): void {
-      const payload = {
-        adminId: this.authService.getUserId(),
-        page: 0,
-        size: 100,
-      };
+  // loadPdfs(): void {
+  //     const payload = {
+  //       adminId: this.authService.getUserId(),
+  //       page: 0,
+  //       size: 100,
+  //     };
 
-      this.api
-        .post("admin/fetch-admin-documents", payload)
-        .subscribe({
-          next: (res: any) => {
-            console.log(res);
-            this.pdfList = res.data || res.content || res;
-          },
-          error: (err) => {
-            console.log(err);
-          },
-        });
-    }
+  //     this.api
+  //       .post("admin/fetch-admin-documents", payload)
+  //       .subscribe({
+  //         next: (res: any) => {
+  //           console.log(res);
+  //           this.pdfList = res.data || res.content || res;
+  //         },
+  //         error: (err) => {
+  //           console.log(err);
+  //         },
+  //       });
+  //   }
 
-  isPdfSelected(pdfId: number): boolean {
-    return this.selectedPdfIds.has(pdfId);
-  }
+  // isPdfSelected(pdfId: number): boolean {
+  //   return this.selectedPdfIds.has(pdfId);
+  // }
 
-  get selectedPdfsLabel(): string {
-    const count = this.selectedPdfIds.size;
-    if (count === 0) return "Wählen dein PDF";
-    if (count === 1) {
-      const pdf = this.pdfList.find((p) =>
-        this.selectedPdfIds.has(p.adminDocId),
-      );
-      return pdf?.type || pdf?.documentType || "1 PDF ausgewählt";
-    }
-    return `${count} PDFs ausgewählt`;
-  }
+  // get selectedPdfsLabel(): string {
+  //   const count = this.selectedPdfIds.size;
+  //   if (count === 0) return "Wählen dein PDF";
+  //   if (count === 1) {
+  //     const pdf = this.pdfList.find((p) =>
+  //       this.selectedPdfIds.has(p.adminDocId),
+  //     );
+  //     return pdf?.type || pdf?.documentType || "1 PDF ausgewählt";
+  //   }
+  //   return `${count} PDFs ausgewählt`;
+  // }
 
-  uploadDocuments: any[] = [{ file: null }];
+  // uploadDocuments: any[] = [{ file: null }];
 
-  onUploadDocumentSelect(event: any, index: number): void {
-    const file = event.target.files[0];
-    if (!file) return;
+  // onUploadDocumentSelect(event: any, index: number): void {
+  //   const file = event.target.files[0];
+  //   if (!file) return;
 
-    const allowedTypes = ['application/pdf','image/png','image/jpeg'];
-    if (!allowedTypes.includes(file.type)) {
-      alert('Only PDF, JPG, JPEG and PNG files are allowed');
-      return;
-    }
+  //   const allowedTypes = ['application/pdf','image/png','image/jpeg'];
+  //   if (!allowedTypes.includes(file.type)) {
+  //     alert('Only PDF, JPG, JPEG and PNG files are allowed');
+  //     return;
+  //   }
 
-    if (file.size > 10 * 1024 * 1024) {
-      alert('File size must be less than 10MB');
-      return;
-    }
-    this.uploadDocuments[index].file = file;
-  }
+  //   if (file.size > 10 * 1024 * 1024) {
+  //     alert('File size must be less than 10MB');
+  //     return;
+  //   }
+  //   this.uploadDocuments[index].file = file;
+  // }
 
-  addUploadDocumentField(): void {
-    this.uploadDocuments.push({ file: null });
-  }
+  // addUploadDocumentField(): void {
+  //   this.uploadDocuments.push({ file: null });
+  // }
 
-  removeUploadDocumentField(index: number): void {
-    this.uploadDocuments.splice(index, 1);
-      if (this.uploadDocuments.length === 0) {
-        this.uploadDocuments.push({ file: null });
-      }
-  }
+  // removeUploadDocumentField(index: number): void {
+  //   this.uploadDocuments.splice(index, 1);
+  //     if (this.uploadDocuments.length === 0) {
+  //       this.uploadDocuments.push({ file: null });
+  //     }
+  // }
 
-  submitSendEmail(): void {
+  // submitSendEmail(): void {
 
-    if (!this.selectedEmailCustomer) return;
+  //   if (!this.selectedEmailCustomer) return;
 
-    this.errorMessageEmail = "";
-    this.successMessage = "";
+  //   this.errorMessageEmail = "";
+  //   this.successMessage = "";
 
-    const payload = {
-      adminId: this.authService.getUserId(),
-      customerId: this.selectedEmailCustomer.id,
-      title: this.emailTitle,
-      subtitle: this.emailSubtitle,
-      emailContent: this.emailMessage,
+  //   const payload = {
+  //     adminId: this.authService.getUserId(),
+  //     customerId: this.selectedEmailCustomer.id,
+  //     title: this.emailTitle,
+  //     subtitle: this.emailSubtitle,
+  //     emailContent: this.emailMessage,
+  //     // email: this.selectedEmailCustomer.email,
 
-      // changed from pdfIds
-      documentIds: Array.from(this.selectedPdfIds),
-    };
+  //     // changed from pdfIds
+  //     documentIds: Array.from(this.selectedPdfIds),
+  //   };
 
-    const formData = new FormData();
-    formData.append("data", JSON.stringify(payload));
+  //   const formData = new FormData();
+  //   formData.append("data", JSON.stringify(payload));
 
-    // upload files
-    this.uploadDocuments.forEach((doc: any) => {
-      if (doc.file) {
-        formData.append("uploadDocuments", doc.file);
-      }
-    });
+  //   // upload files
+  //   this.uploadDocuments.forEach((doc: any) => {
+  //     if (doc.file) {
+  //       formData.append("uploadDocuments", doc.file);
+  //     }
+  //   });
 
-    this.api.post("/admin/send-customer-email", formData)
-      .subscribe({
-        next: (res: any) => {
+  //   this.api.post("admin/send-customer-email", formData)
+  //     .subscribe({
+  //       next: (res: any) => {
 
-          if (res?.res) {
-            this.errorMessageEmail = "";
-            this.closeSendEmailModal();
-            this.successMessage = "Email sent successfully";
+  //         if (res?.res) {
+  //           this.errorMessageEmail = "";
+  //           this.successMessage = "E-Mail erfolgreich gesendet";
 
-            setTimeout(() => {
-              this.successMessage = "";
-              this.fetchCustomers();
-            }, 2000);
+  //           setTimeout(() => {
+  //             this.closeSendEmailModal();
+  //             this.successMessage = "";
+  //           }, 2000);
 
-          } else {
-            this.errorMessageEmail =
-              res?.errorMessage || "Email not sent";
-          }
-        },
+  //             this.fetchCustomers();
 
-        // error: (err) => {
-        //   console.log(err);
-        //   this.successMessage = "";
-        //   this.errorMessageEmail = "Email not sent";
-        // }
-      });
-  }
+  //         } else {
+  //           this.successMessage = "";
+  //           this.errorMessageEmail =
+  //             res?.errorMessage || "E-Mail nicht gesendet";
+
+  //           setTimeout(() => {
+  //             this.errorMessageEmail ="";
+  //           }, 3000);
+  //         }
+  //       },
+
+  //       error: (err) => {
+  //         console.log(err);
+  //         this.successMessage = "";
+  //         this.errorMessageEmail = err?.error?.errorMessage || err?.error?.message ||"E-Mail nicht gesendet";
+
+  //         setTimeout(() => {
+  //           this.errorMessageEmail ="";
+  //         }, 3000);
+  //       }
+  //     });
+  // }
 
   /** Save Lexoffice number for the selected customer */
   saveLexofficeNumber(): void {
