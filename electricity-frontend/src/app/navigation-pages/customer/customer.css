@@ -245,7 +245,7 @@
   border-top: none;
 }
 .customer-profile-box::before {
-  content: "";
+  content: '';
   position: absolute;
   top: 0;
   left: 20px; /* gap start */
@@ -389,7 +389,7 @@
 }
 
 .slider:before {
-  content: "";
+  content: '';
   position: absolute;
   height: 18px;
   width: 18px;
@@ -558,13 +558,13 @@
 
 /* Green check icon from assets */
 .check-list li::before {
-  content: "";
+  content: '';
   position: absolute;
   left: 0;
   top: 4px;
   width: 16px;
   height: 16px;
-  background: url("/assets/icons/Kreis_Haken_gruen.png") no-repeat center;
+  background: url('/assets/icons/Kreis_Haken_gruen.png') no-repeat center;
   background-size: contain;
 }
 
@@ -679,12 +679,12 @@
 
 /* Green tick */
 .guideline-icon.valid {
-  background-image: url("/assets/icons/Kreis_Haken_gruen.png");
+  background-image: url('/assets/icons/Kreis_Haken_gruen.png');
 }
 
 /* Red cross */
 .guideline-icon.invalid {
-  background-image: url("/assets/icons/cross.png");
+  background-image: url('/assets/icons/cross.png');
 }
 
 .btn-back,
@@ -2094,7 +2094,7 @@
   background: #0085e0;
 }
 
-.upload-option input[type="radio"] {
+.upload-option input[type='radio'] {
   width: 12px;
   height: 12px;
   accent-color: #ffffff;
@@ -2107,7 +2107,7 @@
   }
 }
 
-.upload-option input[type="checkbox"] {
+.upload-option input[type='checkbox'] {
   appearance: none;
   -webkit-appearance: none;
 
@@ -2123,8 +2123,8 @@
 }
 
 /* checked tick */
-.upload-option input[type="checkbox"]:checked::after {
-  content: "✓";
+.upload-option input[type='checkbox']:checked::after {
+  content: '✓';
 
   position: absolute;
   top: 50%;
@@ -3486,15 +3486,12 @@ input {
 .subaccount-card-name {
   font-size: 14px;
   font-weight: 600;
-/* =========================================================
-   CONTRACT CHANGE SECTION
+  flex: 1;
+}
 
 .contract-change-section {
   margin-top: 30px;
 }
-
-/* =========================================================
-   HEADING
 
 .contract-change-heading {
   font-size: 16px;
@@ -3509,9 +3506,6 @@ input {
   margin-bottom: 20px;
 }
 
-/* =========================================================
-   DROPDOWN WRAPPER
-
 .contract-change-dropdown {
   position: relative;
   width: 100%;
@@ -3521,9 +3515,6 @@ input {
   overflow: visible !important;
   z-index: 1000;
 }
-
-/* =========================================================
-   SELECT BOX
 
 .contract-change-select-box {
   width: 100%;
@@ -3544,9 +3535,6 @@ input {
 .contract-change-select-box:hover {
   border-color: #ff7a00;
 }
-
-/* =========================================================
-   SELECTED VALUES
 
 .contract-change-selected-values {
   display: flex;
@@ -3687,25 +3675,17 @@ input {
   cursor: pointer;
 }
 
-.subaccount-checkbox-label input[type="checkbox"] {
+.subaccount-checkbox-label input[type='checkbox'] {
   width: 16px;
   height: 16px;
   accent-color: #e65100;
   cursor: pointer;
 }
-  flex: 1;
-}
-
-/* =========================================================
-   PLACEHOLDER
 
 .contract-change-placeholder {
   font-size: 14px;
   color: #999;
 }
-
-/* =========================================================
-   TAGS
 
 .contract-change-tag {
   background: #ff7a00;
@@ -3719,9 +3699,6 @@ input {
   line-height: 1;
 }
 
-/* =========================================================
-   ARROW
-
 .contract-change-arrow {
   font-size: 13px;
   color: #666;
@@ -3729,8 +3706,6 @@ input {
   flex-shrink: 0;
 }
 
-/* =========================================================
-   DROPDOWN MENU (IMPROVED)
 .contract-change-dropdown-menu {
   position: absolute;
   top: 100%; /* Sits flush right below the select box */
@@ -3739,24 +3714,21 @@ input {
   background: #fff;
   border: 1px solid #e5e5e5;
   border-radius: 12px;
-  
+
   /* Creates a clean floating effect over the background elements */
-  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.15); 
-  
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.15);
+
   /* Ensures it stays completely on top of footer or body text */
-  z-index: 999999 !important; 
-  
+  z-index: 999999 !important;
+
   /* Restricts dropdown size if options grow, triggering internal scrollbar */
-  max-height: 240px; 
+  max-height: 240px;
   overflow-y: auto;
   overflow-x: hidden;
-  
+
   padding: 6px 0;
   margin-top: 4px; /* Slight decorative gap below the main bar */
 }
-
-/* =========================================================
-   DROPDOWN ITEM
 
 .contract-change-dropdown-item {
   width: 100%;
@@ -3778,18 +3750,12 @@ input {
   background: #f7f7f7;
 }
 
-/* =========================================================
-   CHECKBOX
-
-.contract-change-dropdown-item input[type="checkbox"] {
+.contract-change-dropdown-item input[type='checkbox'] {
   width: 16px;
   height: 16px;
   cursor: pointer;
   /* accent-color: #ff7a00; */
 }
-
-/* =========================================================
-   SCROLLBAR
 
 .contract-change-dropdown-menu::-webkit-scrollbar {
   width: 6px;
@@ -3799,9 +3765,6 @@ input {
   background: #d0d0d0;
   border-radius: 10px;
 }
-
-/* =========================================================
-   BUTTON
 
 .contract-change-submit-btn {
   margin-top: 18px;
@@ -3828,7 +3791,7 @@ input {
 
 /* =========================================================
    FORM BOX
-
+*/
 .contract-change-form-box {
   margin-top: 25px;
 
@@ -3842,7 +3805,7 @@ input {
 
 /* =========================================================
    FORM TITLE
-
+*/
 .contract-change-form-title {
   font-size: 17px;
   font-weight: 600;
@@ -3851,7 +3814,7 @@ input {
 
 /* =========================================================
    INPUTS
-
+*/
 .contract-change-input,
 .contract-change-textarea {
   width: 100%;
@@ -3880,7 +3843,7 @@ input {
 
 /* =========================================================
    IMPORTANT FIX
-
+*/
 .selected-contract-card,
 .selected-contract-wrapper,
 .contract-top,
@@ -3894,7 +3857,7 @@ input {
 
 /* =========================================
    CONTRACT DOCUMENT UPLOAD
-
+*/
 .contract-change-upload-box {
   margin-top: 20px;
   /* padding: 18px; */
