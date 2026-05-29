@@ -66,6 +66,7 @@ public class AdminServicePointManagementController {
 		return ResponseEntity.ok(adminServicePointManagementService.deleteEnergySupplierMessageCategory(categoryDto));
 	}
 
+	@PostMapping("/fetch-supplier-message-category")
 	public ResponseEntity<?> fetchSupplierMessageCategory(@RequestBody EnergySupplierMessageCategoryDto categoryDto) {
 		return ResponseEntity.ok(adminServicePointManagementService.fetchAllEnergySupplierCategory(categoryDto));
 	}
