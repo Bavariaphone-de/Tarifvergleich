@@ -234,6 +234,13 @@ export class Customer {
     this.cdr.detectChanges();
   }
 
+  changeDiscount(item?: any) {
+    this.nextStep(8);
+    if (item) {
+      this.selectedMeter = item;
+    }
+    this.cdr.detectChanges();
+  }
   showLogoutModal: boolean = false;
 
   openLogoutModal() {
@@ -372,8 +379,6 @@ export class Customer {
           this.selection = 'no';
         }
 
-        // console.log('Customer :', this.customerData?.address);
-        // console.log('customerData on init:', this.customerData?.address?.zip);
         // PREFILL ADDRESS DROPDOWNS
         if (this.customerData?.address?.zip) {
           this.addressService
@@ -403,6 +408,15 @@ export class Customer {
               this.cdr.detectChanges();
             });
         }
+
+        this.contractChangeData = {
+          lastName: data.lastName || '',
+          companyName: data.companyName || '',
+          title: data.title || '',
+          firstName: data.firstName || '',
+          salutation: data.salutation || '',
+          dateOfBirth: data.dateOfBirth || '',
+        };
 
         this.cdr.detectChanges();
         // this.isLoading = false;
@@ -1335,6 +1349,7 @@ export class Customer {
     });
   }
 
+  redirectToMeter: boolean = false;
   openRequestService(item: any): void {
     // open service section
     this.activeTab = 3;
@@ -1367,6 +1382,9 @@ export class Customer {
       this.selectedIndex = index;
 
       console.log('Selected Card:', this.cards[index]);
+
+      this.redirectToMeter = true;
+      this.cdr.detectChanges();
 
       // existing card select function
       this.selectCard(index, this.cards[index].deliveryId);
@@ -1420,7 +1438,6 @@ export class Customer {
   isLoadingEnergySupplierMessage: boolean = false;
 
   getSupplierMessageStatus(item: any): string {
-
     const status = Number(item?.supplierMessage?.[0]?.status);
 
     if (status === 0) {
@@ -1432,7 +1449,6 @@ export class Customer {
     }
 
     return '';
-
   }
 
   fetchSupplierMessageCategories(): void {
@@ -1522,6 +1538,26 @@ export class Customer {
         this.cdr.detectChanges();
       },
     });
+  }
+
+  /* View contract details */
+  viewContract(item: any) {
+    const fileUrl = `${API_BASE}/assets/customers/${item.order.doc.signedFileUrl}`;
+
+    window.open(fileUrl, '_blank');
+  }
+  /* Download contract */
+  downloadContract(item: any) {
+    const fileUrl = item.signedFileUrl;
+
+    const link = document.createElement('a');
+    link.href = fileUrl;
+    link.target = '_blank';
+    link.download = '';
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   }
 
   /* Change contract details */
@@ -1621,6 +1657,93 @@ export class Customer {
 
     this.contractDropdownOpen = false;
   }
+
+  /* Change Discount Payment */
+
+  newDiscountAmount: string = '';
+  discountReason: string = '';
+
+  submittedDiscountRequest = false;
+  isLoadingDiscountRequest = false;
+
+  getDiscountStatus(item: any): string {
+    const status = item?.discountRequests?.[0]?.status;
+
+    if (status === 0) {
+      return 'In Progress';
+    }
+
+    if (status === 1) {
+      return 'Forwarded';
+    }
+
+    return '';
+  }
+
+  validateDiscountRequest(): boolean {
+    this.fieldErrors = {};
+
+    let isValid = true;
+
+    if (!this.newDiscountAmount || Number(this.newDiscountAmount) <= 0) {
+      this.fieldErrors['newDiscountAmount'] = 'Bitte neuen Abschlagsbetrag eingeben';
+
+      isValid = false;
+    }
+
+    if (!this.discountReason?.trim()) {
+      this.fieldErrors['discountReason'] = 'Bitte Grund der Änderung eingeben';
+
+      isValid = false;
+    }
+
+    return isValid;
+  }
+
+  submitDiscountRequest() {
+    if (!this.validateDiscountRequest()) {
+      return;
+    }
+
+    const payload = {
+      customerId: this.authService.getUserId(),
+
+      deliveryId: this.selectedMeter?.deliveryId,
+
+      newAdvanceAmount: this.newDiscountAmount,
+
+      reason: this.discountReason,
+      orderId: this.selectedMeter?.order?.orderId,
+    };
+
+    console.log('Discount Payload:', payload);
+
+    this.isLoadingDiscountRequest = true;
+
+    this.http.post<any>(`${API_BASE}/customer/change-discount-request`, payload).subscribe({
+      next: (res) => {
+        this.isLoadingDiscountRequest = false;
+
+        if (res?.res === true) {
+          this.submittedDiscountRequest = true;
+
+          this.newDiscountAmount = '';
+          this.discountReason = '';
+
+          this.cdr.detectChanges();
+        } else {
+          console.error('Invalid response', res);
+        }
+      },
+
+      error: (err) => {
+        this.isLoadingDiscountRequest = false;
+
+        console.error('API Error:', err);
+      },
+    });
+  }
+
   /*── Meter Section end ──*/
   /* ════════════════════════════════════════════════════════════════════════════════════════════════*/
   /*── Reminder Section Start ──*/
@@ -2152,6 +2275,20 @@ export class Customer {
       isValid = false;
     }
 
+    // OPTIONAL CALLBACK VALIDATION
+    // Only validate if phone number entered
+    if (this.phoneNumber) {
+      if (!this.selectedDay) {
+        this.fieldErrors['selectedDay'] = 'Bitte wählen Sie einen Wochentag';
+        isValid = false;
+      }
+
+      if (!this.selectedTimeSlot) {
+        this.fieldErrors['selectedTimeSlot'] = 'Bitte wählen Sie eine Uhrzeit';
+        isValid = false;
+      }
+    }
+
     return isValid;
   }
 
@@ -2165,6 +2302,17 @@ export class Customer {
       message: this.inquiryText,
       serviceRequestType: this.selectedIndex === -1 ? 'general' : 'delivery',
       deliveryId: this.selectedDeliveryId,
+
+      // OPTIONAL CALLBACK DATA
+      callbackRequest: !!this.phoneNumber,
+
+      phoneNumber: this.phoneNumber || '',
+      countryCode: this.countryCode || '',
+
+      callbackDate: this.selectedDay?.date || '',
+      callbackTimeSlot: this.selectedTimeSlot || '',
+
+      callbackDescription: this.scheduleDescription || '',
     };
 
     // console.log('Final Payload:', payload);
@@ -2537,9 +2685,14 @@ export class Customer {
               city: address?.city || '',
 
               invoiceRequests: item.invoiceRequests,
+              discountRequests: item.discountRequests,
 
               reportMeterReadings: item.reportMeterReadings,
               supplierMessage: item.order.supplierMessage,
+
+              signedFileUrl: item.order?.doc?.signedFileUrl
+                ? `${API_BASE}/assets/customers/${item.order.doc.signedFileUrl}`
+                : null,
 
               address: {
                 name: `${customer?.firstName || ''} ${customer?.lastName || ''}`.trim(),

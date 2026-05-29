@@ -86,6 +86,9 @@ public class CustomerServiceRequest {
 	@JsonIgnore
 	private AdminUser admin;
 	
+	@Column(name = "counselling_id")
+	private Integer counsellingId;
+	
 	@ManyToOne
 	@JoinColumn(name = "customer_delivery_id")
 	@JsonIgnore

@@ -42,6 +42,16 @@ public class CustomerServiceRequestDto {
 	private Integer size;
 	private String search;
 
+	private String phoneNumber;
+	private String countryCode;
+
+	private String callbackDate;
+	private String callbackTimeSlot;
+
+	private String callbackDescription;
+
+	private BigInteger scheduleDate;
+	
 	@NoArgsConstructor
 	@AllArgsConstructor
 	@Data

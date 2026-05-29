@@ -19,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.tarifvergleich.electricity.dto.CustomerAddressDto;
 import com.tarifvergleich.electricity.dto.CustomerAttornyDto;
+import com.tarifvergleich.electricity.dto.CustomerChangeDiscountRequestDto;
 import com.tarifvergleich.electricity.dto.CustomerDeliveryResponseDto;
 import com.tarifvergleich.electricity.dto.CustomerDeliveryResponseDto.CustomerDeliveryResponseAll;
 import com.tarifvergleich.electricity.dto.CustomerDto;
@@ -40,10 +41,12 @@ import com.tarifvergleich.electricity.model.AdminUser;
 import com.tarifvergleich.electricity.model.Customer;
 import com.tarifvergleich.electricity.model.CustomerAddress;
 import com.tarifvergleich.electricity.model.CustomerAttorny;
+import com.tarifvergleich.electricity.model.CustomerChangeDiscountRequest;
 import com.tarifvergleich.electricity.model.CustomerContractSignature;
 import com.tarifvergleich.electricity.model.CustomerDelivery;
 import com.tarifvergleich.electricity.model.CustomerInvoiceRequest;
 import com.tarifvergleich.electricity.model.CustomerOrder;
+import com.tarifvergleich.electricity.model.CustomerRequestCounselling;
 import com.tarifvergleich.electricity.model.CustomerServiceRequest;
 import com.tarifvergleich.electricity.model.CustomerServiceRequestMessages;
 import com.tarifvergleich.electricity.model.CustomerServices;
@@ -54,6 +57,7 @@ import com.tarifvergleich.electricity.repository.AdminSignatureRepository;
 import com.tarifvergleich.electricity.repository.AdminUserRepository;
 import com.tarifvergleich.electricity.repository.CustomerAddressRepository;
 import com.tarifvergleich.electricity.repository.CustomerAttornyRepository;
+import com.tarifvergleich.electricity.repository.CustomerChangeDiscountRequestRepository;
 import com.tarifvergleich.electricity.repository.CustomerDeliveryRepository;
 import com.tarifvergleich.electricity.repository.CustomerInvoiceRequestRepository;
 import com.tarifvergleich.electricity.repository.CustomerOrderRepository;
@@ -73,6 +77,7 @@ import com.tarifvergleich.electricity.util.PdfGenerator;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import com.tarifvergleich.electricity.repository.CustomerRequestCounsellingRepository;
 
 @Service
 @RequiredArgsConstructor
@@ -98,6 +103,9 @@ public class CustomerDetailService {
 	private final CustomEmailTemplate customEmailTemplate;
 	private final AdminSignatureRepository adminSignatureRepository;
 	private final EnergySupplierMessageRepository energySupplierMessageRepo;
+
+	private final CustomerRequestCounsellingRepository customerRequestCounsellingRepository;
+	private final CustomerChangeDiscountRequestRepository customerChangeDiscountRequestRepository;
 
 	public Map<String, Object> getCustomerDetails(Integer customerId) {
 
@@ -254,6 +262,17 @@ public class CustomerDetailService {
 		// STEP 3B: fetch meter readings
 		List<ReportMeterReading> allMeterReadings = reportMeterReadingRepo.findByDeliveryIdIn(deliveryIds);
 
+		// STEP 3D: fetch discount requests
+		List<CustomerChangeDiscountRequest> allDiscountRequests =
+		        customerChangeDiscountRequestRepository
+		                .findByCustomerDeliveryIdIn(deliveryIds);
+		
+		Map<Integer, List<CustomerChangeDiscountRequest>> discountRequestMap =
+		        allDiscountRequests.stream()
+		                .collect(Collectors.groupingBy(
+		                        req -> req.getCustomerDelivery().getId()
+		                ));
+
 		// STEP 3C: group by deliveryId
 		Map<Integer, List<ReportMeterReading>> meterReadingMap = allMeterReadings.stream()
 				.collect(Collectors.groupingBy(ReportMeterReading::getDeliveryId));
@@ -288,6 +307,29 @@ public class CustomerDetailService {
 					.toList();
 
 			dto.setInvoiceRequests(invoiceDtoList);
+			
+			List<CustomerChangeDiscountRequest> deliveryDiscountRequests =
+			        discountRequestMap.getOrDefault(entity.getId(), List.of());
+
+			List<CustomerChangeDiscountRequestDto> discountDtoList =
+			        deliveryDiscountRequests.stream()
+			                .map(req -> {
+			                    CustomerChangeDiscountRequestDto discountDto = new CustomerChangeDiscountRequestDto();
+
+			                    discountDto.setId(req.getId());
+			                    discountDto.setCustomerId(req.getCustomer().getCustomerId());
+			                    discountDto.setDeliveryId(req.getCustomerDelivery().getId());
+			                    discountDto.setOrderId(req.getOrderId());
+			                    discountDto.setNewAdvanceAmount(req.getNewAdvanceAmount());
+			                    discountDto.setReason(req.getReason());
+			                    discountDto.setStatus(req.getStatus());
+			                    discountDto.setCreatedOn(req.getCreatedOn());
+
+			                    return discountDto;
+			                })
+			                .collect(java.util.stream.Collectors.toList());
+
+			dto.setDiscountRequests(discountDtoList);
 
 			// METER READING LIST
 			List<ReportMeterReadingDto> meterReadingDtoList = meterReadingMap.getOrDefault(entity.getId(), List.of())
@@ -455,8 +497,60 @@ public class CustomerDetailService {
 				.message(serviceRequestDto.getMessage()).chatUser("CUSTOMER").build();
 
 		customerServiceRequest.addCustomerServiceRequestMessage(message);
+		
+		CustomerRequestCounselling counselling = null;
 
+		if (!isReopened
+		        && !isNewMessage
+		        && serviceRequestDto.getPhoneNumber() != null
+		        && !serviceRequestDto.getPhoneNumber().isBlank()) {
+
+		    counselling = CustomerRequestCounselling.builder()
+		            .mobileNumber(
+		                    serviceRequestDto.getCountryCode() != null
+		                            ? serviceRequestDto.getCountryCode()
+		                                    + serviceRequestDto.getPhoneNumber()
+		                            : serviceRequestDto.getPhoneNumber())
+		            .weekDay(serviceRequestDto.getCallbackDate())
+		            .timeSlot(serviceRequestDto.getCallbackTimeSlot())
+		            .description(serviceRequestDto.getCallbackDescription())
+		            .scheduleDate(
+						serviceRequestDto.getCallbackDate() != null
+							? BigInteger.valueOf(
+								java.time.LocalDate
+									.parse(serviceRequestDto.getCallbackDate())
+									.atStartOfDay(java.time.ZoneId.of("Europe/Berlin"))
+									.toEpochSecond()
+							)
+							: null
+					)
+		            .customer(customer)
+		            .admin(customer.getAdmin())
+		            .build();
+
+		    // DELIVERY ORDER LINK
+		    if (serviceRequestDto.getDeliveryId() != null
+		            && serviceRequestDto.getDeliveryId() > 0) {
+
+		        CustomerDelivery delivery = customerDeliveryRepo
+		                .findById(serviceRequestDto.getDeliveryId())
+		                .orElse(null);
+
+		        if (delivery != null) {
+		            counselling.setCustomerOrder(delivery.getCustomerOrder());
+		        }
+		    }
+
+		    
+		    counselling = customerRequestCounsellingRepository.save(counselling);
+		}
+		
+		if (counselling != null) {
+		    customerServiceRequest.setCounsellingId(counselling.getId());
+		}
+		
 		customerServiceRequest = customerServiceRequestRepo.save(customerServiceRequest);
+
 		AdminUser admin = customer.getAdmin();
 
 		Map<String, Object> customerBody = new HashMap<String, Object>();
@@ -845,4 +939,75 @@ public class CustomerDetailService {
 		return Map.of("res", true, "data", resp, "adminSignaturePath", adminSignaturePath);
 	}
 
+	
+	@Transactional
+	public Map<String, Object> saveChangeDiscountRequest(
+	        CustomerChangeDiscountRequestDto dto) {
+
+	    if (dto.getCustomerId() == null || dto.getCustomerId() <= 0) {
+	        throw new InternalServerException(
+	                "Customer id missing",
+	                HttpStatus.OK);
+	    }
+
+	    if (dto.getDeliveryId() == null || dto.getDeliveryId() <= 0) {
+	        throw new InternalServerException(
+	                "Delivery id missing",
+	                HttpStatus.OK);
+	    }
+
+	    if (dto.getOrderId() == null || dto.getOrderId() <= 0) {
+	        throw new InternalServerException(
+	                "Order id missing",
+	                HttpStatus.OK);
+	    }
+
+	    if (dto.getNewAdvanceAmount() == null
+	            || dto.getNewAdvanceAmount().isBlank()) {
+
+	        throw new InternalServerException(
+	                "New advance amount missing",
+	                HttpStatus.OK);
+	    }
+
+	    if (dto.getReason() == null
+	            || dto.getReason().isBlank()) {
+
+	        throw new InternalServerException(
+	                "Reason missing",
+	                HttpStatus.OK);
+	    }
+
+	    Customer customer = customerRepo.findById(dto.getCustomerId())
+	            .orElseThrow(() -> new InternalServerException(
+	                    "Customer not found",
+	                    HttpStatus.OK));
+
+	    CustomerDelivery delivery = customerDeliveryRepo
+	            .findById(dto.getDeliveryId())
+	            .orElseThrow(() -> new InternalServerException(
+	                    "Delivery not found",
+	                    HttpStatus.OK));
+
+
+	    CustomerChangeDiscountRequest request =
+	            CustomerChangeDiscountRequest.builder()
+	                    .newAdvanceAmount(dto.getNewAdvanceAmount())
+	                    .reason(dto.getReason())
+	                    .customer(customer)
+	                    .customerDelivery(delivery)
+	                    .orderId(dto.getOrderId())
+	                    .admin(customer.getAdmin())
+	                    .build();
+
+	    request = customerChangeDiscountRequestRepository.save(request);
+
+	    return Map.of(
+	            "res", true,
+	            "message", "Discount change request submitted successfully",
+	            "requestId", request.getId(),
+	            "sendOn", Helper.getCurrentTimeBerlin()
+	    );
+	}
+	
 }

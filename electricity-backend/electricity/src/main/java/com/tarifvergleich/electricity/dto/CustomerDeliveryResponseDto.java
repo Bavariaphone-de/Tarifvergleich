@@ -101,6 +101,7 @@ public class CustomerDeliveryResponseDto {
 		private CustomerOrderStatusRecordForDeliveryDetailsAdmin orderStatus;
 		private List<CustomerInvoiceRequestDto> invoiceRequests;
 		private List<ReportMeterReadingDto> reportMeterReadings;
+		private List<CustomerChangeDiscountRequestDto> discountRequests;
 	}
 
 	@Data
