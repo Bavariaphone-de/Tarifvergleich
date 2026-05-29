@@ -64,7 +64,6 @@ import com.tarifvergleich.electricity.repository.CustomerOrderRepository;
 import com.tarifvergleich.electricity.repository.CustomerRepository;
 import com.tarifvergleich.electricity.repository.CustomerServiceRequestRepository;
 import com.tarifvergleich.electricity.repository.CustomerServicesRepository;
-import com.tarifvergleich.electricity.repository.EnergySupplierMessageRepository;
 import com.tarifvergleich.electricity.repository.ReportMeterReadingRepository;
 import com.tarifvergleich.electricity.repository.TokenManagementRespository;
 import com.tarifvergleich.electricity.service.AesEncryptionService;
@@ -102,7 +101,6 @@ public class CustomerDetailService {
 	private final ReportMeterReadingRepository reportMeterReadingRepo;
 	private final CustomEmailTemplate customEmailTemplate;
 	private final AdminSignatureRepository adminSignatureRepository;
-	private final EnergySupplierMessageRepository energySupplierMessageRepo;
 
 	private final CustomerRequestCounsellingRepository customerRequestCounsellingRepository;
 	private final CustomerChangeDiscountRequestRepository customerChangeDiscountRequestRepository;

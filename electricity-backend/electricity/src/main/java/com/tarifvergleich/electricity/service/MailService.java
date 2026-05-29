@@ -5,17 +5,16 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Base64;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.FileSystemResource;
-import org.springframework.core.io.InputStreamSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import com.tarifvergleich.electricity.exception.InternalServerException;
 
@@ -176,47 +175,46 @@ public class MailService {
 	}
 
 	@Async
-	public void sendEmailWithMultipartAttachment(String to, String subject, String body, List<String> absoluteFilePaths,
-			List<MultipartFile> multipartFiles) {
-		try {
-			MimeMessage message = mailSender.createMimeMessage();
+		public void sendEmailWithMultipartAttachment(String to, String subject, String body, List<String> absoluteFilePaths,
+				Map<String, byte[]> multipartFilesInByte) {
+			try {
+				MimeMessage message = mailSender.createMimeMessage();
 
-			MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+				MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
-			helper.setTo(to);
-			helper.setSubject(subject);
-			helper.setText(body, true);
+				helper.setTo(to);
+				helper.setFrom(sendFrom);
+				helper.setSubject(subject);
+				helper.setText(body, true);
 
-			if (multipartFiles != null && !multipartFiles.isEmpty()) {
+				if (multipartFilesInByte != null && !multipartFilesInByte.isEmpty()) {
+					for (Map.Entry<String, byte[]> entry : multipartFilesInByte.entrySet()) {
+						String fileName = entry.getKey();
+						byte[] fileData = entry.getValue();
 
-				multipartFiles.stream().forEach(file -> {
-
-					InputStreamSource attachmentSource = () -> file.getInputStream();
-					try {
-						helper.addAttachment(file.getOriginalFilename(), attachmentSource, file.getContentType());
-					} catch (MessagingException e) {
-						e.printStackTrace();
-						throw new RuntimeException("Failed to send email with multipart attachment", e);
+						if (fileData != null && fileData.length > 0) {
+							ByteArrayResource attachmentResource = new ByteArrayResource(fileData);
+							helper.addAttachment(fileName, attachmentResource);
+						}
 					}
-				});
-			}
-
-			if (absoluteFilePaths != null && !absoluteFilePaths.isEmpty()) {
-				for (String localFilePath : absoluteFilePaths) {
-					Path path = Paths.get(localFilePath);
-					if (Files.exists(path)) {
-						FileSystemResource file = new FileSystemResource(path.toFile());
-
-						helper.addAttachment(file.getFilename(), file);
-					} else
-						throw new InternalServerException("File path does not exits", HttpStatus.BAD_REQUEST);
 				}
+
+				if (absoluteFilePaths != null && !absoluteFilePaths.isEmpty()) {
+					for (String localFilePath : absoluteFilePaths) {
+						Path path = Paths.get(localFilePath);
+						if (Files.exists(path)) {
+							FileSystemResource file = new FileSystemResource(path.toFile());
+
+							helper.addAttachment(file.getFilename(), file);
+						} else
+							throw new InternalServerException("File path does not exists", HttpStatus.BAD_REQUEST);
+					}
+				}
+
+				mailSender.send(message);
+
+			} catch (MessagingException e) {
+				throw new RuntimeException("Failed to send email with multipart attachment", e);
 			}
-
-			mailSender.send(message);
-
-		} catch (MessagingException e) {
-			throw new RuntimeException("Failed to send email with multipart attachment", e);
 		}
-	}
 }
