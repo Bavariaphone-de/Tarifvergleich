@@ -354,4 +354,31 @@ public class EmailBodyRender {
 
 		return response;
 	}
+
+	public Map<String, Object> businessCustomerSubAccountRegistrationBody(Customer customer, String token) {
+
+		if (token == null || token.isEmpty())
+			throw new InternalServerException("Token not found for email body", HttpStatus.OK);
+		AdminEmailManagement adminEmailManagement = adminEmailManagementRepo
+				.findByCategoryCategorySlugLike("%BUSINESS_CUSTOMER_SUB_ACCOUNT_REGISTRATION%")
+				.orElseThrow(() -> new InternalServerException("Error finding Email body", HttpStatus.OK));
+
+		String tempEmailBody = adminEmailManagement.getEmailContent();
+
+		tempEmailBody = tempEmailBody.replace("{INVITATION_LINK}",
+				"http://localhost:4200/create-sub-accounts?token=" + token);
+		tempEmailBody = tempEmailBody.replace("{COMPANY_NAME}", customer.getCompanyName());
+
+		String title = adminEmailManagement.getTitle().replace("{COMPANY_NAME}", customer.getCompanyName());
+
+		String emailBody = customEmailTemplate.generateEmailHtml(title, adminEmailManagement.getSubtitle(),
+				tempEmailBody);
+
+		HashMap<String, Object> response = new HashMap<String, Object>();
+		response.put("body", emailBody);
+		response.put("title", title);
+		response.put("docs", adminEmailManagement.getDocuments());
+
+		return response;
+	}
 }

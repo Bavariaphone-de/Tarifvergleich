@@ -58,7 +58,7 @@ public class CustomerBankAccountService {
 			throw new InternalServerException("Admin not found", HttpStatus.OK);
 
 		CustomerBankAccount account = null;
-		if (accountDto.getBankAccountId() != null && accountDto.getBankAccountId() <= 0) {
+		if (accountDto.getBankAccountId() != null && accountDto.getBankAccountId() > 0) {
 			account = customerBankAccountRepo
 					.findByIdAndCustomerCustomerId(accountDto.getBankAccountId(), accountDto.getCustomerId())
 					.orElseThrow(() -> new InternalServerException("Bank account not found with this credential",

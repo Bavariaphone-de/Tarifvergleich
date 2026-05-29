@@ -100,7 +100,7 @@ public class Helper {
 		ZonedDateTime zonedDateTime = localDate.atStartOfDay(zoneId);
 		return BigInteger.valueOf(zonedDateTime.toEpochSecond());
 	}
-	
+
 	public LocalDate toGermalDateStamp(BigInteger dateAndTime) {
 		ZoneId zoneId = ZoneId.of("Europe/Berlin");
 		long timeStamp = dateAndTime.longValue();
@@ -234,7 +234,7 @@ public class Helper {
 			throw new InternalServerException("Error encoding the file", HttpStatus.OK);
 		}
 	}
-	
+
 	public String generateUUId() {
 		return UUID.randomUUID().toString();
 	}

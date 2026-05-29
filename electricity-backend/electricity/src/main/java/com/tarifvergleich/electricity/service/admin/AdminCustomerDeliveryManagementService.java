@@ -634,5 +634,9 @@ public class AdminCustomerDeliveryManagementService {
 
 		return Map.of("res", true, "message", "Contract Mail send successfully");
 	}
+	
+	public Map<String, Object> fetchEnergyProviderMessagesByCustomer(){
+		return Map.of();
+	}
 
 }

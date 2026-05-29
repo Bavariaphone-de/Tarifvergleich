@@ -35,7 +35,7 @@ public class TokenManagement {
 
 	private Integer orderId; 			// Use it when customer sign contract
 	
-	@Column(name = "customer_id") 		// Use it when customer forget old password
+	@Column(name = "customer_id") 		// Use it when customer forget old password or sending invitation
 	private Integer customerId;
 
 	@Column(name = "created_on")
