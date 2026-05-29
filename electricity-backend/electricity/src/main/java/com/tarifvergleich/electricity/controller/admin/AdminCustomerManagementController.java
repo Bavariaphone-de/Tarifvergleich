@@ -1,5 +1,6 @@
 package com.tarifvergleich.electricity.controller.admin;
 
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
@@ -202,15 +203,9 @@ public class AdminCustomerManagementController {
 		public ResponseEntity<?> sendCustomerEmail(
 		    @RequestParam("data") String jsonData,
 		    @RequestPart(value = "uploadDocuments",required = false)
-		    MultipartFile[] uploadDocuments
+		    List<MultipartFile> uploadDocuments
 		) throws Exception {
-
 		    CustomerSendEmailRequestDto request = objectMapper.readValue(jsonData, CustomerSendEmailRequestDto.class);
-
-		    return ResponseEntity.ok(adminCustomerManagementService.sendCustomerEmail(
-		            request,
-		            uploadDocuments
-		        )
-		    );
+		    return ResponseEntity.ok(adminCustomerManagementService.sendCustomerEmail(request,uploadDocuments));
 		}
 }

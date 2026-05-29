@@ -591,531 +591,96 @@
         </div>
       </div>
 
-      <!-- ══════════════════════════════════════════════════════════ -->
-      <!-- SUB-ACCOUNTS SECTION                                       -->
-      <!-- ══════════════════════════════════════════════════════════ -->
-      <div class="profile-orange-header">Unterkonten</div>
+      <div class="profile-orange-header">Unterkonten verwalten</div>
 
-      <div class="tab-row">
+      <div class="tab-row" style="margin-top: 40px">
         <div>
           <div class="tab-header">Unterkonten verwalten</div>
           <div class="tab-text">
-            Jedes Unterkonto wird als eigenständiges Kontaktprofil mit vollständigen Daten geführt
-            (Firma, Anrede, Name, Adresse, Rechnungsadresse, E-Mail, Telefon, Bankdaten usw.).
+            Hier können Sie Ihre Unterkonten einsehen und neue Mitglieder einladen, um Ihr Profil
+            gemeinsam zu nutzen.
           </div>
         </div>
 
-        <!-- Sub-account list (collapsed cards) -->
-        <div
-          class="subaccount-list"
-          *ngIf="customerData?.subAccounts && customerData.subAccounts.length > 0"
-        >
-          <div
-            class="subaccount-card"
-            *ngFor="let sub of customerData.subAccounts; let i = index"
-            [class.subaccount-card--expanded]="expandedSubAccount === i"
-          >
-            <!-- Card header / summary row -->
-            <div class="subaccount-card-header" (click)="toggleSubAccount(i)">
-              <div class="subaccount-card-avatar">
-                <span class="material-symbols-outlined">person</span>
-              </div>
-              <div class="subaccount-card-summary">
-                <div class="subaccount-card-name">
-                  <strong
-                    >{{ sub.salutation }} {{ sub.title }} {{ sub.firstName }}
-                    {{ sub.lastName }}</strong
-                  >
-                  <span *ngIf="sub.companyName" class="subaccount-company-badge">{{
-                    sub.companyName
-                  }}</span>
-                </div>
-                <div class="subaccount-card-meta">
-                  <span *ngIf="sub.email">{{ sub.email }}</span>
-                  <span *ngIf="sub.address?.zip"
-                    >&nbsp;· {{ sub.address?.zip }} {{ sub.address?.city }}</span
-                  >
-                </div>
-              </div>
-              <div class="subaccount-card-actions">
-                <span class="link" (click)="editSubAccount(i, $event)">ändern</span>
-                <span
-                  class="material-symbols-outlined edit-icon"
-                  (click)="editSubAccount(i, $event)"
-                  >edit_square</span
-                >
-                <span class="material-symbols-outlined subaccount-chevron">
-                  {{ expandedSubAccount === i ? 'expand_less' : 'expand_more' }}
-                </span>
-              </div>
-            </div>
-
-            <!-- Expanded detail view (read-only) -->
-            <div class="subaccount-card-body" *ngIf="expandedSubAccount === i">
-              <div class="subaccount-detail-grid">
-                <!-- Persönliche Daten -->
-                <div class="subaccount-detail-section">
-                  <div class="subaccount-detail-section-title">Persönliche Daten</div>
-                  <div class="subaccount-detail-row" *ngIf="sub.companyName">
-                    <span>Firma</span><strong>{{ sub.companyName }}</strong>
-                  </div>
-                  <div class="subaccount-detail-row">
-                    <span>Anrede</span><strong>{{ sub.salutation || '—' }}</strong>
-                  </div>
-                  <div class="subaccount-detail-row">
-                    <span>Titel</span><strong>{{ sub.title || '—' }}</strong>
-                  </div>
-                  <div class="subaccount-detail-row">
-                    <span>Vorname</span><strong>{{ sub.firstName || '—' }}</strong>
-                  </div>
-                  <div class="subaccount-detail-row">
-                    <span>Nachname</span><strong>{{ sub.lastName || '—' }}</strong>
-                  </div>
-                  <div class="subaccount-detail-row">
-                    <span>E-Mail</span><strong>{{ sub.email || '—' }}</strong>
-                  </div>
-                  <div class="subaccount-detail-row">
-                    <span>Handynummer</span><strong>{{ sub.mobileNumber || '—' }}</strong>
-                  </div>
-                  <div class="subaccount-detail-row">
-                    <span>Telefon</span><strong>{{ sub.phoneNumber || '—' }}</strong>
-                  </div>
-                </div>
-
-                <!-- Adresse -->
-                <div class="subaccount-detail-section">
-                  <div class="subaccount-detail-section-title">Adresse</div>
-                  <div class="subaccount-detail-row">
-                    <span>PLZ</span><strong>{{ sub.address?.zip || '—' }}</strong>
-                  </div>
-                  <div class="subaccount-detail-row">
-                    <span>Ort</span><strong>{{ sub.address?.city || '—' }}</strong>
-                  </div>
-                  <div class="subaccount-detail-row">
-                    <span>Straße</span><strong>{{ sub.address?.street || '—' }}</strong>
-                  </div>
-                  <div class="subaccount-detail-row">
-                    <span>Hausnummer</span><strong>{{ sub.address?.houseNumber || '—' }}</strong>
-                  </div>
-                </div>
-
-                <!-- Rechnungsadresse -->
-                <div class="subaccount-detail-section">
-                  <div class="subaccount-detail-section-title">Separate Rechnungsadresse</div>
-                  <div *ngIf="!sub.billingAddressDiffers" class="subaccount-detail-row">
-                    <span style="color: #888; font-style: italic">Identisch mit Hauptadresse</span>
-                  </div>
-                  <ng-container *ngIf="sub.billingAddressDiffers">
-                    <div class="subaccount-detail-row">
-                      <span>PLZ</span><strong>{{ sub.billingAddress?.zip || '—' }}</strong>
-                    </div>
-                    <div class="subaccount-detail-row">
-                      <span>Ort</span><strong>{{ sub.billingAddress?.city || '—' }}</strong>
-                    </div>
-                    <div class="subaccount-detail-row">
-                      <span>Straße</span><strong>{{ sub.billingAddress?.street || '—' }}</strong>
-                    </div>
-                    <div class="subaccount-detail-row">
-                      <span>Hausnummer</span
-                      ><strong>{{ sub.billingAddress?.houseNumber || '—' }}</strong>
-                    </div>
-                  </ng-container>
-                </div>
-
-                <!-- Bankdaten -->
-                <div class="subaccount-detail-section">
-                  <div class="subaccount-detail-section-title">Bankdaten</div>
-                  <div class="subaccount-detail-row">
-                    <span>Name der Bank</span
-                    ><strong>{{ sub.bankDetails?.bankName || '—' }}</strong>
-                  </div>
-                  <div class="subaccount-detail-row">
-                    <span>IBAN</span><strong>{{ sub.bankDetails?.iban || '—' }}</strong>
-                  </div>
-                  <div class="subaccount-detail-row">
-                    <span>BIC</span><strong>{{ sub.bankDetails?.bic || '—' }}</strong>
-                  </div>
-                  <div class="subaccount-detail-row">
-                    <span>Kontonummer</span
-                    ><strong>{{ sub.bankDetails?.accountNumber || '—' }}</strong>
-                  </div>
-                  <div class="subaccount-detail-row">
-                    <span>Bankleitzahl</span><strong>{{ sub.bankDetails?.bankCode || '—' }}</strong>
-                  </div>
-                </div>
-              </div>
-              <!-- /subaccount-detail-grid -->
-            <div
-              class="no-data-found"
-              *ngIf="
-                !customerData?.additionalAddresses || customerData.additionalAddresses.length === 0
-              "
-            >
-              Keine Daten gefunden
-            </div>
-            <!-- /subaccount-card-body -->
+        <div class="container-readonly" *ngIf="subAccounts.length === 0 && !showInviteForm">
+          <div class="form-actions" style="justify-content: flex-start; padding: 20px 0">
+            <button type="button" class="btn-primary" (click)="showInviteForm = true">
+              Unterkonto hinzufügen
+            </button>
           </div>
-          <!-- /subaccount-card *ngFor -->
-        </div>
-        <!-- /subaccount-list -->
-
-        <!-- Empty state -->
-        <div
-          class="no-data-found"
-          *ngIf="!customerData?.subAccounts || customerData.subAccounts.length === 0"
-        >
-          Keine Unterkonten vorhanden
         </div>
 
-        <!-- Add sub-account button -->
-        <div class="form-actions" style="margin-top: 16px">
-          <button type="button" class="btn-primary" (click)="openAddSubAccount()">
-            + Neues Unterkonto hinzufügen
-          </button>
-        </div>
-      </div>
-      <!-- ══════════════════════════════════════════════════════════ -->
-      <!-- SUB-ACCOUNT FORM (add / edit)                             -->
-      <!-- ══════════════════════════════════════════════════════════ -->
-      <div *ngIf="showSubAccountForm">
-        <div class="profile-orange-header">
-          {{
-            editingSubAccountIndex !== null ? 'Unterkonto bearbeiten' : 'Neues Unterkonto anlegen'
-          }}
-        </div>
-
-        <div class="tab-row">
-          <div>
-            <div class="tab-header">Kontaktprofil des Unterkontos</div>
-            <div class="tab-text">
-              Füllen Sie alle relevanten Felder aus. Jedes Unterkonto bildet ein eigenständiges
-              Kontaktprofil.
-            </div>
-          </div>
-
-          <div class="container-readonly">
-            <!-- Company (optional) -->
-            <div class="form-group">
+        <div class="container-readonly" *ngIf="showInviteForm">
+          <div class="form-row">
+            <div class="form-group" style="flex: 1">
               <div class="field-wrap">
-                <span class="field-label">Firma (optional)</span>
+                <span class="field-label">E-Mail-Adresse des Unterkontos</span>
                 <input
-                  type="text"
-                  [(ngModel)]="subAccountForm.companyName"
-                  placeholder="Musterfirma GmbH"
+                  type="email"
+                  [(ngModel)]="newSubAccountEmail"
+                  placeholder="beispiel@domain.de"
+                  [class.field-error]="subAccountErrors['email']"
                 />
               </div>
-            </div>
-
-            <!-- Salutation + Title -->
-            <div class="form-row">
-              <div class="form-group" style="flex: 1">
-                <div
-                  class="input-field select-wrap"
-                  [class.field-error]="subAccountFieldErrors['salutation']"
-                  style="display: inline-block"
-                >
-                  <div>
-                    <span
-                      class="field-label"
-                      style="margin-left: 10px; font-size: 12px; font-weight: 500; display: block"
-                      >Anrede</span
-                    >
-                    <select class="styled-select" [(ngModel)]="subAccountForm.salutation">
-                      <option value="">Bitte wählen...</option>
-                      <option value="Herr">Herr</option>
-                      <option value="Frau">Frau</option>
-                      <option value="Divers">Divers</option>
-                      <option value="Keine Angabe">Keine Angabe</option>
-                    </select>
-                    <span class="material-symbols-outlined dropdown-arrow">expand_more</span>
-                  </div>
-                </div>
-                <div class="field-error-msg" *ngIf="subAccountFieldErrors['salutation']">
-                  {{ subAccountFieldErrors['salutation'] }}
-                </div>
-              </div>
-              <div class="form-group" style="flex: 1">
-                <div class="input-field select-wrap" style="display: inline-block">
-                  <div>
-                    <span
-                      class="field-label"
-                      style="margin-left: 10px; font-size: 12px; font-weight: 500; display: block"
-                      >Titel</span
-                    >
-                    <select class="styled-select" [(ngModel)]="subAccountForm.title">
-                      <option value="">Kein Titel</option>
-                      <option value="Dr.">Dr.</option>
-                      <option value="Prof.">Prof.</option>
-                      <option value="Prof. Dr.">Prof. Dr.</option>
-                    </select>
-                    <span class="material-symbols-outlined dropdown-arrow">expand_more</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- First + Last name -->
-            <div class="form-row">
-              <div class="form-group">
-                <div class="field-wrap" [class.field-error]="subAccountFieldErrors['firstName']">
-                  <span class="field-label">Vorname</span>
-                  <input type="text" [(ngModel)]="subAccountForm.firstName" placeholder="Marie" />
-                </div>
-                <div class="field-error-msg" *ngIf="subAccountFieldErrors['firstName']">
-                  {{ subAccountFieldErrors['firstName'] }}
-                </div>
-              </div>
-              <div class="form-group">
-                <div class="field-wrap" [class.field-error]="subAccountFieldErrors['lastName']">
-                  <span class="field-label">Nachname</span>
-                  <input
-                    type="text"
-                    [(ngModel)]="subAccountForm.lastName"
-                    placeholder="Mustermann"
-                  />
-                </div>
-                <div class="field-error-msg" *ngIf="subAccountFieldErrors['lastName']">
-                  {{ subAccountFieldErrors['lastName'] }}
-                </div>
-              </div>
-            </div>
-
-            <!-- E-Mail + Mobile -->
-            <div class="form-row">
-              <div class="form-group">
-                <div class="field-wrap">
-                  <span class="field-label">E-Mail-Adresse</span>
-                  <input
-                    type="email"
-                    [(ngModel)]="subAccountForm.email"
-                    placeholder="marie@beispiel.de"
-                  />
-                </div>
-              </div>
-              <div class="form-group">
-                <div class="field-wrap">
-                  <span class="field-label">Handynummer</span>
-                  <input
-                    type="tel"
-                    [(ngModel)]="subAccountForm.mobileNumber"
-                    placeholder="+49 178 1234567"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <!-- Phone -->
-            <div class="form-row">
-              <div class="form-group">
-                <div class="field-wrap">
-                  <span class="field-label">Telefonnummer (optional)</span>
-                  <input
-                    type="tel"
-                    [(ngModel)]="subAccountForm.phoneNumber"
-                    placeholder="+49 30 1234567"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <!-- Address -->
-            <div class="subaccount-section-divider">Adresse</div>
-
-            <div class="form-row">
-              <div class="form-group postcode">
-                <div class="field-wrap" [class.field-error]="subAccountFieldErrors['zip']">
-                  <span class="field-label">PLZ</span>
-                  <input type="text" [(ngModel)]="subAccountForm.address.zip" placeholder="12345" />
-                </div>
-                <div class="field-error-msg" *ngIf="subAccountFieldErrors['zip']">
-                  {{ subAccountFieldErrors['zip'] }}
-                </div>
-              </div>
-              <div class="form-group">
-                <div class="field-wrap">
-                  <span class="field-label">Ort</span>
-                  <input
-                    type="text"
-                    [(ngModel)]="subAccountForm.address.city"
-                    placeholder="Musterhausen"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div class="form-row">
-              <div class="form-group">
-                <div class="field-wrap">
-                  <span class="field-label">Straße</span>
-                  <input
-                    type="text"
-                    [(ngModel)]="subAccountForm.address.street"
-                    placeholder="Musterstraße"
-                  />
-                </div>
-              </div>
-              <div class="form-group postcode">
-                <div class="field-wrap">
-                  <span class="field-label">Hausnummer</span>
-                  <input
-                    type="text"
-                    [(ngModel)]="subAccountForm.address.houseNumber"
-                    placeholder="1"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <!-- Separate billing address toggle -->
-            <div class="subaccount-billing-toggle">
-              <label class="subaccount-checkbox-label">
-                <input type="checkbox" [(ngModel)]="subAccountForm.billingAddressDiffers" />
-                <span>Separate Rechnungsadresse verwenden</span>
-              </label>
-            </div>
-
-            <div *ngIf="subAccountForm.billingAddressDiffers">
-              <div class="subaccount-section-divider">Rechnungsadresse</div>
-
-              <div class="form-row">
-                <div class="form-group postcode">
-                  <div class="field-wrap">
-                    <span class="field-label">PLZ</span>
-                    <input
-                      type="text"
-                      [(ngModel)]="subAccountForm.billingAddress.zip"
-                      placeholder="12345"
-                    />
-                  </div>
-                </div>
-                <div class="form-group">
-                  <div class="field-wrap">
-                    <span class="field-label">Ort</span>
-                    <input
-                      type="text"
-                      [(ngModel)]="subAccountForm.billingAddress.city"
-                      placeholder="Musterhausen"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div class="form-row">
-                <div class="form-group">
-                  <div class="field-wrap">
-                    <span class="field-label">Straße</span>
-                    <input
-                      type="text"
-                      [(ngModel)]="subAccountForm.billingAddress.street"
-                      placeholder="Rechnungsstraße"
-                    />
-                  </div>
-                </div>
-                <div class="form-group postcode">
-                  <div class="field-wrap">
-                    <span class="field-label">Hausnummer</span>
-                    <input
-                      type="text"
-                      [(ngModel)]="subAccountForm.billingAddress.houseNumber"
-                      placeholder="1"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Bank details -->
-            <div class="subaccount-section-divider">Bankdaten (optional)</div>
-
-            <div class="form-row">
-              <div class="form-group">
-                <div class="field-wrap">
-                  <span class="field-label">Name der Bank</span>
-                  <input
-                    type="text"
-                    [(ngModel)]="subAccountForm.bankDetails.bankName"
-                    placeholder="Musterbank AG"
-                  />
-                </div>
-              </div>
-              <div class="form-group">
-                <div class="field-wrap">
-                  <span class="field-label">IBAN</span>
-                  <input
-                    type="text"
-                    [(ngModel)]="subAccountForm.bankDetails.iban"
-                    placeholder="DE89 3704 0044 0532 0130 00"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div class="form-row">
-              <div class="form-group">
-                <div class="field-wrap">
-                  <span class="field-label">BIC</span>
-                  <input
-                    type="text"
-                    [(ngModel)]="subAccountForm.bankDetails.bic"
-                    placeholder="COBADEFFXXX"
-                  />
-                </div>
-              </div>
-              <div class="form-group">
-                <div class="field-wrap">
-                  <span class="field-label">Kontonummer (optional)</span>
-                  <input
-                    type="text"
-                    [(ngModel)]="subAccountForm.bankDetails.accountNumber"
-                    placeholder="532013000"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div class="form-row">
-              <div class="form-group">
-                <div class="field-wrap">
-                  <span class="field-label">Bankleitzahl (optional)</span>
-                  <input
-                    type="text"
-                    [(ngModel)]="subAccountForm.bankDetails.bankCode"
-                    placeholder="37040044"
-                  />
-                </div>
+              <div class="field-error-msg" *ngIf="subAccountErrors['email']">
+                {{ subAccountErrors['email'] }}
               </div>
             </div>
           </div>
-          <!-- /container-readonly -->
 
-          <div class="error-msg" *ngIf="subAccountApiError">{{ subAccountApiError }}</div>
-
-          <div
-            style="
-              display: flex;
-              flex-direction: row;
-              justify-content: space-between;
-              margin-top: 10px;
-            "
-          >
-            <button class="btn-back" (click)="cancelSubAccountForm()">Abbrechen</button>
-            <div class="form-actions">
-              <button
-                type="button"
-                class="btn-primary"
-                [disabled]="isSavingSubAccount"
-                (click)="saveSubAccount()"
-              >
-                <span *ngIf="isSavingSubAccount"><span class="spinner"></span> Speichern...</span>
-                <span *ngIf="!isSavingSubAccount">Ändern &amp; Speichern</span>
-              </button>
-            </div>
+          <div class="form-actions" style="margin-top: 15px; display: flex; gap: 10px">
+            <button type="button" class="btn-primary" (click)="sendSubAccountInvitation()">
+              Einladung senden
+            </button>
+            <button type="button" class="btn-back" (click)="cancelInvitation()">Abbrechen</button>
           </div>
         </div>
-        <!-- /tab-row -->
+
+        <div class="container-readonly" *ngIf="subAccounts.length > 0">
+          <div
+            class="sub-account-list"
+            style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px"
+          >
+            <div
+              *ngFor="let account of subAccounts"
+              class="form-row"
+              style="align-items: center; border-bottom: 1px solid #eee; padding-bottom: 10px"
+            >
+              <div style="flex: 1">
+                <div style="font-weight: 500; color: #333">{{ account.email }}</div>
+                <div style="font-size: 12px; color: #666">
+                  Status:
+                  <span [style.color]="account.status === 'Aktiv' ? 'green' : 'orange'">{{
+                    account.status
+                  }}</span>
+                </div>
+              </div>
+              <div>
+                <button
+                  type="button"
+                  class="btn-secondary"
+                  style="color: red; border-color: red"
+                  (click)="removeSubAccount(account.id)"
+                >
+                  Entfernen
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-actions" *ngIf="!showInviteForm">
+            <button type="button" class="btn-primary" (click)="showInviteForm = true">
+              Weiteres Unterkonto einladen
+            </button>
+          </div>
+        </div>
+
+        <div class="success-msg" *ngIf="subAccountSuccessMessage" style="margin-top: 15px">
+          {{ subAccountSuccessMessage }}
+        </div>
       </div>
-      <!-- /showSubAccountForm -->
     </div>
+
     <!--══════════ Profile – Kontaktdaten End ══════════-->
 
     <!--══════════ Profile – Adressen (Tab - 0, sub: addresses) ══════════-->
@@ -1461,6 +1026,7 @@
         </div>
       </div>
     </div>
+
     <!--══════════ Profile – Zahlungsdaten End ══════════-->
 
     <!--══════════ Profile Section End (Tab - 0) ══════════-->
@@ -1833,16 +1399,21 @@
                   </button>
                 </ng-template>
 
-                <button *ngIf="!item.supplierMessage || item.supplierMessage.length === 0" class="meter-blue-btn full"
-                  (click)="messageEnergySupplier(item)">
+                <button
+                  *ngIf="!item.supplierMessage || item.supplierMessage.length === 0"
+                  class="meter-blue-btn full"
+                  (click)="messageEnergySupplier(item)"
+                >
                   Nachricht an Energielieferanten senden
                 </button>
 
-                <div *ngIf="item.supplierMessage && item.supplierMessage.length > 0" class="status-badge">
+                <div
+                  *ngIf="item.supplierMessage && item.supplierMessage.length > 0"
+                  class="status-badge"
+                >
                   Nachricht an Energielieferanten senden
                   {{ getSupplierMessageStatus(item) }}
                 </div>
-
               </div>
 
               <!-- RIGHT -->
@@ -3309,86 +2880,18 @@
     <!--══════════ Change contract details ══════════-->
 
     <div *ngIf="activeTab === 1 && currentStep === 7">
-      <div class="login-berich">
-        Vertragsdetails ändern
-      </div>
+      <div class="login-berich">Vertragsdetails ändern</div>
 
       <br />
 
-      <!-- NO DATA -->
-      <div class="no-data-found" *ngIf="!groupedContracts || groupedContracts.length === 0">
-        Keine Daten gefunden
-      </div>
-      <ng-container *ngIf="groupedContracts && groupedContracts.length > 0">
-        <div
-          class="attorney-berich-green"
-          style="align-items: start; justify-content: start; padding-left: 20px"
-        >
-          Wechselerinnerung
-        </div>
-
-        <div class="section-body">
-          <!-- Neu einziehen toggle -->
-          <div class="toggle-row header"></div>
-          <div class="toggle-row">
-            <div class="toggle-box">
-              <div
-                class="toggle-opt"
-                [class.selected]="selection === 'yes'"
-                (click)="selectOption('yes')"
-              >
-                <label class="cb-row">
-                  <input
-                    type="checkbox"
-                    name="selectionYes"
-                    [checked]="selection === 'yes'"
-                    (click)="$event.stopPropagation()"
-                  />
-                </label>
-                Ja
-              </div>
-              <div
-                class="toggle-opt"
-                [class.selected]="selection === 'no'"
-                (click)="selectOption('no')"
-              >
-                <label class="cb-row">
-                  <input
-                    type="checkbox"
-                    name="selectionNo"
-                    [checked]="selection === 'no'"
-                    (click)="$event.stopPropagation()"
-                  />
-                </label>
-                Nein
-              </div>
-            </div>
-            <div>
-              <span class="info-base info-circ" style="flex-shrink: 0">i</span>
-            </div>
-          </div>
       <div class="selected-contract-wrapper">
-
         <!-- HEADER -->
-        <div class="selected-contract-header">
-          Ausgewählter Vertrag
-        </div>
+        <div class="selected-contract-header">Ausgewählter Vertrag</div>
 
         <!-- CARD -->
         <div class="selected-contract-card">
-
-        <div *ngFor="let group of groupedContracts">
-          <!-- ADDRESS HEADER -->
-          <div style="border-radius: 0 0 8px 8px; border: 1px solid #00a651; margin-bottom: 20px">
-            <div
-              class="attorney-berich-green"
-              style="align-items: start; justify-content: start; padding-left: 20px"
-            >
-              Ihre Verträge und Kündigungsfristen - {{ group.addressLabel }}
-            </div>
           <!-- TOP -->
           <div class="contract-top">
-
             <!-- LEFT -->
             <div class="contract-left">
               <img [src]="selectedMeter.meterIcon" alt="provider" class="provider-logo" />
@@ -3411,7 +2914,11 @@
               <div class="contract-row-title">
                 <strong>Zählerbezeichnung:</strong>
 
-                <a class="change-link" *ngIf="!isEditingSelectedMeterName" (click)="editSelectedMeterName()">
+                <a
+                  class="change-link"
+                  *ngIf="!isEditingSelectedMeterName"
+                  (click)="editSelectedMeterName()"
+                >
                   ändern
                   <img src="assets/icons/Bearbeiten_schwarz.png" alt="edit" />
                 </a>
@@ -3424,14 +2931,26 @@
 
               <!-- EDIT VIEW -->
               <div class="meter-edit-box" *ngIf="isEditingSelectedMeterName">
-                <input type="text" [(ngModel)]="selectedMeter.meterDesignation" class="meter-input"
-                  placeholder="Zählerbezeichnung" />
+                <input
+                  type="text"
+                  [(ngModel)]="selectedMeter.meterDesignation"
+                  class="meter-input"
+                  placeholder="Zählerbezeichnung"
+                />
 
-                <button type="button" class="icon-action save-icon" (click)="saveSelectedMeterName()">
+                <button
+                  type="button"
+                  class="icon-action save-icon"
+                  (click)="saveSelectedMeterName()"
+                >
                   ✓
                 </button>
 
-                <button type="button" class="icon-action cancel-icon" (click)="cancelSelectedMeterEdit()">
+                <button
+                  type="button"
+                  class="icon-action cancel-icon"
+                  (click)="cancelSelectedMeterEdit()"
+                >
                   ✕
                 </button>
               </div>
@@ -3489,61 +3008,49 @@
           <!-- CHANGE CONTRACT DETAILS SECTION -->
 
           <div class="contract-change-section">
-
             <!-- HEADING -->
-            <div class="contract-change-heading">
-              Vertragsdetails ändern
-            </div>
+            <div class="contract-change-heading">Vertragsdetails ändern</div>
 
             <!-- SUB HEADING -->
-            <div class="contract-change-subheading">
-              Welche Daten möchten Sie aktualisieren?
-            </div>
+            <div class="contract-change-subheading">Welche Daten möchten Sie aktualisieren?</div>
 
             <!-- DROPDOWN -->
             <div class="contract-change-dropdown">
-
               <!-- SELECT BOX -->
               <div class="contract-change-select-box" (click)="toggleContractDropdown()">
-
                 <div class="contract-change-selected-values">
-
-                  <span class="contract-change-placeholder" *ngIf="selectedContractOptions.length === 0">
+                  <span
+                    class="contract-change-placeholder"
+                    *ngIf="selectedContractOptions.length === 0"
+                  >
                     Vertragsdetails auswählen
                   </span>
 
                   <span class="contract-change-tag" *ngFor="let item of selectedContractOptions">
                     {{ getContractOptionLabel(item) }}
-
                   </span>
-
                 </div>
 
                 <span class="contract-change-arrow">
                   {{ contractDropdownOpen ? '▲' : '▼' }}
                 </span>
-
               </div>
 
               <!-- DROPDOWN -->
               <div class="contract-change-dropdown-menu" *ngIf="contractDropdownOpen">
-
-                <div class="contract-change-dropdown-item" *ngFor="let option of contractOptionsList"
-                  (click)="toggleContractSelection(option.id, $event)">
-
+                <div
+                  class="contract-change-dropdown-item"
+                  *ngFor="let option of contractOptionsList"
+                  (click)="toggleContractSelection(option.id, $event)"
+                >
                   <input type="checkbox" [checked]="selectedContractOptions.includes(option.id)" />
 
                   <span>
                     {{ option.label }}
                   </span>
-
                 </div>
-
               </div>
-
             </div>
-
-
 
             <!-- SUBMIT BUTTON -->
             <button type="button" class="btn-primary" (click)="submitContractSelection()">
@@ -3553,11 +3060,12 @@
             <!-- DYNAMIC FORM FIELDS -->
 
             <!-- LAST NAME -->
-            <div class="contract-change-form-box" *ngIf="submittedSelections.includes(1)" id="last-name-section">
-
-              <div class="contract-change-form-title">
-                Nachname ändern
-              </div>
+            <div
+              class="contract-change-form-box"
+              *ngIf="submittedSelections.includes(1)"
+              id="last-name-section"
+            >
+              <div class="contract-change-form-title">Nachname ändern</div>
 
               <div class="contract-change-subheading">
                 Bitte geben Sie Ihren neuen Nachnamen ein und laden Sie einen Nachweis hoch.
@@ -3565,154 +3073,145 @@
 
               <!-- INPUT -->
               <div class="form-row">
-
                 <div class="form-group">
-
                   <div class="field-wrap">
+                    <span class="field-label"> Neuer Nachname * </span>
 
-                    <span class="field-label">
-                      Neuer Nachname *
-                    </span>
-
-                    <input type="text" [(ngModel)]="contractChangeData.lastName" placeholder="Neuer Nachname" />
-
+                    <input
+                      type="text"
+                      [(ngModel)]="contractChangeData.lastName"
+                      placeholder="Neuer Nachname"
+                    />
                   </div>
-
                 </div>
-
               </div>
 
               <!-- FILE UPLOAD -->
 
               <div class="contract-change-upload-box">
-
-                <div class="contract-change-upload-title">
-                  Erforderlicher Nachweis
-                </div>
+                <div class="contract-change-upload-title">Erforderlicher Nachweis</div>
 
                 <div class="contract-change-upload-text">
                   Heiratsurkunde oder Scheidungsurkunde hochladen
                 </div>
 
                 <input type="file" (change)="onContractDocumentUpload($event, 'lastName')" />
-
               </div>
-
             </div>
 
             <!-- COMPANY NAME -->
-            <div class="contract-change-form-box" *ngIf="submittedSelections.includes(2)" id="company-name-section">
-
-              <div class="contract-change-form-title">
-                Firmenname ändern
-              </div>
+            <div
+              class="contract-change-form-box"
+              *ngIf="submittedSelections.includes(2)"
+              id="company-name-section"
+            >
+              <div class="contract-change-form-title">Firmenname ändern</div>
 
               <div class="contract-change-subheading">
                 Bitte laden Sie einen gültigen Nachweis hoch.
               </div>
 
-              <input type="text" [(ngModel)]="contractChangeData.companyName" placeholder="Firmenname"
-                class="contract-change-input" />
+              <input
+                type="text"
+                [(ngModel)]="contractChangeData.companyName"
+                placeholder="Firmenname"
+                class="contract-change-input"
+              />
 
               <div class="contract-change-upload-box">
-
                 <div class="contract-change-upload-text">
                   Gewerbeummeldung oder Handelsregisterauszug hochladen
                 </div>
 
                 <input type="file" (change)="onContractDocumentUpload($event, 'companyName')" />
-
               </div>
-
             </div>
 
             <!-- TITLE -->
-            <div class="contract-change-form-box" *ngIf="submittedSelections.includes(3)" id="title-section">
+            <div
+              class="contract-change-form-box"
+              *ngIf="submittedSelections.includes(3)"
+              id="title-section"
+            >
+              <div class="contract-change-form-title">Titel ändern</div>
 
-              <div class="contract-change-form-title">
-                Titel ändern
-              </div>
-
-              <input type="text" [(ngModel)]="contractChangeData.title" placeholder="Neuer Titel"
-                class="contract-change-input" />
+              <input
+                type="text"
+                [(ngModel)]="contractChangeData.title"
+                placeholder="Neuer Titel"
+                class="contract-change-input"
+              />
 
               <div class="contract-change-upload-box">
-
-                <div class="contract-change-upload-text">
-                  Titelnachweis hochladen
-                </div>
+                <div class="contract-change-upload-text">Titelnachweis hochladen</div>
 
                 <input type="file" (change)="onContractDocumentUpload($event, 'title')" />
-
               </div>
-
             </div>
 
             <!-- FIRST NAME / SALUTATION -->
-            <div class="contract-change-form-box"
+            <div
+              class="contract-change-form-box"
               *ngIf="submittedSelections.includes(4) || submittedSelections.includes(5)"
-              id="firstname-salutation-section">
-
-              <div class="contract-change-form-title">
-                Vorname / Anrede ändern
-              </div>
+              id="firstname-salutation-section"
+            >
+              <div class="contract-change-form-title">Vorname / Anrede ändern</div>
 
               <!-- FIRST NAME -->
               <div *ngIf="submittedSelections.includes(4)">
-
-                <input type="text" [(ngModel)]="contractChangeData.firstName" placeholder="Neuer Vorname"
-                  class="contract-change-input" />
-
+                <input
+                  type="text"
+                  [(ngModel)]="contractChangeData.firstName"
+                  placeholder="Neuer Vorname"
+                  class="contract-change-input"
+                />
               </div>
 
               <!-- SALUTATION -->
               <div *ngIf="submittedSelections.includes(5)">
-
-                <input type="text" [(ngModel)]="contractChangeData.salutation" placeholder="Neue Anrede"
-                  class="contract-change-input" />
-
+                <input
+                  type="text"
+                  [(ngModel)]="contractChangeData.salutation"
+                  placeholder="Neue Anrede"
+                  class="contract-change-input"
+                />
               </div>
 
               <div class="contract-change-upload-box">
-
-                <div class="contract-change-upload-text">
-                  Kopie des Personalausweises hochladen
-                </div>
+                <div class="contract-change-upload-text">Kopie des Personalausweises hochladen</div>
 
                 <input type="file" (change)="onContractDocumentUpload($event, 'personData')" />
-
               </div>
-
             </div>
 
             <!-- DATE OF BIRTH -->
-            <div class="contract-change-form-box" *ngIf="submittedSelections.includes(6)" id="dob-section">
+            <div
+              class="contract-change-form-box"
+              *ngIf="submittedSelections.includes(6)"
+              id="dob-section"
+            >
+              <div class="contract-change-form-title">Geburtsdatum ändern</div>
 
-              <div class="contract-change-form-title">
-                Geburtsdatum ändern
-              </div>
-
-              <input type="date" [(ngModel)]="contractChangeData.dateOfBirth" class="contract-change-input" />
+              <input
+                type="date"
+                [(ngModel)]="contractChangeData.dateOfBirth"
+                class="contract-change-input"
+              />
 
               <div class="contract-change-upload-box">
-
-                <div class="contract-change-upload-text">
-                  Kopie des Personalausweises hochladen
-                </div>
+                <div class="contract-change-upload-text">Kopie des Personalausweises hochladen</div>
 
                 <input type="file" (change)="onContractDocumentUpload($event, 'dateOfBirth')" />
-
               </div>
-
             </div>
 
-
             <!-- BILLING ADDRESS -->
-            <div class="contract-change-form-box" *ngIf="submittedSelections.includes(7)" id="billing-address-section">
-
-              <div class="contract-change-form-title">
-                Rechnungsadresse ändern
-              </div>
+            <div
+              class="contract-change-form-box"
+              *ngIf="submittedSelections.includes(7)"
+              id="billing-address-section"
+            >
+              <div class="contract-change-form-title">Rechnungsadresse ändern</div>
 
               <div class="form-row">
                 <div class="form-group" style="flex: 0 0 160px">
@@ -3721,7 +3220,7 @@
                     <input />
                     <span *ngIf="fieldErrors['billingPLZ']" class="error-hint">{{
                       fieldErrors['billingPLZ']
-                      }}</span>
+                    }}</span>
                   </div>
                 </div>
                 <div class="form-group">
@@ -3730,7 +3229,7 @@
                     <input />
                     <span *ngIf="fieldErrors['billingOrt']" class="error-hint">{{
                       fieldErrors['billingOrt']
-                      }}</span>
+                    }}</span>
                   </div>
                 </div>
               </div>
@@ -3741,7 +3240,7 @@
                     <input />
                     <span *ngIf="fieldErrors['billingStreet']" class="error-hint">{{
                       fieldErrors['billingStreet']
-                      }}</span>
+                    }}</span>
                   </div>
                 </div>
                 <div class="form-group" style="flex: 0 0 160px">
@@ -3750,36 +3249,39 @@
                     <input />
                     <span *ngIf="fieldErrors['billingHouseNumber']" class="error-hint">{{
                       fieldErrors['billingHouseNumber']
-                      }}</span>
+                    }}</span>
                   </div>
                 </div>
               </div>
-
             </div>
 
             <!-- CUSTOMER ADDRESS -->
-            <div class="contract-change-form-box" *ngIf="submittedSelections.includes(8)" id="customer-address-section">
-
-              <div class="contract-change-form-title">
-                Kundenadresse ändern
-              </div>
+            <div
+              class="contract-change-form-box"
+              *ngIf="submittedSelections.includes(8)"
+              id="customer-address-section"
+            >
+              <div class="contract-change-form-title">Kundenadresse ändern</div>
               <div class="contract-change-subheading">
                 <strong>
-                  Achtung: Steht ein Umzug an? Falls ja, ist dies die falsche Funktion! Verwenden Sie in diesem Fall
-                  bitte
-                  stattdessen die Option „Umzug melden“.
+                  Achtung: Steht ein Umzug an? Falls ja, ist dies die falsche Funktion! Verwenden
+                  Sie in diesem Fall bitte stattdessen die Option „Umzug melden“.
                 </strong>
               </div>
 
               <!-- ZIP + CITY -->
               <div class="form-row">
-
                 <!-- ZIP -->
                 <div class="form-group postcode">
                   <div class="field-wrap">
                     <span class="field-label">Ihre PLZ</span>
 
-                    <input type="text" maxlength="5" [value]="customerData.address.zip" placeholder="12345" />
+                    <input
+                      type="text"
+                      maxlength="5"
+                      [value]="customerData.address.zip"
+                      placeholder="12345"
+                    />
                   </div>
 
                   <div class="field-error-msg" *ngIf="addressFieldErrors['zip']">
@@ -3790,19 +3292,29 @@
                 <!-- CITY -->
                 <div class="form-group">
                   <div class="field-wrap dropdown-wrapper">
-
                     <span class="field-label">Ort</span>
 
-                    <input type="text" placeholder="Musterhausen" (input)="onEditCityInput($event)"
-                      (focus)="showEditCityDropdown = true" (click)="$event.stopPropagation()" />
+                    <input
+                      type="text"
+                      placeholder="Musterhausen"
+                      (input)="onEditCityInput($event)"
+                      (focus)="showEditCityDropdown = true"
+                      (click)="$event.stopPropagation()"
+                    />
 
                     <div class="dropdown" *ngIf="showEditCityDropdown">
-
-                      <div *ngIf="editFilteredCityOptions.length === 0" class="dropdown-item disabled">
+                      <div
+                        *ngIf="editFilteredCityOptions.length === 0"
+                        class="dropdown-item disabled"
+                      >
                         Keine Orte gefunden
                       </div>
 
-                      <div *ngFor="let c of editFilteredCityOptions" class="dropdown-item" (click)="selectEditCity(c)">
+                      <div
+                        *ngFor="let c of editFilteredCityOptions"
+                        class="dropdown-item"
+                        (click)="selectEditCity(c)"
+                      >
                         {{ c.city }}
                       </div>
                     </div>
@@ -3814,33 +3326,37 @@
                 </div>
               </div>
 
-
               <!-- STREET + HOUSE NUMBER -->
               <div class="form-row">
-
                 <!-- STREET -->
                 <div class="form-group">
                   <div class="field-wrap dropdown-wrapper">
-
                     <span class="field-label">Ihre Straße</span>
 
-                    <input type="text" placeholder="Mustermannstraße" (input)="onEditStreetInput($event)"
-                      (focus)="showEditStreetDropdown = true" (click)="$event.stopPropagation()"
-                      [disabled]="!customerData.address.city" />
+                    <input
+                      type="text"
+                      placeholder="Mustermannstraße"
+                      (input)="onEditStreetInput($event)"
+                      (focus)="showEditStreetDropdown = true"
+                      (click)="$event.stopPropagation()"
+                      [disabled]="!customerData.address.city"
+                    />
 
                     <div class="dropdown" *ngIf="showEditStreetDropdown">
+                      <div *ngIf="isEditStreetLoading" class="dropdown-item">Laden...</div>
 
-                      <div *ngIf="isEditStreetLoading" class="dropdown-item">
-                        Laden...
-                      </div>
-
-                      <div *ngIf="!isEditStreetLoading && editFilteredStreetOptions.length === 0"
-                        class="dropdown-item disabled">
+                      <div
+                        *ngIf="!isEditStreetLoading && editFilteredStreetOptions.length === 0"
+                        class="dropdown-item disabled"
+                      >
                         Keine Straße gefunden
                       </div>
 
-                      <div *ngFor="let s of editFilteredStreetOptions" class="dropdown-item"
-                        (click)="selectEditStreet(s)">
+                      <div
+                        *ngFor="let s of editFilteredStreetOptions"
+                        class="dropdown-item"
+                        (click)="selectEditStreet(s)"
+                      >
                         {{ s.street }}
                       </div>
                     </div>
@@ -3864,44 +3380,45 @@
                   </div>
                 </div>
               </div>
-
             </div>
 
             <!-- EMAIL -->
-            <div class="contract-change-form-box" *ngIf="submittedSelections.includes(9)" id="email-address-section">
-
-              <div class="contract-change-form-title">
-                E-Mail-Adresse ändern
-              </div>
+            <div
+              class="contract-change-form-box"
+              *ngIf="submittedSelections.includes(9)"
+              id="email-address-section"
+            >
+              <div class="contract-change-form-title">E-Mail-Adresse ändern</div>
 
               <input type="email" placeholder="Neue E-Mail-Adresse" class="contract-change-input" />
-
             </div>
 
             <!-- BANK -->
-            <div class="contract-change-form-box" *ngIf="submittedSelections.includes(10)" id="bank-details-section">
-
-              <div class="contract-change-form-title">
-                Bankdaten ändern
-              </div>
+            <div
+              class="contract-change-form-box"
+              *ngIf="submittedSelections.includes(10)"
+              id="bank-details-section"
+            >
+              <div class="contract-change-form-title">Bankdaten ändern</div>
 
               <input type="text" placeholder="IBAN" class="contract-change-input" />
 
               <input type="text" placeholder="Kontoinhaber" class="contract-change-input" />
-
             </div>
 
             <!-- OTHER -->
-            <div class="contract-change-form-box" *ngIf="submittedSelections.includes(11)" id="other-section">
+            <div
+              class="contract-change-form-box"
+              *ngIf="submittedSelections.includes(11)"
+              id="other-section"
+            >
+              <div class="contract-change-form-title">Sonstige Änderung</div>
 
-              <div class="contract-change-form-title">
-                Sonstige Änderung
-              </div>
-
-              <textarea placeholder="Bitte geben Sie Ihre Anfrage ein" class="contract-change-textarea"></textarea>
-
+              <textarea
+                placeholder="Bitte geben Sie Ihre Anfrage ein"
+                class="contract-change-textarea"
+              ></textarea>
             </div>
-
           </div>
         </div>
       </div>
@@ -3931,7 +3448,6 @@
         </div>
       </div> -->
     </div>
-
 
     <!--══════════ Meters Section End ══════════-->
 

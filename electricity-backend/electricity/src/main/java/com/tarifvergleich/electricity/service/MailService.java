@@ -175,46 +175,46 @@ public class MailService {
 	}
 
 	@Async
-	public void sendEmailWithMultipartAttachment(String to, String subject, String body, List<String> absoluteFilePaths,
-			Map<String, byte[]> multipartFilesInByte) {
-		try {
-			MimeMessage message = mailSender.createMimeMessage();
+		public void sendEmailWithMultipartAttachment(String to, String subject, String body, List<String> absoluteFilePaths,
+				Map<String, byte[]> multipartFilesInByte) {
+			try {
+				MimeMessage message = mailSender.createMimeMessage();
 
-			MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+				MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
-			helper.setTo(to);
-			helper.setFrom(sendFrom);
-			helper.setSubject(subject);
-			helper.setText(body, true);
+				helper.setTo(to);
+				helper.setFrom(sendFrom);
+				helper.setSubject(subject);
+				helper.setText(body, true);
 
-			if (multipartFilesInByte != null && !multipartFilesInByte.isEmpty()) {
-				for (Map.Entry<String, byte[]> entry : multipartFilesInByte.entrySet()) {
-					String fileName = entry.getKey();
-					byte[] fileData = entry.getValue();
+				if (multipartFilesInByte != null && !multipartFilesInByte.isEmpty()) {
+					for (Map.Entry<String, byte[]> entry : multipartFilesInByte.entrySet()) {
+						String fileName = entry.getKey();
+						byte[] fileData = entry.getValue();
 
-					if (fileData != null && fileData.length > 0) {
-						ByteArrayResource attachmentResource = new ByteArrayResource(fileData);
-						helper.addAttachment(fileName, attachmentResource);
+						if (fileData != null && fileData.length > 0) {
+							ByteArrayResource attachmentResource = new ByteArrayResource(fileData);
+							helper.addAttachment(fileName, attachmentResource);
+						}
 					}
 				}
-			}
 
-			if (absoluteFilePaths != null && !absoluteFilePaths.isEmpty()) {
-				for (String localFilePath : absoluteFilePaths) {
-					Path path = Paths.get(localFilePath);
-					if (Files.exists(path)) {
-						FileSystemResource file = new FileSystemResource(path.toFile());
+				if (absoluteFilePaths != null && !absoluteFilePaths.isEmpty()) {
+					for (String localFilePath : absoluteFilePaths) {
+						Path path = Paths.get(localFilePath);
+						if (Files.exists(path)) {
+							FileSystemResource file = new FileSystemResource(path.toFile());
 
-						helper.addAttachment(file.getFilename(), file);
-					} else
-						throw new InternalServerException("File path does not exists", HttpStatus.BAD_REQUEST);
+							helper.addAttachment(file.getFilename(), file);
+						} else
+							throw new InternalServerException("File path does not exists", HttpStatus.BAD_REQUEST);
+					}
 				}
+
+				mailSender.send(message);
+
+			} catch (MessagingException e) {
+				throw new RuntimeException("Failed to send email with multipart attachment", e);
 			}
-
-			mailSender.send(message);
-
-		} catch (MessagingException e) {
-			throw new RuntimeException("Failed to send email with multipart attachment", e);
 		}
-	}
 }

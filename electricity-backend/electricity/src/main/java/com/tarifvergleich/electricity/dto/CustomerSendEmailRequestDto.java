@@ -17,6 +17,8 @@ public class CustomerSendEmailRequestDto {
 
     private Long customerId;
 
+//    private String email;
+    
     private String title;
 
     private String subtitle;
