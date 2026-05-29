@@ -1,5 +1,6 @@
 package com.tarifvergleich.electricity.service.admin;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -60,7 +61,9 @@ import com.tarifvergleich.electricity.repository.CustomerOrderRepository;
 import com.tarifvergleich.electricity.repository.CustomerRepository;
 import com.tarifvergleich.electricity.repository.CustomerServiceRequestRepository;
 import com.tarifvergleich.electricity.repository.ManageAdminDocumentRepository;
+import com.tarifvergleich.electricity.service.MailService;
 import com.tarifvergleich.electricity.service.customer.CustomerAuthService;
+import com.tarifvergleich.electricity.util.CustomEmailTemplate;
 import com.tarifvergleich.electricity.util.EmailBodyRender;
 import com.tarifvergleich.electricity.util.FileServiceSuperAdmin;
 import com.tarifvergleich.electricity.util.Helper;
@@ -88,7 +91,9 @@ public class AdminCustomerManagementService {
 	private final CustomerEmailSendHistoryRepository customerEmailSendHistoryRepo;
 	private final AdminUserRepository adminUserRepo;
 	private final FileServiceSuperAdmin fileUtil;
-	private final ManageAdminDocumentRepository manageAdminDocumentRepo; 
+	private final ManageAdminDocumentRepository manageAdminDocumentRepo;
+	private final MailService mailService;
+	private final CustomEmailTemplate customEmailTemplate;
 
 	public Map<String, Object> getCustomers(CustomerDto customerReq) {
 
@@ -630,7 +635,7 @@ public class AdminCustomerManagementService {
 	}
 
 	@Transactional
-	public Object sendCustomerEmail(CustomerSendEmailRequestDto request, MultipartFile[] uploadDocuments) {
+	public Map<String, Object> sendCustomerEmail(CustomerSendEmailRequestDto request, List<MultipartFile> uploadDocuments) {
 		
 		if (request.getTitle() == null || request.getTitle().trim().isEmpty())
 			throw new InternalServerException("Title cannot be empty", HttpStatus.OK);
@@ -639,15 +644,15 @@ public class AdminCustomerManagementService {
 		if (request.getEmailContent() == null || request.getEmailContent().trim().isEmpty())
 			throw new InternalServerException("Email content cannot be empty", HttpStatus.OK);
 		
+		System.out.println("Customer ID = " + request.getCustomerId());
 	    Customer customer = customerRepo
 	            .findById(request.getCustomerId().intValue())
 	            .orElseThrow(() -> new InternalServerException("Customer not found", HttpStatus.OK));
-	    
-	    AdminUser admin = adminUserRepo
-	            .findById(request.getAdminId().intValue())
+	    String toEmail = customer.getEmail();
+//		String toEmail = request.getEmail();
+	    AdminUser admin = adminUserRepo.findById(request.getAdminId().intValue())
 	            .orElseThrow(() -> new InternalServerException("Admin not found", HttpStatus.OK));
 
-	    String toEmail = customer.getEmail();
 	    CustomerEmailSendHistory sendEmailhistory = new CustomerEmailSendHistory();
 
 	    sendEmailhistory.setCustomerId(request.getCustomerId());
@@ -664,20 +669,26 @@ public class AdminCustomerManagementService {
 	    }
 	    
 	    List<CustomerSendEmailUpload> uploadedDocuments = new ArrayList<>();
+	    
 	    if (uploadDocuments != null) {
 	        for (MultipartFile file : uploadDocuments) {
+	        	
 	            if (file != null && !file.isEmpty()) {
+	            	
 	            	if (file.getSize() > 10 * 1024 * 1024) {
 	            	    throw new InternalServerException("File size must be less than 10MB", HttpStatus.OK);
 	            	}
+	            	
 	                CustomerSendEmailUpload document = new CustomerSendEmailUpload();
 	                document.setFileName(file.getOriginalFilename());
 	                String uploadedPath;
+	                
 	                	try {
 	                		uploadedPath = fileUtil.saveFile(file, "customer-email-documents");
 	                	}catch (Exception e) {
 	                		throw new InternalServerException("Failed to uppload document", HttpStatus.OK);
 	                	}
+	                	
 	                document.setFilePath(uploadedPath);
 	                document.setAdmin(admin);
 	                document.setSendEmailHistory(sendEmailhistory);
@@ -686,11 +697,44 @@ public class AdminCustomerManagementService {
 	        }
 	    }
 	    sendEmailhistory.setUploadDocuments(uploadedDocuments);
+
+	    Map<String, byte[]> multipartFilesInByte = new HashMap<>();
 	    
+	    if (uploadDocuments != null) {
+	        for (MultipartFile file : uploadDocuments) {
+	        	
+	            if (file != null && !file.isEmpty()) {
+	            	
+	                try {
+	                    multipartFilesInByte.put(file.getOriginalFilename(), file.getBytes());
+	                } catch (IOException e) {
+	                    throw new InternalServerException("Failed to read uploaded file", HttpStatus.OK);
+	                }
+	            }
+	        }
+	    }
+	    
+	    List<String> absoluteFilePaths = new ArrayList<>();
+	    
+	    if (request.getDocumentIds() != null && !request.getDocumentIds().isEmpty()) {
+
+	        List<Integer> documentIds = request.getDocumentIds().stream().map(Long::intValue).toList();
+	        List<ManageAdminDocument> documents = manageAdminDocumentRepo.findAllById(documentIds);
+	        
+	        for (ManageAdminDocument doc : documents) {
+	        	absoluteFilePaths.add(fileUtil.getAbsolutePath(doc.getFilePath()));
+	        }
+        	System.out.println("Absolute File Paths");
+        	absoluteFilePaths.forEach(System.out::println);
+	    }
+	    
+		    try {
+		        mailService.sendEmailWithMultipartAttachment(toEmail, request.getTitle(), customEmailTemplate.generateEmailHtml("", "", request.getEmailContent()), absoluteFilePaths, multipartFilesInByte);
+		    } catch (Exception e) {
+		        throw new InternalServerException("Failed to send email", HttpStatus.OK);
+		    }
+
 	    customerEmailSendHistoryRepo.save(sendEmailhistory);
-	    return Map.of(
-	            "res", true,
-	            "messsage", "Email sent successfully"
-	    );
+	    return Map.of("res", true, "messsage", "Email sent successfully");
 	}
 }

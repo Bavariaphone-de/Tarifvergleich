@@ -1,163 +1,309 @@
 <div class="page-layout">
-    <div class="sidebar">
-        <app-contact-person></app-contact-person>
-        <app-need-support></app-need-support>
-    </div>
+  <div class="sidebar">
+    <app-contact-person></app-contact-person>
+    <app-need-support></app-need-support>
+  </div>
 
-    <div class="main-content">
-        <div class="section-panel">
-            <div class="section-header">
-                Account – Business
-                <div class="container-icon" style="align-items: center">
-                    <span class="info-base info-green">i</span>
-                </div>
-            </div>
-
-            <div class="section-body">
-
-                <!-- Titel (optional toggle buttons) -->
-                <div *ngIf="title !== undefined" class="form-row container-salutation">
-                    <button type="button" class="title-btn" [class.active]="isTitleSelected('Dr.')"
-                        (click)="selectTitle('Dr.')">Dr.</button>
-                    <button type="button" class="title-btn" [class.active]="isTitleSelected('Prof.')"
-                        (click)="selectTitle('Prof.')">Prof.</button>
-                    <button type="button" class="title-btn" [class.active]="isTitleSelected('Prof. Dr.')"
-                        (click)="selectTitle('Prof. Dr.')">Prof. Dr.</button>
-                </div>
-
-                <!-- Unternehmensname -->
-                <div class="form-row" style="align-items: center">
-                    <div class="form-group">
-                        <div class="field-wrap" [class.field-error]="validationErrors['companyName']">
-                            <span class="field-label">Firma *</span>
-                            <input name="companyName" type="text" [(ngModel)]="companyName" />
-                        </div>
-                        <span *ngIf="validationErrors['companyName']" class="error-hint">
-                            {{ validationErrors['companyName'] }}
-                        </span>
-                    </div>
-                    <span class="info-base info-icon" style="flex-shrink: 0">i</span>
-                </div>
-
-                <!-- Anrede (Salutation) -->
-                <div class="form-group" style="padding-right: 20px; gap: 10px; margin-bottom: 10px">
-                    <div class="input-field select-wrap" [class.field-error]="validationErrors['salutation']"
-                        style="display: inline-block">
-                        <div>
-                            <span class="field-label"
-                                style="margin-left: 10px; font-size: 12px; font-weight: 500; display: block">
-                                Anrede *
-                            </span>
-                            <select class="styled-select" [(ngModel)]="salutation" name="salutation">
-                                <option value="">Bitte wählen...</option>
-                                <option value="Herr">Herr</option>
-                                <option value="Frau">Frau</option>
-                                <option value="Divers">Divers</option>
-                                <option value="Keine Angabe">Keine Angabe</option>
-                            </select>
-                            <span class="material-symbols-outlined dropdown-arrow">expand_more</span>
-                        </div>
-                    </div>
-                    <div class="error-hint" *ngIf="validationErrors['salutation']">
-                        {{ validationErrors['salutation'] }}
-                    </div>
-                </div>
-
-                <!-- Vorname / Nachname -->
-                <div class="form-row" style="align-items: center">
-                    <div class="form-group">
-                        <div class="field-wrap" [class.field-error]="validationErrors['firstName']">
-                            <span class="field-label">Vorname *</span>
-                            <input name="firstName" type="text" [(ngModel)]="firstName" />
-                        </div>
-                        <span *ngIf="validationErrors['firstName']" class="error-hint">
-                            {{ validationErrors['firstName'] }}
-                        </span>
-                    </div>
-                    <div class="form-group">
-                        <div class="field-wrap" [class.field-error]="validationErrors['lastName']">
-                            <span class="field-label">Nachname *</span>
-                            <input name="lastName" type="text" [(ngModel)]="lastName" />
-                        </div>
-                        <span *ngIf="validationErrors['lastName']" class="error-hint">
-                            {{ validationErrors['lastName'] }}
-                        </span>
-                    </div>
-                    <span class="info-base info-icon" style="flex-shrink: 0">i</span>
-                </div>
-
-                <!-- E-Mail 1 (Business) / E-Mail 2 (Privat) -->
-                <div class="form-row" style="align-items: center">
-                    <div class="form-group">
-                        <div class="field-wrap readonly-field" [class.field-error]="validationErrors['emailBusiness']">
-                            <span class="field-label">E-Mail-Adresse 1 (geschäftlich) *</span>
-                            <input name="emailBusiness" type="email" autocomplete="email" [(ngModel)]="emailBusiness" readonly />
-                        </div>
-                        <span *ngIf="validationErrors['emailBusiness']" class="error-hint">
-                            {{ validationErrors['emailBusiness'] }}
-                        </span>
-                    </div>
-                    <div class="form-group">
-                        <div class="field-wrap" [class.field-error]="validationErrors['emailPrivate']">
-                            <span class="field-label">E-Mail-Adresse 2 (privat)</span>
-                            <input name="emailPrivate" type="email" autocomplete="email" [(ngModel)]="emailPrivate" />
-                        </div>
-                        <span *ngIf="validationErrors['emailPrivate']" class="error-hint">
-                            {{ validationErrors['emailPrivate'] }}
-                        </span>
-                    </div>
-                    <span class="info-base info-icon" style="flex-shrink: 0">i</span>
-                </div>
-
-                <!-- Telefonnummer / Handynummer -->
-                <div class="form-row" style="align-items: center">
-                    <div class="form-group">
-                        <div class="field-wrap" [class.field-error]="validationErrors['phone']">
-                            <span class="field-label">Telefonnummer *</span>
-                            <input name="phone" type="tel" [(ngModel)]="phone" />
-                        </div>
-                        <span *ngIf="validationErrors['phone']" class="error-hint">
-                            {{ validationErrors['phone'] }}
-                        </span>
-                    </div>
-                    <div class="form-group">
-                        <div class="field-wrap" [class.field-error]="validationErrors['mobile']">
-                            <span class="field-label">Handynummer</span>
-                            <input name="mobile" type="tel" [(ngModel)]="mobile" />
-                        </div>
-                        <span *ngIf="validationErrors['mobile']" class="error-hint">
-                            {{ validationErrors['mobile'] }}
-                        </span>
-                    </div>
-                    <span class="info-base info-icon" style="flex-shrink: 0">i</span>
-                </div>
-
-                <!-- Geburtsdatum -->
-                <div class="form-row" style="align-items: center">
-                    <div class="form-group">
-                        <div class="field-wrap date" [class.field-error]="validationErrors['dob']">
-                            <span class="field-label">Geburtsdatum *</span>
-                            <input matInput [matDatepicker]="picker" [(ngModel)]="dob" [min]="minDob" [max]="maxDob"
-                                (click)="picker.open()" placeholder="TT.MM.JJJJ" readonly />
-                            <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-                            <mat-datepicker #picker></mat-datepicker>
-                        </div>
-                        <span *ngIf="validationErrors['dob']" class="error-hint">
-                            {{ validationErrors['dob'] }}
-                        </span>
-                    </div>
-                    <span class="info-base info-circ" style="flex-shrink: 0">i</span>
-                </div>
-
-                <!-- Error banner & Submit -->
-                <div *ngIf="errorMessage" class="error-banner">{{ errorMessage }}</div>
-
-                <button class="btn-primary" [disabled]="isLoading" (click)="submitForm()">
-                    <span *ngIf="isLoading" class="btn-spinner"></span>
-                    {{ isLoading ? 'Wird gespeichert…' : 'Account erstellen' }}
-                </button>
-
-            </div>
+  <div class="main-content">
+    <div class="section-panel">
+      <div class="section-header">
+        Account – Business
+        <div class="container-icon" style="align-items: center">
+          <span class="info-base info-green">i</span>
         </div>
+      </div>
+
+      <div class="section-body">
+        <!-- Unternehmensname -->
+        <div class="form-row" style="align-items: center">
+          <div class="form-group">
+            <div class="field-wrap" [class.field-error]="validationErrors['companyName']">
+              <span class="field-label">Firma *</span>
+              <input name="companyName" type="text" [(ngModel)]="companyName" />
+            </div>
+            <span *ngIf="validationErrors['companyName']" class="error-hint">
+              {{ validationErrors['companyName'] }}
+            </span>
+          </div>
+          <span class="info-base info-icon" style="flex-shrink: 0">i</span>
+        </div>
+
+        <!-- Anrede / Titel -->
+        <div class="form-row">
+          <div class="form-group" style="flex: 1">
+            <div
+              class="input-field select-wrap"
+              [class.field-error]="validationErrors['salutation']"
+              style="display: inline-block"
+            >
+              <div>
+                <span
+                  class="field-label"
+                  style="margin-left: 10px; font-size: 12px; font-weight: 500; display: block"
+                >
+                  Anrede *
+                </span>
+                <select class="styled-select" [(ngModel)]="salutation" name="salutation">
+                  <option value="">Bitte wählen...</option>
+                  <option value="Herr">Herr</option>
+                  <option value="Frau">Frau</option>
+                  <option value="Divers">Divers</option>
+                  <option value="Keine Angabe">Keine Angabe</option>
+                </select>
+                <span class="material-symbols-outlined dropdown-arrow">expand_more</span>
+              </div>
+            </div>
+            <div class="error-hint" *ngIf="validationErrors['salutation']">
+              {{ validationErrors['salutation'] }}
+            </div>
+          </div>
+
+          <div class="form-group" style="flex: 1">
+            <div class="input-field select-wrap" style="display: inline-block">
+              <div>
+                <span
+                  class="field-label"
+                  style="margin-left: 10px; font-size: 12px; font-weight: 500; display: block"
+                >
+                  Titel
+                </span>
+                <select class="styled-select" [(ngModel)]="title" name="title">
+                  <option value="">Kein Titel</option>
+                  <option value="Dr.">Dr.</option>
+                  <option value="Prof.">Prof.</option>
+                  <option value="Prof. Dr.">Prof. Dr.</option>
+                </select>
+                <span class="material-symbols-outlined dropdown-arrow">expand_more</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Vorname / Nachname -->
+        <div class="form-row" style="align-items: center">
+          <div class="form-group">
+            <div class="field-wrap" [class.field-error]="validationErrors['firstName']">
+              <span class="field-label">Vorname *</span>
+              <input name="firstName" type="text" [(ngModel)]="firstName" />
+            </div>
+            <span *ngIf="validationErrors['firstName']" class="error-hint">
+              {{ validationErrors['firstName'] }}
+            </span>
+          </div>
+          <div class="form-group">
+            <div class="field-wrap" [class.field-error]="validationErrors['lastName']">
+              <span class="field-label">Nachname *</span>
+              <input name="lastName" type="text" [(ngModel)]="lastName" />
+            </div>
+            <span *ngIf="validationErrors['lastName']" class="error-hint">
+              {{ validationErrors['lastName'] }}
+            </span>
+          </div>
+          <span class="info-base info-icon" style="flex-shrink: 0">i</span>
+        </div>
+
+        <!-- E-Mail 1 (Business) / E-Mail 2 (Privat) -->
+        <div class="form-row" style="align-items: center">
+          <div class="form-group">
+            <div
+              class="field-wrap readonly-field"
+              [class.field-error]="validationErrors['emailBusiness']"
+            >
+              <span class="field-label">E-Mail-Adresse 1 (geschäftlich) *</span>
+              <input
+                name="emailBusiness"
+                type="email"
+                autocomplete="email"
+                [(ngModel)]="emailBusiness"
+                readonly
+              />
+            </div>
+            <span *ngIf="validationErrors['emailBusiness']" class="error-hint">
+              {{ validationErrors['emailBusiness'] }}
+            </span>
+          </div>
+          <div class="form-group">
+            <div class="field-wrap" [class.field-error]="validationErrors['emailPrivate']">
+              <span class="field-label">E-Mail-Adresse 2 (privat)</span>
+              <input
+                name="emailPrivate"
+                type="email"
+                autocomplete="email"
+                [(ngModel)]="emailPrivate"
+              />
+            </div>
+            <span *ngIf="validationErrors['emailPrivate']" class="error-hint">
+              {{ validationErrors['emailPrivate'] }}
+            </span>
+          </div>
+          <span class="info-base info-icon" style="flex-shrink: 0">i</span>
+        </div>
+
+        <!-- Handynummer (required) / Telefonnummer (optional) — order matches customer -->
+        <div class="form-row" style="align-items: center">
+          <div class="form-group">
+            <div class="field-wrap" [class.field-error]="validationErrors['mobile']">
+              <span class="field-label">Handynummer *</span>
+              <input name="mobile" type="tel" [(ngModel)]="mobile" placeholder="+49 178 2568973" />
+            </div>
+            <span *ngIf="validationErrors['mobile']" class="error-hint">
+              {{ validationErrors['mobile'] }}
+            </span>
+          </div>
+          <div class="form-group">
+            <div class="field-wrap" [class.field-error]="validationErrors['phone']">
+              <span class="field-label">Telefonnummer (optional)</span>
+              <input name="phone" type="tel" [(ngModel)]="phone" placeholder="+49 30 1234567" />
+            </div>
+            <span *ngIf="validationErrors['phone']" class="error-hint">
+              {{ validationErrors['phone'] }}
+            </span>
+          </div>
+          <span class="info-base info-icon" style="flex-shrink: 0">i</span>
+        </div>
+
+        <!-- Geburtsdatum -->
+        <div class="form-row" style="align-items: center">
+          <div class="form-group">
+            <div class="field-wrap date" [class.field-error]="validationErrors['dob']">
+              <span class="field-label">Geburtsdatum *</span>
+              <input
+                matInput
+                [matDatepicker]="picker"
+                [(ngModel)]="dob"
+                [min]="minDob"
+                [max]="maxDob"
+                (click)="picker.open()"
+                placeholder="TT.MM.JJJJ"
+                readonly
+              />
+              <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+              <mat-datepicker #picker></mat-datepicker>
+            </div>
+            <span *ngIf="validationErrors['dob']" class="error-hint">
+              {{ validationErrors['dob'] }}
+            </span>
+          </div>
+          <span class="info-base info-circ" style="flex-shrink: 0">i</span>
+        </div>
+
+        <!-- PLZ / Ort -->
+        <div class="form-row" style="align-items: flex-start">
+          <!-- ZIP -->
+          <div class="form-group postcode">
+            <div class="field-wrap" [class.field-error]="validationErrors['zip']">
+              <span class="field-label">Ihre PLZ *</span>
+              <input
+                name="zip"
+                type="text"
+                maxlength="5"
+                [(ngModel)]="zip"
+                (input)="onPostalCodeInput($event)"
+                placeholder="12345"
+              />
+            </div>
+            <span *ngIf="validationErrors['zip']" class="error-hint">
+              {{ validationErrors['zip'] }}
+            </span>
+          </div>
+
+          <!-- CITY -->
+          <div class="form-group">
+            <div class="field-wrap dropdown-wrapper" [class.field-error]="validationErrors['city']">
+              <span class="field-label">Ort *</span>
+              <input
+                name="city"
+                type="text"
+                [(ngModel)]="citySearch"
+                placeholder="Musterhausen"
+                (input)="onCityInput($event)"
+                (focus)="showCityDropdown = true"
+                (click)="$event.stopPropagation()"
+              />
+              <div class="dropdown" *ngIf="showCityDropdown">
+                <div *ngIf="filteredCityOptions.length === 0" class="dropdown-item disabled">
+                  Keine Orte gefunden
+                </div>
+                <div
+                  *ngFor="let c of filteredCityOptions"
+                  class="dropdown-item"
+                  (click)="selectCity(c)"
+                >
+                  {{ c.city }}
+                </div>
+              </div>
+            </div>
+            <span *ngIf="validationErrors['city']" class="error-hint">
+              {{ validationErrors['city'] }}
+            </span>
+          </div>
+
+          <span class="info-base info-icon" style="flex-shrink: 0">i</span>
+        </div>
+
+        <!-- Straße / Hausnummer -->
+        <div class="form-row" style="align-items: flex-start">
+          <!-- STREET -->
+          <div class="form-group">
+            <div
+              class="field-wrap dropdown-wrapper"
+              [class.field-error]="validationErrors['street']"
+            >
+              <span class="field-label">Ihre Straße *</span>
+              <input
+                name="street"
+                type="text"
+                [(ngModel)]="streetSearch"
+                placeholder="Mustermannstraße"
+                (input)="onStreetInput($event)"
+                (focus)="showStreetDropdown = true"
+                (click)="$event.stopPropagation()"
+                [disabled]="!city"
+              />
+              <div class="dropdown" *ngIf="showStreetDropdown">
+                <div *ngIf="isStreetLoading" class="dropdown-item">Laden...</div>
+                <div
+                  *ngIf="!isStreetLoading && filteredStreetOptions.length === 0"
+                  class="dropdown-item disabled"
+                >
+                  Keine Straße gefunden
+                </div>
+                <div
+                  *ngFor="let s of filteredStreetOptions"
+                  class="dropdown-item"
+                  (click)="selectStreet(s)"
+                >
+                  {{ s.street }}
+                </div>
+              </div>
+            </div>
+            <span *ngIf="validationErrors['street']" class="error-hint">
+              {{ validationErrors['street'] }}
+            </span>
+          </div>
+
+          <!-- HOUSE NUMBER -->
+          <div class="form-group postcode">
+            <div class="field-wrap" [class.field-error]="validationErrors['houseNumber']">
+              <span class="field-label">Hausnummer *</span>
+              <input name="houseNumber" type="text" [(ngModel)]="houseNumber" placeholder="1a" />
+            </div>
+            <span *ngIf="validationErrors['houseNumber']" class="error-hint">
+              {{ validationErrors['houseNumber'] }}
+            </span>
+          </div>
+
+          <span class="info-base info-icon" style="flex-shrink: 0">i</span>
+        </div>
+
+        <!-- Error banner & Submit -->
+        <div *ngIf="errorMessage" class="error-banner">{{ errorMessage }}</div>
+
+        <button class="btn-primary" [disabled]="isLoading" (click)="submitForm()">
+          <span *ngIf="isLoading" class="btn-spinner"></span>
+          {{ isLoading ? 'Wird gespeichert…' : 'Account erstellen' }}
+        </button>
+      </div>
     </div>
+  </div>
 </div>

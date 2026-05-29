@@ -16,6 +16,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tarifvergleich.electricity.dto.CustomerAddressDto;
 import com.tarifvergleich.electricity.dto.CustomerAttornyDto;
+import com.tarifvergleich.electricity.dto.CustomerChangeDiscountRequestDto;
 import com.tarifvergleich.electricity.dto.CustomerConnectWrapper;
 import com.tarifvergleich.electricity.dto.CustomerContactScheduleRequestDto;
 import com.tarifvergleich.electricity.dto.CustomerDeliveryDto;
@@ -235,5 +236,13 @@ public class CustomerController {
 	@PostMapping("/add-supplier-message")
 	public ResponseEntity<?> addSupplierMessage(@RequestBody EnergySupplierMessageDto energySupplierMessageDto) {
 		return ResponseEntity.ok(customerEnergySupplierService.saveSupplierMessage(energySupplierMessageDto));
+	}
+	
+	@PostMapping("/change-discount-request")
+	public ResponseEntity<?> changeDiscountRequest(
+	        @RequestBody CustomerChangeDiscountRequestDto dto) {
+
+	    return ResponseEntity.ok(
+	            customerDetailService.saveChangeDiscountRequest(dto));
 	}
 }

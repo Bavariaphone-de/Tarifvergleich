@@ -234,6 +234,13 @@ export class Customer {
     this.cdr.detectChanges();
   }
 
+  changeDiscount(item?: any) {
+    this.nextStep(8);
+    if (item) {
+      this.selectedMeter = item;
+    }
+    this.cdr.detectChanges();
+  }
   showLogoutModal: boolean = false;
 
   openLogoutModal() {
@@ -372,8 +379,6 @@ export class Customer {
           this.selection = 'no';
         }
 
-        // console.log('Customer :', this.customerData?.address);
-        // console.log('customerData on init:', this.customerData?.address?.zip);
         // PREFILL ADDRESS DROPDOWNS
         if (this.customerData?.address?.zip) {
           this.addressService
@@ -403,6 +408,15 @@ export class Customer {
               this.cdr.detectChanges();
             });
         }
+
+        this.contractChangeData = {
+          lastName: data.lastName || '',
+          companyName: data.companyName || '',
+          title: data.title || '',
+          firstName: data.firstName || '',
+          salutation: data.salutation || '',
+          dateOfBirth: data.dateOfBirth || '',
+        };
 
         this.cdr.detectChanges();
         // this.isLoading = false;
@@ -1335,6 +1349,7 @@ export class Customer {
     });
   }
 
+  redirectToMeter: boolean = false;
   openRequestService(item: any): void {
     // open service section
     this.activeTab = 3;
@@ -1367,6 +1382,9 @@ export class Customer {
       this.selectedIndex = index;
 
       console.log('Selected Card:', this.cards[index]);
+
+      this.redirectToMeter = true;
+      this.cdr.detectChanges();
 
       // existing card select function
       this.selectCard(index, this.cards[index].deliveryId);
@@ -1522,6 +1540,26 @@ export class Customer {
     });
   }
 
+  /* View contract details */
+  viewContract(item: any) {
+    const fileUrl = `${API_BASE}/assets/customers/${item.order.doc.signedFileUrl}`;
+
+    window.open(fileUrl, '_blank');
+  }
+  /* Download contract */
+  downloadContract(item: any) {
+    const fileUrl = item.signedFileUrl;
+
+    const link = document.createElement('a');
+    link.href = fileUrl;
+    link.target = '_blank';
+    link.download = '';
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
   /* Change contract details */
   // component.ts
 
@@ -1619,6 +1657,93 @@ export class Customer {
 
     this.contractDropdownOpen = false;
   }
+
+  /* Change Discount Payment */
+
+  newDiscountAmount: string = '';
+  discountReason: string = '';
+
+  submittedDiscountRequest = false;
+  isLoadingDiscountRequest = false;
+
+  getDiscountStatus(item: any): string {
+    const status = item?.discountRequests?.[0]?.status;
+
+    if (status === 0) {
+      return 'In Progress';
+    }
+
+    if (status === 1) {
+      return 'Forwarded';
+    }
+
+    return '';
+  }
+
+  validateDiscountRequest(): boolean {
+    this.fieldErrors = {};
+
+    let isValid = true;
+
+    if (!this.newDiscountAmount || Number(this.newDiscountAmount) <= 0) {
+      this.fieldErrors['newDiscountAmount'] = 'Bitte neuen Abschlagsbetrag eingeben';
+
+      isValid = false;
+    }
+
+    if (!this.discountReason?.trim()) {
+      this.fieldErrors['discountReason'] = 'Bitte Grund der Änderung eingeben';
+
+      isValid = false;
+    }
+
+    return isValid;
+  }
+
+  submitDiscountRequest() {
+    if (!this.validateDiscountRequest()) {
+      return;
+    }
+
+    const payload = {
+      customerId: this.authService.getUserId(),
+
+      deliveryId: this.selectedMeter?.deliveryId,
+
+      newAdvanceAmount: this.newDiscountAmount,
+
+      reason: this.discountReason,
+      orderId: this.selectedMeter?.order?.orderId,
+    };
+
+    console.log('Discount Payload:', payload);
+
+    this.isLoadingDiscountRequest = true;
+
+    this.http.post<any>(`${API_BASE}/customer/change-discount-request`, payload).subscribe({
+      next: (res) => {
+        this.isLoadingDiscountRequest = false;
+
+        if (res?.res === true) {
+          this.submittedDiscountRequest = true;
+
+          this.newDiscountAmount = '';
+          this.discountReason = '';
+
+          this.cdr.detectChanges();
+        } else {
+          console.error('Invalid response', res);
+        }
+      },
+
+      error: (err) => {
+        this.isLoadingDiscountRequest = false;
+
+        console.error('API Error:', err);
+      },
+    });
+  }
+
   /*── Meter Section end ──*/
   /* ════════════════════════════════════════════════════════════════════════════════════════════════*/
   /*── Reminder Section Start ──*/
@@ -2150,6 +2275,20 @@ export class Customer {
       isValid = false;
     }
 
+    // OPTIONAL CALLBACK VALIDATION
+    // Only validate if phone number entered
+    if (this.phoneNumber) {
+      if (!this.selectedDay) {
+        this.fieldErrors['selectedDay'] = 'Bitte wählen Sie einen Wochentag';
+        isValid = false;
+      }
+
+      if (!this.selectedTimeSlot) {
+        this.fieldErrors['selectedTimeSlot'] = 'Bitte wählen Sie eine Uhrzeit';
+        isValid = false;
+      }
+    }
+
     return isValid;
   }
 
@@ -2163,6 +2302,17 @@ export class Customer {
       message: this.inquiryText,
       serviceRequestType: this.selectedIndex === -1 ? 'general' : 'delivery',
       deliveryId: this.selectedDeliveryId,
+
+      // OPTIONAL CALLBACK DATA
+      callbackRequest: !!this.phoneNumber,
+
+      phoneNumber: this.phoneNumber || '',
+      countryCode: this.countryCode || '',
+
+      callbackDate: this.selectedDay?.date || '',
+      callbackTimeSlot: this.selectedTimeSlot || '',
+
+      callbackDescription: this.scheduleDescription || '',
     };
 
     // console.log('Final Payload:', payload);
@@ -2535,9 +2685,14 @@ export class Customer {
               city: address?.city || '',
 
               invoiceRequests: item.invoiceRequests,
+              discountRequests: item.discountRequests,
 
               reportMeterReadings: item.reportMeterReadings,
               supplierMessage: item.order.supplierMessage,
+
+              signedFileUrl: item.order?.doc?.signedFileUrl
+                ? `${API_BASE}/assets/customers/${item.order.doc.signedFileUrl}`
+                : null,
 
               address: {
                 name: `${customer?.firstName || ''} ${customer?.lastName || ''}`.trim(),
@@ -3828,149 +3983,42 @@ export class Customer {
   /* ════════════════════════════════════════════════════════════════════════════════════════════════*/
   /* ──  Sub-Account Section Start ──*/
 
-  /** Index of the currently expanded sub-account card (-1 = none) */
-  expandedSubAccount: number = -1;
+  subAccounts: any[] = [];
+  showInviteForm: boolean = false;
+  newSubAccountEmail: string = '';
+  subAccountSuccessMessage: string = '';
+  subAccountErrors: { [key: string]: string } = {};
 
-  /** Whether the add/edit form is visible */
-  showSubAccountForm: boolean = false;
+  sendSubAccountInvitation() {
+    this.subAccountErrors = {};
 
-  /** Index being edited, or null when creating a new one */
-  editingSubAccountIndex: number | null = null;
-
-  isSavingSubAccount: boolean = false;
-  subAccountApiError: string = '';
-  subAccountFieldErrors: Record<string, string> = {};
-
-  /** Blank sub-account shape reused for new / edit forms */
-  private blankSubAccountForm() {
-    return {
-      companyName: '',
-      salutation: '',
-      title: '',
-      firstName: '',
-      lastName: '',
-      email: '',
-      mobileNumber: '',
-      phoneNumber: '',
-      address: { zip: '', city: '', street: '', houseNumber: '' },
-      billingAddressDiffers: false,
-      billingAddress: { zip: '', city: '', street: '', houseNumber: '' },
-      bankDetails: { bankName: '', iban: '', bic: '', accountNumber: '', bankCode: '' },
-    };
-  }
-
-  subAccountForm: ReturnType<Customer['blankSubAccountForm']> = this.blankSubAccountForm();
-
-  toggleSubAccount(index: number): void {
-    this.expandedSubAccount = this.expandedSubAccount === index ? -1 : index;
-  }
-
-  openAddSubAccount(): void {
-    this.editingSubAccountIndex = null;
-    this.subAccountForm = this.blankSubAccountForm();
-    this.subAccountFieldErrors = {};
-    this.subAccountApiError = '';
-    this.showSubAccountForm = true;
-    this.cdr.detectChanges();
-  }
-
-  editSubAccount(index: number, event: Event): void {
-    event.stopPropagation();
-    const sub = this.customerData.subAccounts[index];
-    this.editingSubAccountIndex = index;
-    this.subAccountForm = {
-      companyName: sub.companyName || '',
-      salutation: sub.salutation || '',
-      title: sub.title || '',
-      firstName: sub.firstName || '',
-      lastName: sub.lastName || '',
-      email: sub.email || '',
-      mobileNumber: sub.mobileNumber || '',
-      phoneNumber: sub.phoneNumber || '',
-      address: sub.address
-        ? { ...sub.address }
-        : { zip: '', city: '', street: '', houseNumber: '' },
-      billingAddressDiffers: sub.billingAddressDiffers || false,
-      billingAddress: sub.billingAddress
-        ? { ...sub.billingAddress }
-        : { zip: '', city: '', street: '', houseNumber: '' },
-      bankDetails: sub.bankDetails
-        ? { ...sub.bankDetails }
-        : { bankName: '', iban: '', bic: '', accountNumber: '', bankCode: '' },
-    };
-    this.subAccountFieldErrors = {};
-    this.subAccountApiError = '';
-    this.showSubAccountForm = true;
-    this.expandedSubAccount = -1;
-    this.cdr.detectChanges();
-  }
-
-  cancelSubAccountForm(): void {
-    this.showSubAccountForm = false;
-    this.editingSubAccountIndex = null;
-    this.subAccountForm = this.blankSubAccountForm();
-    this.subAccountFieldErrors = {};
-    this.subAccountApiError = '';
-    this.cdr.detectChanges();
-  }
-
-  private validateSubAccountForm(): boolean {
-    this.subAccountFieldErrors = {};
-    if (!this.subAccountForm.salutation?.trim()) {
-      this.subAccountFieldErrors['salutation'] = 'Bitte Anrede auswählen';
+    // Basic Email Validation
+    if (!this.newSubAccountEmail || !this.newSubAccountEmail.includes('@')) {
+      this.subAccountErrors['email'] = 'Bitte geben Sie eine gültige E-Mail-Adresse ein.';
+      return;
     }
-    if (!this.subAccountForm.firstName?.trim()) {
-      this.subAccountFieldErrors['firstName'] = 'Vorname ist erforderlich';
-    }
-    if (!this.subAccountForm.lastName?.trim()) {
-      this.subAccountFieldErrors['lastName'] = 'Nachname ist erforderlich';
-    }
-    if (!this.subAccountForm.address?.zip?.trim()) {
-      this.subAccountFieldErrors['zip'] = 'PLZ ist erforderlich';
-    }
-    return Object.keys(this.subAccountFieldErrors).length === 0;
+
+    // Handle your API invitation logic here
+    console.log('Sending invitation to:', this.newSubAccountEmail);
+
+    // Mocking API Success response:
+    this.subAccountSuccessMessage = 'Die Einladung wurde erfolgreich gesendet.';
+    this.showInviteForm = false;
+    this.newSubAccountEmail = '';
+
+    // Clear success message after a few seconds
+    setTimeout(() => (this.subAccountSuccessMessage = ''), 5000);
   }
 
-  saveSubAccount(): void {
-    if (!this.validateSubAccountForm()) return;
+  cancelInvitation() {
+    this.showInviteForm = false;
+    this.newSubAccountEmail = '';
+    this.subAccountErrors = {};
+  }
 
-    this.isSavingSubAccount = true;
-    this.subAccountApiError = '';
-
-    const customerId = this.authService.getUserId() || 0;
-    const payload = {
-      customerId: Number(customerId),
-      adminId: 1,
-      subAccount: { ...this.subAccountForm },
-      subAccountIndex: this.editingSubAccountIndex,
-    };
-
-    this.http.post<any>(`${API_BASE}/customer/save-sub-account`, payload).subscribe({
-      next: (res) => {
-        this.isSavingSubAccount = false;
-        if (res?.res) {
-          // Optimistically update local list
-          if (!this.customerData.subAccounts) {
-            this.customerData.subAccounts = [];
-          }
-          if (this.editingSubAccountIndex !== null) {
-            this.customerData.subAccounts[this.editingSubAccountIndex] = { ...this.subAccountForm };
-          } else {
-            this.customerData.subAccounts.push({ ...this.subAccountForm });
-          }
-          this.cancelSubAccountForm();
-        } else {
-          this.subAccountApiError = res?.errMessage || 'Fehler beim Speichern.';
-        }
-        this.cdr.detectChanges();
-      },
-      error: (err) => {
-        this.isSavingSubAccount = false;
-        this.subAccountApiError =
-          err?.error?.message || 'Fehler beim Speichern. Bitte erneut versuchen.';
-        this.cdr.detectChanges();
-      },
-    });
+  removeSubAccount(id: number) {
+    // Logic to handle deleting/revoking a sub-account access
+    console.log('Removing account ID:', id);
   }
 
   /* ──  Sub-Account Section End ──*/
