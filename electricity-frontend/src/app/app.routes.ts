@@ -57,7 +57,7 @@ export const routes: Routes = [
     ],
   },
   { path: 'customer', component: Customer },
-  { path: 'create-accounts', component: CreateBusinessAccount },
+  { path: 'create-sub-accounts', component: CreateBusinessAccount },
   { path: 'imprint', component: Imprint },
   { path: 'contact', component: Contact },
   { path: 'order-signature', component: OrderSignature },

@@ -1,4 +1,11 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef, computed } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  ChangeDetectorRef,
+  computed,
+  HostListener,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
@@ -9,6 +16,7 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { ContactPerson } from '../../layout/contact-person/contact-person';
 import { NeedSupport } from '../../layout/need-support/need-support';
 import { AuthService } from '../../services/auth.service';
+import { AddressService } from '../../services/address.service';
 
 const API_BASE = 'http://192.168.0.155:8080';
 
@@ -30,28 +38,39 @@ const API_BASE = 'http://192.168.0.155:8080';
 export class CreateBusinessAccount implements OnInit, OnDestroy {
   // ── Form fields ──────────────────────────────────────────────
   salutation: string = '';
-  title: string = ''; // optional title toggle (Dr. / Prof. / Prof. Dr.)
+  title: string = ''; // select: '' | 'Dr.' | 'Prof.' | 'Prof. Dr.'
   companyName: string = '';
   firstName: string = '';
   lastName: string = '';
-  emailBusiness: string = ''; // E-Mail 1 – geschäftlich (required)
+  emailBusiness: string = ''; // E-Mail 1 – geschäftlich (required, readonly)
   emailPrivate: string = ''; // E-Mail 2 – privat       (optional)
-  phone: string = ''; // Telefonnummer (required)
-  mobile: string = ''; // Handynummer   (optional)
+  mobile: string = ''; // Handynummer  (required)  — matches customer order
+  phone: string = ''; // Telefonnummer (optional) — matches customer order
   dob: Date | null = null;
+
+  // ── Address fields ───────────────────────────────────────────
+  zip: string = '';
+  city: string = '';
+  street: string = '';
+  houseNumber: string = '';
+
+  // ── Address dropdown state ───────────────────────────────────
+  citySearch: string = '';
+  streetSearch: string = '';
+  showCityDropdown: boolean = false;
+  showStreetDropdown: boolean = false;
+  filteredCityOptions: any[] = [];
+  filteredStreetOptions: any[] = [];
+  isStreetLoading: boolean = false;
 
   // ── UI state ─────────────────────────────────────────────────
   isLoading: boolean = false;
   successMessage: string = '';
   errorMessage: string = '';
   validationErrors: Record<string, string> = {};
-  providerDetails: any = null;
 
   // ── Datepicker bounds ────────────────────────────────────────
-  /** Earliest accepted birth date */
   readonly minDob: Date = new Date(1900, 0, 1);
-
-  /** Latest accepted birth date — must be at least 18 years old */
   readonly maxDob: Date = (() => {
     const d = new Date();
     d.setFullYear(d.getFullYear() - 18);
@@ -68,17 +87,24 @@ export class CreateBusinessAccount implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private http: HttpClient,
     private authService: AuthService,
+    private addressService: AddressService,
     private cdr: ChangeDetectorRef,
   ) {}
 
   // ── Lifecycle ────────────────────────────────────────────────
   ngOnInit(): void {
     this.initPrefillData();
-
   }
 
   ngOnDestroy(): void {
     this.routerSub?.unsubscribe();
+  }
+
+  /** Close address dropdowns when clicking outside */
+  @HostListener('document:click')
+  onDocumentClick(): void {
+    this.showCityDropdown = false;
+    this.showStreetDropdown = false;
   }
 
   private resetFields(): void {
@@ -89,9 +115,17 @@ export class CreateBusinessAccount implements OnInit, OnDestroy {
     this.lastName = '';
     this.emailBusiness = '';
     this.emailPrivate = '';
-    this.phone = '';
     this.mobile = '';
+    this.phone = '';
     this.dob = null;
+    this.zip = '';
+    this.city = '';
+    this.street = '';
+    this.houseNumber = '';
+    this.citySearch = '';
+    this.streetSearch = '';
+    this.filteredCityOptions = [];
+    this.filteredStreetOptions = [];
     this.validationErrors = {};
     this.successMessage = '';
     this.errorMessage = '';
@@ -105,14 +139,36 @@ export class CreateBusinessAccount implements OnInit, OnDestroy {
     this.lastName = data.lastName ?? '';
     this.emailBusiness = data.emailBusiness ?? data.email ?? this.emailBusiness;
     this.emailPrivate = data.emailPrivate ?? '';
+
+    // mobile = mobileNumber/mobile (required); phone = telephone/phone (optional)
+    this.mobile = data.mobileNumber ?? data.mobile ?? '';
     this.phone = data.telephone ?? data.phone ?? '';
-    this.mobile = data.mobile ?? '';
 
     if (data.dob) {
       const parsed = new Date(Number(data.dob) * 1000);
       if (!isNaN(parsed.getTime())) {
         this.dob = parsed;
       }
+    }
+
+    // Address
+    const addr = data.address ?? {};
+    this.zip = addr.zip ?? data.zip ?? '';
+    this.city = addr.city ?? data.city ?? '';
+    this.street = addr.street ?? data.street ?? '';
+    this.houseNumber = addr.houseNumber ?? data.houseNumber ?? '';
+    this.citySearch = this.city;
+    this.streetSearch = this.street;
+
+    // Pre-load street options if zip + city are already known
+    if (this.zip && this.city) {
+      this.addressService.getCitiesByZip(this.zip).subscribe((cities: any[]) => {
+        this.filteredCityOptions = cities;
+        this.addressService.getStreetsByCity(this.zip, this.city).subscribe((streets: any[]) => {
+          this.filteredStreetOptions = streets;
+          this.cdr.detectChanges();
+        });
+      });
     }
 
     this.cdr.detectChanges();
@@ -126,10 +182,7 @@ export class CreateBusinessAccount implements OnInit, OnDestroy {
 
   private prefillFromAuthState(): void {
     const user = this.authService.getCurrentUser();
-    if (!user) {
-      return;
-    }
-
+    if (!user) return;
     this.emailBusiness = this.emailBusiness || user.email || '';
   }
 
@@ -146,10 +199,7 @@ export class CreateBusinessAccount implements OnInit, OnDestroy {
   private fetchStoredFormData(): void {
     const userId = this.authService.getUserId();
     const deliveryId = this.authService.getDeliveryId();
-
-    if (!userId || !deliveryId) {
-      return;
-    }
+    if (!userId || !deliveryId) return;
 
     const payload = {
       customerId: parseInt(userId, 10),
@@ -169,13 +219,64 @@ export class CreateBusinessAccount implements OnInit, OnDestroy {
     });
   }
 
-  // ── Title toggle helpers ─────────────────────────────────────
-  isTitleSelected(t: string): boolean {
-    return this.title.trim() === t;
+  // ── Address dropdown handlers ────────────────────────────────
+  onPostalCodeInput(event: Event): void {
+    const value = (event.target as HTMLInputElement).value;
+    this.zip = value;
+    this.city = '';
+    this.street = '';
+    this.citySearch = '';
+    this.streetSearch = '';
+    this.filteredCityOptions = [];
+    this.filteredStreetOptions = [];
+
+    if (value.length === 5) {
+      this.addressService.getCitiesByZip(value).subscribe((cities: any[]) => {
+        this.filteredCityOptions = cities;
+        this.showCityDropdown = cities.length > 0;
+        this.cdr.detectChanges();
+      });
+    }
   }
 
-  selectTitle(t: string): void {
-    this.title = this.title === t ? '' : t;
+  onCityInput(event: Event): void {
+    const value = (event.target as HTMLInputElement).value.toLowerCase();
+    this.citySearch = (event.target as HTMLInputElement).value;
+    this.filteredCityOptions = this.filteredCityOptions.filter((c) =>
+      c.city.toLowerCase().includes(value),
+    );
+    this.showCityDropdown = true;
+  }
+
+  selectCity(c: any): void {
+    this.city = c.city;
+    this.citySearch = c.city;
+    this.showCityDropdown = false;
+    this.street = '';
+    this.streetSearch = '';
+    this.filteredStreetOptions = [];
+
+    this.isStreetLoading = true;
+    this.addressService.getStreetsByCity(this.zip, this.city).subscribe((streets: any[]) => {
+      this.filteredStreetOptions = streets;
+      this.isStreetLoading = false;
+      this.cdr.detectChanges();
+    });
+  }
+
+  onStreetInput(event: Event): void {
+    const value = (event.target as HTMLInputElement).value.toLowerCase();
+    this.streetSearch = (event.target as HTMLInputElement).value;
+    this.filteredStreetOptions = this.filteredStreetOptions.filter((s) =>
+      s.street.toLowerCase().includes(value),
+    );
+    this.showStreetDropdown = true;
+  }
+
+  selectStreet(s: any): void {
+    this.street = s.street;
+    this.streetSearch = s.street;
+    this.showStreetDropdown = false;
   }
 
   // ── Validation ───────────────────────────────────────────────
@@ -185,12 +286,10 @@ export class CreateBusinessAccount implements OnInit, OnDestroy {
   private validate(): boolean {
     this.validationErrors = {};
 
-    // Salutation
     if (!this.salutation?.trim()) {
       this.validationErrors['salutation'] = 'Bitte wählen Sie eine Anrede aus.';
     }
 
-    // First / Last name
     if (!this.firstName?.trim()) {
       this.validationErrors['firstName'] = 'Bitte geben Sie Ihren Vornamen ein.';
     }
@@ -210,21 +309,21 @@ export class CreateBusinessAccount implements OnInit, OnDestroy {
       this.validationErrors['emailBusiness'] = 'Bitte geben Sie eine gültige E-Mail-Adresse ein.';
     }
 
-    // E-Mail 2 – private (optional, validate format only when filled)
+    // E-Mail 2 – private (optional)
     if (this.emailPrivate?.trim() && !this.EMAIL_RE.test(this.emailPrivate.trim())) {
       this.validationErrors['emailPrivate'] = 'Bitte geben Sie eine gültige E-Mail-Adresse ein.';
     }
 
-    // Phone (required)
-    if (!this.phone?.trim()) {
-      this.validationErrors['phone'] = 'Bitte geben Sie Ihre Telefonnummer ein.';
-    } else if (!this.PHONE_RE.test(this.phone.trim())) {
-      this.validationErrors['phone'] = 'Bitte geben Sie eine gültige Telefonnummer ein.';
+    // Handynummer (required)
+    if (!this.mobile?.trim()) {
+      this.validationErrors['mobile'] = 'Bitte geben Sie Ihre Handynummer ein.';
+    } else if (!this.PHONE_RE.test(this.mobile.trim())) {
+      this.validationErrors['mobile'] = 'Bitte geben Sie eine gültige Handynummer ein.';
     }
 
-    // Mobile (optional, validate format only when filled)
-    if (this.mobile?.trim() && !this.PHONE_RE.test(this.mobile.trim())) {
-      this.validationErrors['mobile'] = 'Bitte geben Sie eine gültige Handynummer ein.';
+    // Telefonnummer (optional)
+    if (this.phone?.trim() && !this.PHONE_RE.test(this.phone.trim())) {
+      this.validationErrors['phone'] = 'Bitte geben Sie eine gültige Telefonnummer ein.';
     }
 
     // Date of birth
@@ -233,7 +332,6 @@ export class CreateBusinessAccount implements OnInit, OnDestroy {
     } else {
       const selected = new Date(this.dob);
       selected.setHours(0, 0, 0, 0);
-
       const minDate = new Date(1900, 0, 1);
       const maxDate = new Date();
       maxDate.setFullYear(maxDate.getFullYear() - 18);
@@ -244,6 +342,25 @@ export class CreateBusinessAccount implements OnInit, OnDestroy {
       } else if (selected > maxDate) {
         this.validationErrors['dob'] = 'Sie müssen mindestens 18 Jahre alt sein.';
       }
+    }
+
+    // Address
+    if (!this.zip?.trim()) {
+      this.validationErrors['zip'] = 'Bitte geben Sie Ihre PLZ ein.';
+    } else if (!/^\d{5}$/.test(this.zip.trim())) {
+      this.validationErrors['zip'] = 'Bitte geben Sie eine gültige PLZ ein (5 Ziffern).';
+    }
+
+    if (!this.city?.trim()) {
+      this.validationErrors['city'] = 'Bitte wählen Sie einen Ort aus.';
+    }
+
+    if (!this.street?.trim()) {
+      this.validationErrors['street'] = 'Bitte wählen Sie eine Straße aus.';
+    }
+
+    if (!this.houseNumber?.trim()) {
+      this.validationErrors['houseNumber'] = 'Bitte geben Sie die Hausnummer ein.';
     }
 
     return Object.keys(this.validationErrors).length === 0;
@@ -270,9 +387,15 @@ export class CreateBusinessAccount implements OnInit, OnDestroy {
       lastName: this.lastName,
       emailBusiness: this.emailBusiness.trim(),
       emailPrivate: this.emailPrivate.trim() || null,
-      phone: this.phone.trim(),
-      mobile: this.mobile.trim() || null,
+      mobile: this.mobile.trim(),
+      phone: this.phone.trim() || null,
       dob: this.dob ? this.formatDate(this.dob) : null,
+      address: {
+        zip: this.zip.trim(),
+        city: this.city.trim(),
+        street: this.street.trim(),
+        houseNumber: this.houseNumber.trim(),
+      },
     };
 
     this.http

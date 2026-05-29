@@ -200,12 +200,12 @@ public class AdminCustomerManagementController {
 	}
 	
 	@PostMapping("/send-customer-email")
-	public ResponseEntity<?> sendCustomerEmail(
-	    @RequestParam("data") String jsonData,
-	    @RequestPart(value = "uploadDocuments",required = false)
-	    List<MultipartFile> uploadDocuments
-	) throws Exception {
-	    CustomerSendEmailRequestDto request = objectMapper.readValue(jsonData, CustomerSendEmailRequestDto.class);
-	    return ResponseEntity.ok(adminCustomerManagementService.sendCustomerEmail(request,uploadDocuments));
-	}
+		public ResponseEntity<?> sendCustomerEmail(
+		    @RequestParam("data") String jsonData,
+		    @RequestPart(value = "uploadDocuments",required = false)
+		    List<MultipartFile> uploadDocuments
+		) throws Exception {
+		    CustomerSendEmailRequestDto request = objectMapper.readValue(jsonData, CustomerSendEmailRequestDto.class);
+		    return ResponseEntity.ok(adminCustomerManagementService.sendCustomerEmail(request,uploadDocuments));
+		}
 }

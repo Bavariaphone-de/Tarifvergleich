@@ -11,6 +11,7 @@ import com.tarifvergleich.electricity.util.Helper;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -55,7 +56,7 @@ public class Customer {
 
 	private String otp;
 
-	@Column(name = "user_type")
+	@Column(name = "user_type", comment = "'PRIVATE', 'BUSINESS'")
 	private String userType;
 
 	private String title;
@@ -107,6 +108,11 @@ public class Customer {
 
 	// This field is used for blocking and unblocking
 	private Boolean status;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "business_customer_id")
+	@JsonIgnore
+	private Customer businessCustomerAccount;
 
 	@Column(name = "is_notification_enabled")
 	private Boolean isNotificationEnabled;
@@ -166,6 +172,10 @@ public class Customer {
 	@OneToMany(mappedBy = "customer", cascade = { CascadeType.PERSIST, CascadeType.MERGE })
 	@JsonIgnoreProperties("customer")
 	private List<EnergySupplierMessage> energySupplierMessages;
+
+	@OneToMany(mappedBy = "businessCustomer", cascade = { CascadeType.PERSIST, CascadeType.MERGE })
+	@JsonIgnoreProperties("businessCustomer")
+	private List<CustomerInvitation> customerInvitations;
 
 	@ManyToOne
 	@JoinColumn(name = "admin_id")

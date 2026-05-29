@@ -176,6 +176,10 @@ public class AdminUser {
 	@JsonIgnoreProperties("admin")
 	private List<EnergySupplierMessage> energySupplierMessages;
 
+	@OneToMany(mappedBy = "admin", cascade = { CascadeType.PERSIST, CascadeType.MERGE }, orphanRemoval = true)
+	@JsonIgnoreProperties("admin")
+	private List<CustomerInvitation> customerInvitation;
+
 	@PrePersist
 	protected void onCreate() {
 		this.createdOn = Helper.getCurrentTimeBerlin();
