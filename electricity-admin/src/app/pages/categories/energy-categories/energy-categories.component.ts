@@ -33,6 +33,7 @@ export class EnergyCategoriesComponent implements OnInit {
   showCategoryModal = false;
   isSaving = false;
   categoryForm: Partial<EnergyCategory> = {};
+  modalErrorMessage = "";
 
   constructor(
     private api: ApiService,
@@ -77,11 +78,13 @@ export class EnergyCategoriesComponent implements OnInit {
   // --- Add/Edit Modal Logic ---
   openAddModal(): void {
     this.categoryForm = { categoryName: "" };
+    this.modalErrorMessage = "";
     this.showCategoryModal = true;
   }
 
   openEditModal(category: EnergyCategory): void {
     this.categoryForm = { ...category }; // clone object
+    this.modalErrorMessage = "";
     this.showCategoryModal = true;
   }
 
@@ -89,12 +92,14 @@ export class EnergyCategoriesComponent implements OnInit {
     this.showCategoryModal = false;
     this.categoryForm = {};
     this.isSaving = false;
+    this.modalErrorMessage = "";
   }
 
   saveCategory(): void {
     if (!this.categoryForm.categoryName?.trim()) return;
 
     this.isSaving = true;
+    this.modalErrorMessage = "";
 
     // Send supplierMessageCategoryId if it exists (edit), otherwise undefined (create)
     const payload = {
@@ -112,12 +117,12 @@ export class EnergyCategoriesComponent implements OnInit {
           this.closeCategoryModal();
           this.fetchCategories(); // Refresh list after saving
         } else {
-          alert(res.message || "Failed to save category");
+          this.modalErrorMessage = res.errMessage || res.message || "Failed to save category";
         }
       },
       error: () => {
         this.isSaving = false;
-        alert("Something went wrong while saving");
+        this.modalErrorMessage = "Something went wrong while saving";
       },
     });
   }

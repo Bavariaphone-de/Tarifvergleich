@@ -3,10 +3,10 @@
   <div class="flex items-center justify-between mb-6">
     <div>
       <h2 class="text-xl font-semibold text-gray-800 dark:text-white">
-        Liste der Rechnungskategorien
+        Zählerstand-Meldekategorien
       </h2>
       <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-        Übersicht aller Rechnungskategorien.
+        Übersicht aller Zählerstand-Meldekategorien.
       </p>
     </div>
 
@@ -15,7 +15,7 @@
       (click)="openAddModal()"
       class="px-4 py-2 text-sm bg-brand-500 text-white rounded-lg hover:bg-brand-600 transition cursor-pointer"
     >
-      + Rechnung hinzufügen
+      + Kategorie hinzufügen
     </button>
   </div>
 
@@ -25,7 +25,7 @@
       <div
         class="animate-spin rounded-full h-4 w-4 border-b-2 border-brand-500"
       ></div>
-      <span>Rechnungen werden geladen...</span>
+      <span>Kategorien werden geladen...</span>
     </div>
   }
 
@@ -45,7 +45,10 @@
           </tr>
         </thead>
         <tbody>
-          @for (category of categories; track category.invoiceCategoryId) {
+          @for (
+            category of categories;
+            track category.reportMeterReadingCategoryId
+          ) {
             <tr
               class="bg-white border-b dark:bg-gray-900 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
             >
@@ -95,7 +98,9 @@
 
                   <!-- Trigger Modal Delete -->
                   <button
-                    (click)="promptDelete(category.invoiceCategoryId)"
+                    (click)="
+                      promptDelete(category.reportMeterReadingCategoryId)
+                    "
                     class="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition"
                     title="Löschen"
                   >
@@ -133,7 +138,7 @@
   <!-- EMPTY -->
   @if (!isLoading && !errorMessage && categories.length === 0) {
     <div class="text-center py-12">
-      <p class="text-gray-500 font-medium">Keine Rechnung verfügbar.</p>
+      <p class="text-gray-500 font-medium">Keine Kategorie verfügbar.</p>
     </div>
   }
 </div>
@@ -153,7 +158,9 @@
       <div class="flex justify-between items-center mb-2">
         <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
           {{
-            categoryForm.invoiceCategoryId ? "Edit Category" : "Add Category"
+            categoryForm.reportMeterReadingCategoryId
+              ? "Edit Category"
+              : "Add Category"
           }}
         </h3>
         <button
@@ -180,7 +187,7 @@
       <div>
         <label
           class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-          >Rechnungskategoriename</label
+          >Kategoriename</label
         >
         <input
           type="text"
@@ -255,11 +262,11 @@
 
       <div class="text-center">
         <h3 class="text-base font-semibold text-gray-900 dark:text-white mb-1">
-          Rechnungskategorie löschen?
+          Kategorie löschen?
         </h3>
         <p class="text-sm text-gray-500 dark:text-gray-400">
-          Sind Sie sicher, dass Sie diese Rechnungskategorie löschen möchten?
-          Diese Aktion kann nicht rückgängig gemacht werden.
+          Sind Sie sicher, dass Sie diese Kategorie löschen möchten? Diese
+          Aktion kann nicht rückgängig gemacht werden.
         </p>
       </div>
 

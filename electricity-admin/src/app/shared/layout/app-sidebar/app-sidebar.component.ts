@@ -237,6 +237,14 @@ export class AppSidebarComponent implements OnInit, OnDestroy {
         {
           name: "Invoice Categories",
           path: "/invoice-categories",
+        },
+        {
+          name: "Report Meter Reading Category",
+          path: "/report-meter-reading-category",
+        },
+        {
+          name: "Cancellation Service Category",
+          path: "/cancellation-service-category",
         }
       ],
     },

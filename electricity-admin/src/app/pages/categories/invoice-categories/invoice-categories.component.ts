@@ -5,7 +5,7 @@ import { ApiService } from "../../../shared/services/api.service";
 import { AuthService } from "../../../shared/services/auth.service";
 
 export interface EnergyCategory {
-  supplierMessageCategoryId: number;
+  invoiceCategoryId: number;
   categoryName: string;
   createdOn: number | null;
   updatedOn: number | null;
@@ -31,6 +31,7 @@ export class InvoiceCategoriesComponent implements OnInit {
   showCategoryModal = false;
   isSaving = false;
   categoryForm: Partial<EnergyCategory> = {};
+  modalErrorMessage = "";
 
   constructor(
     private api: ApiService,
@@ -50,7 +51,7 @@ export class InvoiceCategoriesComponent implements OnInit {
       page: 1,
     };
 
-    this.api.post("", payload).subscribe({
+    this.api.post("admin/fetch-supplier-invoice-category", payload).subscribe({
       next: (res: any) => {
         this.isLoading = false;
         if (res && (res.res || res.data || Array.isArray(res))) {
@@ -75,11 +76,13 @@ export class InvoiceCategoriesComponent implements OnInit {
   // --- Add/Edit Modal Logic ---
   openAddModal(): void {
     this.categoryForm = { categoryName: "" };
+    this.modalErrorMessage = "";
     this.showCategoryModal = true;
   }
 
   openEditModal(category: EnergyCategory): void {
     this.categoryForm = { ...category }; // clone object
+    this.modalErrorMessage = "";
     this.showCategoryModal = true;
   }
 
@@ -87,35 +90,37 @@ export class InvoiceCategoriesComponent implements OnInit {
     this.showCategoryModal = false;
     this.categoryForm = {};
     this.isSaving = false;
+    this.modalErrorMessage = "";
   }
 
   saveCategory(): void {
     if (!this.categoryForm.categoryName?.trim()) return;
 
     this.isSaving = true;
+    this.modalErrorMessage = "";
 
-    // Send supplierMessageCategoryId if it exists (edit), otherwise undefined (create)
+    // Send invoiceCategoryId if it exists (edit), otherwise undefined (create)
     const payload = {
       adminId: this.authService.getUserId(),
-      supplierMessageCategoryId:
-        this.categoryForm.supplierMessageCategoryId || null,
+      invoiceCategoryId: this.categoryForm.invoiceCategoryId || null,
       categoryName: this.categoryForm.categoryName,
     };
 
     // The add- endpoint usually handles both add and update in this project
-    this.api.post("", payload).subscribe({
+    this.api.post("admin/add-supplier-invoice-category", payload).subscribe({
       next: (res: any) => {
         this.isSaving = false;
         if (res?.res) {
           this.closeCategoryModal();
           this.fetchCategories(); // Refresh list after saving
         } else {
-          alert(res.message || "Failed to save category");
+          this.modalErrorMessage =
+            res.errMessage || res.message || "Failed to save category";
         }
       },
       error: () => {
         this.isSaving = false;
-        alert("Something went wrong while saving");
+        this.modalErrorMessage = "Something went wrong while saving";
       },
     });
   }
@@ -140,15 +145,15 @@ export class InvoiceCategoriesComponent implements OnInit {
 
     const payload = {
       adminId: this.authService.getUserId(),
-      supplierMessageCategoryId: id,
+      invoiceCategoryId: id,
     };
 
-    this.api.post("", payload).subscribe({
+    this.api.post("admin/delete-supplier-invoice-category", payload).subscribe({
       next: (res: any) => {
         this.isDeleting = false;
         if (res?.res) {
           this.categories = this.categories.filter(
-            (c) => c.supplierMessageCategoryId !== id,
+            (c) => c.invoiceCategoryId !== id,
           );
           this.cancelDelete();
         } else {

@@ -36,6 +36,8 @@ import { TaxManagementComponent } from "./pages/credentials/tax-management/tax-m
 import { ContactQueryComponent } from "./pages/customer-query/contact-query/contact-query.component";
 import { EnergyCategoriesComponent } from "./pages/categories/energy-categories/energy-categories.component";
 import { InvoiceCategoriesComponent } from "./pages/categories/invoice-categories/invoice-categories.component";
+import { ReportMeterReadingCategoryComponent } from "./pages/categories/meter-reading-category/report-meter-reading-category.component";
+import { CancellationServiceCategoryComponent } from "./pages/categories/cancellation-category/cancellation-service-category.component";
 
 export const routes: Routes = [
   {
@@ -236,6 +238,16 @@ export const routes: Routes = [
         path: "invoice-categories",
         component: InvoiceCategoriesComponent,
         title: "Invoice Categories",
+      },
+      {
+        path: "report-meter-reading-category",
+        component: ReportMeterReadingCategoryComponent,
+        title: "Report Meter Reading Category",
+      },
+      {
+        path: "cancellation-service-category",
+        component: CancellationServiceCategoryComponent,
+        title: "Cancellation Service Category",
       },
       {
         path: "credentials/admin-signature",
