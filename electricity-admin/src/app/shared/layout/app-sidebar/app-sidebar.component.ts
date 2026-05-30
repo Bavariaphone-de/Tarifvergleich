@@ -241,6 +241,22 @@ export class AppSidebarComponent implements OnInit, OnDestroy {
         },
       ],
     },
+
+    {
+      name: 'Open Provider Action',
+      icon: `<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none"
+              xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2C7.03 2 3 6.03 3 11V20C3 20.55 3.45 21 4 21H20C20.55 21 21 20.55 21 20V11C21 6.03 16.97 2 12 2Z"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M12 8V12L15 14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>`,
+      subItems: [
+        {
+          name: 'Report Meter Reading',
+          path: '/open-provider-action/report-meter-reading'
+        }
+      ]
+    }
   ];
 
   openSubmenu: string | null = null;

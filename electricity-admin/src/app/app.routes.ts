@@ -34,6 +34,7 @@ import { StaticContentComponent } from "./pages/contents/static-content/static-c
 import { EmailTemplateListComponent } from "./pages/email/email-template-list/email-template-list.component";
 import { TaxManagementComponent } from "./pages/credentials/tax-management/tax-management.component";
 import { ContactQueryComponent } from "./pages/customer-query/contact-query/contact-query.component";
+import { ReportMeterReadingComponent } from "./pages/open-provider-action/report-meter-reading/report-meter-reading.component";
 
 export const routes: Routes = [
   {
@@ -187,6 +188,11 @@ export const routes: Routes = [
         path: "customers/details/:id",
         component: CustomerDetailsComponent,
         title: "Kundendetails",
+      },
+      {
+        path: "open-provider-action/report-meter-reading",
+        component: ReportMeterReadingComponent,
+        title: "Messwert melden",
       },
       {
         path: "email-template",
