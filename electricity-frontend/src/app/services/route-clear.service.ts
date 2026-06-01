@@ -14,7 +14,7 @@ export class RouteClearService {
     this.router.events
       .pipe(filter((event) => event instanceof NavigationEnd))
       .subscribe((event: any) => {
-        const keepRoutes = ['/electricity-comparision'];
+        const keepRoutes = ['/electricity-comparision', '/gas-comparision'];
 
         const currentUrl = event.urlAfterRedirects;
 
