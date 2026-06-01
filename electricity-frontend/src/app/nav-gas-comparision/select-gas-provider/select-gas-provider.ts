@@ -101,7 +101,7 @@ export interface RatesResponse {
   res: boolean;
 }
 
-interface SelectProviderState {
+interface SelectGasProviderState {
   priceDisplayMonthly: boolean;
   kundenPrivat: boolean;
   alleTarife: boolean;
@@ -134,19 +134,18 @@ interface SelectProviderState {
     ReactiveFormsModule,
     MatAutocompleteModule,
   ],
-  templateUrl: './select-provider.html',
-  styleUrl: './select-provider.css',
+  templateUrl: './select-gas-provider.html',
+  styleUrl: './select-gas-provider.css',
 })
-export class SelectProvider implements OnInit {
+export class SelectGasProvider implements OnInit {
   private readonly providerStateStorageKey = 'select_provider_state';
   zip = '01067';
   city = 'Dresden';
   street = 'Adlergasse';
   houseNumber = '6';
-  consum = 2510;
+  consum = 20500;
   type = 'private';
-  branch = 'electric';
-  deliveryType = 'electricity';
+  branch = 'gas';
 
   isOpen = false;
   isLoading = false;
@@ -174,8 +173,7 @@ export class SelectProvider implements OnInit {
   cityOptions: { city: string; city_id: string }[] = [];
   streetOptions: { street: string; street_id: string }[] = [];
   isRestoring = false;
-  selectedPersons = 2;
-  // consumption = 2510;
+  selectedPersons = 3;
 
   tax = 1.19;
   showCustomInput = false;
@@ -259,7 +257,7 @@ export class SelectProvider implements OnInit {
 
     console.log('Received:', data);
 
-    if (data && data.zip && data.city && data.street && data.route === 'electricity') {
+    if (data && data.zip && data.city && data.street && data.route === 'gas') {
       this.zip = data.zip;
       this.city = data.city;
       this.street = data.street;
@@ -310,13 +308,11 @@ export class SelectProvider implements OnInit {
     this.handleCityChanges();
     this.handleStreetChanges();
 
-    //   const saved = data.address;
-    // const saved = this.authService.getAddressData();
-    // if (saved) {
     const localData = this.authService.getAddressData();
 
-    if (localData?.route === 'electricity') {
-      // USE ELECTRICITY FLOW LOCAL DATA
+    if (localData?.route === 'gas') {
+      // USE GAS FLOW LOCAL DATA
+      console.log('redirect 1');
       this.prefillAddress(localData);
     } else if (this.isLoggedIn()) {
       // USE CUSTOMER API DATA
@@ -333,7 +329,7 @@ export class SelectProvider implements OnInit {
           consumption: this.consum,
           persons: this.selectedPersons,
         };
-
+        console.log('redirect 2222');
         this.prefillAddress(apiData);
       });
     }
@@ -453,7 +449,46 @@ export class SelectProvider implements OnInit {
     this.filteredStreetOptions = this.streetOptions;
   }
   goBack() {
-    this.router.navigate(['/home/electricity']);
+    this.router.navigate(['/home/gas']);
+  }
+
+  onAreaChange(value: any): void {
+    console.log('Dropdown value:', value, typeof value);
+
+    const selectedValue = Number(value);
+
+    switch (selectedValue) {
+      case 1:
+        this.selectPersons(1, 5050);
+        break;
+
+      case 2:
+        this.selectPersons(2, 12000);
+        break;
+
+      case 3:
+        this.selectPersons(3, 20500);
+        break;
+
+      case 4:
+        this.selectPersons(4, 28000);
+        break;
+
+      default:
+        this.consum = 0;
+        this.addressForm.patchValue({
+          consum: 0,
+        });
+    }
+  }
+
+  selectPersons(persons: number, consumption: number): void {
+    this.selectedPersons = persons;
+    this.consum = consumption;
+
+    this.addressForm.patchValue({
+      consum: consumption,
+    });
   }
 
   searchMode() {
@@ -488,7 +523,7 @@ export class SelectProvider implements OnInit {
       houseNumber: this.addressForm.value.houseNumber,
       persons: this.selectedPersons,
       consumption: this.addressForm.value.consum,
-      deliveryType: this.deliveryType,
+      deliveryType: this.branch,
     };
     this.zip = data.zip;
     this.city = data.city;
@@ -1125,47 +1160,13 @@ export class SelectProvider implements OnInit {
       houseNumber: this.houseNumber,
       persons: this.selectedPersons,
       consumption: this.consum,
-      deliveryType: this.deliveryType,
+      deliveryType: this.branch,
     };
 
     this.authService.setAddressData(data);
 
-    this.router.navigate(['register'], { relativeTo: this.route });
+    // this.router.navigate(['/electricity-comparision/register']);
     this.cdr.detectChanges();
-    // const customerId = this.authService.getUserId() || 0;
-
-    // const body = {
-    //   zip: this.zip,
-    //   city: this.city,
-    //   street: this.street,
-    //   houseNumber: this.houseNumber,
-    //   deliveryType: this.branch == 'electric' ? 'electricity' : this.branch,
-    //   customerId: Number(customerId),
-    //   adminId: 1,
-    // };
-
-    // this.http
-    //   .post<RatesResponse>('http://192.168.0.155:8080/customer/check-booking', body)
-    //   .subscribe({
-    //     next: (res) => {
-    //       if (res?.res === true) {
-    //         this.authService.setSelectedProvider(selectedRate);
-    //         this.router.navigate(['register'], { relativeTo: this.route });
-    //       } else {
-    //         alert('Für diese Adresse besteht bereits ein aktiver Stromvertrag.');
-    //       }
-
-    //       this.cdr.detectChanges();
-    //     },
-
-    //     error: (err) => {
-    //       console.error('API Error:', err);
-    //       this.isLoading = false;
-    //       this.hasLoadedRates = true;
-
-    //       // alert('Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.');
-    //     },
-    //   });
   }
 
   toggleDropdown(): void {
@@ -1501,7 +1502,7 @@ export class SelectProvider implements OnInit {
   }
 
   private persistViewState(): void {
-    const state: SelectProviderState = {
+    const state: SelectGasProviderState = {
       priceDisplayMonthly: this.priceDisplayMonthly,
       kundenPrivat: this.kundenPrivat,
       alleTarife: this.alleTarife,
@@ -1530,7 +1531,7 @@ export class SelectProvider implements OnInit {
         return;
       }
 
-      const state = JSON.parse(raw) as Partial<SelectProviderState>;
+      const state = JSON.parse(raw) as Partial<SelectGasProviderState>;
       this.priceDisplayMonthly = state.priceDisplayMonthly ?? this.priceDisplayMonthly;
       this.kundenPrivat = state.kundenPrivat ?? this.kundenPrivat;
       this.type = this.kundenPrivat ? 'private' : 'business';
