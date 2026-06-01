@@ -21,18 +21,35 @@
   <div class="compare-price">
     <div class="container-address">
       <div class="feature-header">Ladestrom | Autostrom-Vergleich</div>
-      <div class="feature-grid">
+      <form [formGroup]="addressForm" class="feature-grid">
         <div class="row row-1">
-          <input type="text" placeholder="Ihre Postleitzahl" class="box small">
+          <input type="text" placeholder="Ihre Postleitzahl" class="box small" formControlName="postalCode"
+            maxlength="5" />
           <div class="input-arrow">
-            <input type="text" placeholder="Ottobeuren" class="box large">
+            <select formControlName="city" class="box large">
+              <option [ngValue]="null" disabled selected>Ihre Ort</option>
+
+              <option *ngFor="let c of cityOptions" [ngValue]="c.city_id">
+                {{ c.city }}
+              </option>
+            </select>
           </div>
         </div>
         <div class="row row-2">
-          <input type="text" placeholder="Ihre Straße" class="box large">
-          <input type="text" placeholder="Hausnummer" class="box small">
+          <select [attr.data-key]="streetDropdownKey" formControlName="street" class="box large">
+            <option [ngValue]="null" disabled>
+              {{ isStreetLoading ? 'Lade Straßen...' : 'Ihre Straße' }}
+            </option>
+
+            <option *ngIf="isStreetLoading" disabled>Laden...</option>
+
+            <option *ngFor="let s of streetOptions; trackBy: trackByStreet" [ngValue]="s.street">
+              {{ s.street }}
+            </option>
+          </select>
+          <input type="text" placeholder="Hausnummer" class="box small" formControlName="houseNumber" maxlength="6" />
         </div>
-      </div>
+      </form>
       <div class="feature-header1">
         <div class="header-row">
           Haben Sie einen separaten Stromzähler für Autostrom bzw. Ladestrom?
@@ -54,13 +71,13 @@
         </div>
         <div class="container-per-year">
           <div class="container-consumption">
-            <input type="text" class="consumption-number" placeholder="1600">
+            <input type="text" class="consumption-number" [(ngModel)]="consumption" placeholder="1600">
             <span class="watt-per-year">kWh / Jahr (NT)</span>
           </div>
         </div>
 
         <div class="container-compare">
-          <button class="compare"> Jetzt Vergleichen</button>
+          <button class="compare" (click)="goToComparison()"> Jetzt Vergleichen</button>
         </div>
       </div>
     </div>

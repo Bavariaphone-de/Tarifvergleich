@@ -13,13 +13,8 @@
       <div class="feature-header">Gas-Vergleich</div>
       <form [formGroup]="addressForm" class="feature-grid">
         <div class="row row-1">
-          <input
-            type="text"
-            placeholder="Ihre Postleitzahl"
-            class="box small"
-            formControlName="postalCode"
-            maxlength="5"
-          />
+          <input type="text" placeholder="Ihre Postleitzahl" class="box small" formControlName="postalCode"
+            maxlength="5" />
           <div class="input-arrow">
             <!-- <input
               type="text"
@@ -69,13 +64,7 @@
               {{ s.street }}
             </option>
           </select>
-          <input
-            type="text"
-            placeholder="Hausnummer"
-            class="box small"
-            formControlName="houseNumber"
-            maxlength="6"
-          />
+          <input type="text" placeholder="Hausnummer" class="box small" formControlName="houseNumber" maxlength="6" />
         </div>
       </form>
       <div class="feature-header1">
@@ -85,42 +74,26 @@
       <div class="container-person">
         <div class="compare-person">
           <div class="person-option">
-            <button
-              class="person"
-              (click)="selectPersons(1, 5050)"
-              [class.active]="selectedPersons === 1"
-            >
+            <button class="person" (click)="selectPersons(1, 5050)" [class.active]="selectedPersons === 1">
               <span class="person-count">50m<sup>2</sup></span>
             </button>
-            <button
-              class="person"
-              (click)="selectPersons(2, 12000)"
-              [class.active]="selectedPersons === 2"
-            >
+            <button class="person" (click)="selectPersons(2, 12000)" [class.active]="selectedPersons === 2">
               <span class="person-count">100m<sup>2</sup></span>
             </button>
-            <button
-              class="person"
-              (click)="selectPersons(3, 20500)"
-              [class.active]="selectedPersons === 3"
-            >
+            <button class="person" (click)="selectPersons(3, 20500)" [class.active]="selectedPersons === 3">
               <span class="person-count">150m<sup>2</sup></span>
             </button>
-            <button
-              class="person"
-              (click)="selectPersons(4, 28000)"
-              [class.active]="selectedPersons === 4"
-            >
+            <button class="person" (click)="selectPersons(4, 28000)" [class.active]="selectedPersons === 4">
               <span class="person-count">180m<sup>2</sup></span>
             </button>
           </div>
         </div>
         <div class="total-consumption">
-          <input type="text" class="consumption-number" [value]="consumption | number" />
+          <input type="text" class="consumption-number" [(ngModel)]="consumption" (input)="onConsumptionInput()" />
           <span class="watt-per-year">kWh / Jahr</span>
         </div>
         <div class="container-compare">
-          <button class="compare">Jetzt Vergleichen</button>
+          <button class="compare" (click)="goToComparison()">Jetzt Vergleichen</button>
         </div>
       </div>
     </div>
@@ -141,8 +114,7 @@
         <span class="amount">1250€</span>
       </div>
       <div class="item-discount-bottom">
-        <span class="item-price"
-          >sparen
+        <span class="item-price">sparen
           <mat-icon class="info-icon" (click)="openInfo(infoDialog, discountinfo || '')">
             info
           </mat-icon>

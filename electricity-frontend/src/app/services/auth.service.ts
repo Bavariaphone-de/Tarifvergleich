@@ -30,6 +30,7 @@ const ADDRESS_KEY = 'address_data';
 const PROVIDER_STORAGE_KEY = 'selected_provider';
 const ALL_PROVIDERS_KEY = 'all_providers_list';
 const CONTRACT_STORAGE_KEY = 'selected_contract';
+const GAS_ADDRESS_KEY = 'gas_address_data';
 
 @Injectable({
   providedIn: 'root',
@@ -39,6 +40,8 @@ export class AuthService {
   private platformId = inject(PLATFORM_ID);
 
   private addressData: any | null = null;
+
+  private gasAddressData: any | null = null;
 
   /* Internal BehaviorSubject to track auth state */
   authState$: BehaviorSubject<AuthUser | null> = new BehaviorSubject<AuthUser | null>(null);
@@ -50,6 +53,7 @@ export class AuthService {
   ) {
     this.loadUserFromStorage();
     this.loadFromStorage();
+    this.loadFromGasStorage();
   }
 
   /* -------------------------------
@@ -158,6 +162,7 @@ export class AuthService {
       this.customerData$.next(null);
       this.clearStorage();
       this.clearAddress();
+      this.clearGasAddress();
       this.clearSelectedProvider();
       this.clearAllProviders();
       this.currentUser.set(null);
@@ -343,7 +348,7 @@ export class AuthService {
     }
   }
 
-  /// Address save local ///
+  ///Electricity Address save local ///
 
   /* Load from localStorage */
   private loadFromStorage(): void {
@@ -562,5 +567,66 @@ export class AuthService {
     } catch (error) {
       console.error('Error clearing contract:', error);
     }
+  }
+
+  /* ------------------------------- Gas Comparison Address save local -------------------------------*/
+
+  /* Load from localStorage */
+  private loadFromGasStorage(): void {
+    if (!this.isBrowser()) {
+      this.gasAddressData = null;
+      return;
+    }
+
+    try {
+      const data = localStorage.getItem(GAS_ADDRESS_KEY);
+      if (data) {
+        this.gasAddressData = JSON.parse(data);
+      }
+    } catch (e) {
+      console.error('Error loading address', e);
+      this.gasAddressData = null;
+    }
+  }
+
+  /* Save to localStorage */
+  private saveToGasStorage(data: any): void {
+    if (!this.isBrowser()) {
+      return;
+    }
+
+    try {
+      localStorage.setItem(GAS_ADDRESS_KEY, JSON.stringify(data));
+    } catch (e) {
+      console.error('Error saving address', e);
+    }
+  }
+
+  /* Set data */
+  setGasAddressData(data: any): void {
+    this.gasAddressData = data;
+    this.saveToGasStorage(data);
+  }
+
+  /* Get data */
+  getGasAddressData(): any | null {
+    return this.gasAddressData;
+  }
+
+  /* Clear data (optional) */
+  clearGasAddress(): void {
+    if (this.isBrowser()) {
+      try {
+        localStorage.removeItem(GAS_ADDRESS_KEY);
+      } catch (e) {
+        console.error('Error clearing address', e);
+      }
+    }
+    this.gasAddressData = null;
+  }
+
+  /* Check if exists */
+  hasGasAddress(): boolean {
+    return !!(this.gasAddressData?.zip && this.gasAddressData?.city && this.gasAddressData?.street);
   }
 }

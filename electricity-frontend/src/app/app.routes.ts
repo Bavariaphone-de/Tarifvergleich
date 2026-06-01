@@ -26,6 +26,7 @@ import { Contact } from './navigation-pages/contact/contact';
 import { CreateBusinessAccount } from './navigation-pages/create-account-business/create-account-business';
 import { OrderSignature } from './navigation-pages/order-signature/order-signature';
 import { ForgotOldPassword } from './navigation-pages/forgot-old-password/forgot-old-password';
+import { SelectGasProvider } from './nav-gas-comparision/select-provider/select-gas-provider';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'home', pathMatch: 'full' },
@@ -56,6 +57,21 @@ export const routes: Routes = [
       { path: 'register', component: Register },
     ],
   },
+  {
+    path: 'gas-comparision',
+    component: GasComparision,
+    children: [
+      { path: '', component: SelectGasProvider },
+      // { path: 'login', component: LoginPage },
+      // { path: 'delivery-address', component: DeliveryAddress },
+      // { path: 'connection-data', component: ConnectionData },
+      // { path: 'payment-method', component: PaymentMethod },
+      // { path: 'account', component: Account },
+      // { path: 'checkout', component: CheckoutPage },
+      // { path: 'register', component: Register },
+    ],
+  },
+
   { path: 'customer', component: Customer },
   { path: 'create-sub-accounts', component: CreateBusinessAccount },
   { path: 'imprint', component: Imprint },
@@ -64,6 +80,5 @@ export const routes: Routes = [
   { path: 'forgot-old-password', component: ForgotOldPassword },
   { path: 'data-protection', component: DataProtection },
   { path: 'terms-conditions', component: TermsConditions },
-  { path: 'gas-comparision', component: GasComparision },
   { path: 'commercial-electricity', component: CommercialElectricity },
 ];
