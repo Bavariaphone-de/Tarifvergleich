@@ -863,6 +863,7 @@ export class Customer {
       category: this.meterReadingCategory,
       readingDate: this.meterReadingDate,
       meterReading: this.meterReadingValue,
+      adminId: 1,
     };
 
     const formData = new FormData();
