@@ -1,33 +1,39 @@
 package com.tarifvergleich.electricity.dto;
 
-import com.tarifvergleich.electricity.model.EnergySupplierInvoiceCategory;
+import com.tarifvergleich.electricity.model.invoiceSupplierMessageCategory;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.math.BigInteger;
 
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class EnergySupplierInvoiceCategoryDto {
-
-    private Integer invoiceCategoryId;
-    private String categoryName;
+    private Long id;
     private Integer adminId;
+    private String categoryName;
 
     @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
     @Builder
-    public static class EnergySupplierInvoiceCategoryAdminResponseDto {
-        private Integer invoiceCategoryId;
+    public static class InvoiceSupplierCategoryAdminResponseDto {
+        private Long invoiceCategoryId;
         private String categoryName;
-        private Long createdOn;
-        private Long updatedOn;
+        private BigInteger createdOn;
+        private BigInteger updatedOn;
     }
 
-    public static EnergySupplierInvoiceCategoryAdminResponseDto mapForAdmin(EnergySupplierInvoiceCategory category) {
-        if (category == null) return null;
-
-        return EnergySupplierInvoiceCategoryAdminResponseDto.builder()
+    public static InvoiceSupplierCategoryAdminResponseDto mapForAdmin(invoiceSupplierMessageCategory category) {
+        return InvoiceSupplierCategoryAdminResponseDto.builder()
                 .invoiceCategoryId(category.getId())
                 .categoryName(category.getCategoryName())
-                .createdOn(category.getCreatedOn() != null ? category.getCreatedOn().longValue() : null)
-                .updatedOn(category.getUpdatedOn() != null ? category.getUpdatedOn().longValue() : null)
+                .createdOn(category.getCreatedOn())
+                .updatedOn(category.getUpdatedOn())
                 .build();
     }
 }

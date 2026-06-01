@@ -21,11 +21,13 @@ import lombok.Setter;
 @Setter
 public class ReportMeterReading {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Integer id;
-
-	private Integer deliveryId;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "customer_id")
+    private Customer customer;
 
 	private Integer orderId;
 
@@ -46,5 +48,6 @@ public class ReportMeterReading {
 
 	private Integer status;
 
-	private LocalDateTime createdAt;
+    private LocalDateTime createdAt;
+    
 }

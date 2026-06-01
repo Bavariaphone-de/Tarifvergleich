@@ -2,6 +2,7 @@ package com.tarifvergleich.electricity.controller.customer;
 
 import java.util.Map;
 
+import com.tarifvergleich.electricity.dto.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -14,25 +15,12 @@ import org.springframework.web.multipart.MultipartFile;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.tarifvergleich.electricity.dto.CustomerAddressDto;
-import com.tarifvergleich.electricity.dto.CustomerAttornyDto;
-import com.tarifvergleich.electricity.dto.CustomerChangeDiscountRequestDto;
-import com.tarifvergleich.electricity.dto.CustomerConnectWrapper;
-import com.tarifvergleich.electricity.dto.CustomerContactScheduleRequestDto;
-import com.tarifvergleich.electricity.dto.CustomerDeliveryDto;
-import com.tarifvergleich.electricity.dto.CustomerDeliveryRequestWrapper;
-import com.tarifvergleich.electricity.dto.CustomerDto;
-import com.tarifvergleich.electricity.dto.CustomerInvoiceRequestDto;
-import com.tarifvergleich.electricity.dto.CustomerPaymentRequestDto;
-import com.tarifvergleich.electricity.dto.CustomerServiceRequestDto;
-import com.tarifvergleich.electricity.dto.CustomerServicesDto;
-import com.tarifvergleich.electricity.dto.EnergySupplierMessageDto;
-import com.tarifvergleich.electricity.dto.ReportMeterReadingDto;
 import com.tarifvergleich.electricity.service.customer.CustomerBookingService;
 import com.tarifvergleich.electricity.service.customer.CustomerDetailService;
 import com.tarifvergleich.electricity.service.customer.CustomerEnergySupplierService;
 import com.tarifvergleich.electricity.service.customer.CustomerMeterService;
 import com.tarifvergleich.electricity.service.customer.CustomerUpdateService;
+import com.tarifvergleich.electricity.service.customer.CustomerCategoryService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -48,6 +36,7 @@ public class CustomerController {
 	private final ObjectMapper objectMapper;
 	private final CustomerMeterService customerMeterService;
 	private final CustomerEnergySupplierService customerEnergySupplierService;
+	private final CustomerCategoryService customerCategoryService;
 
 	@PostMapping("/fetch-customer-detail")
 	public ResponseEntity<?> fetchCustomer(@RequestBody CustomerDto customerDto) {
@@ -244,5 +233,15 @@ public class CustomerController {
 
 	    return ResponseEntity.ok(
 	            customerDetailService.saveChangeDiscountRequest(dto));
+	}
+
+	@PostMapping("/fetch-invoice-categories")
+	public ResponseEntity<?> fetchInvoiceCategories(@RequestBody EnergySupplierInvoiceCategoryDto dto) {
+		return ResponseEntity.ok(customerCategoryService.fetchInvoiceCategoriesForCustomer(dto));
+	}
+
+	@PostMapping("/fetch-cancellation-service-category")
+	public ResponseEntity<?> fetchCancellationServiceCategories(@RequestBody com.tarifvergleich.electricity.dto.CancellationServiceCategoryDto dto) {
+		return ResponseEntity.ok(customerCategoryService.fetchCancellationServiceCategoriesForCustomer(dto));
 	}
 }

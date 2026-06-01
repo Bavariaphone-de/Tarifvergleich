@@ -1,15 +1,41 @@
 package com.tarifvergleich.electricity.dto;
 
+import java.math.BigInteger;
 import java.time.LocalDateTime;
 
-import lombok.Data;
+import com.tarifvergleich.electricity.dto.CustomerDeliveryResponseDto.CustomerDeliveryProfileDetail;
+import com.tarifvergleich.electricity.model.Customer;
+import com.tarifvergleich.electricity.model.CustomerOrder;
+import com.tarifvergleich.electricity.model.ReportMeterReading;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 @Data
+@Getter
+@Setter
 public class ReportMeterReadingDto {
 
-	private Integer deliveryId;
+	private Integer customerId;
+	
+	private String customerName;
+	
+	private String customerEmail;
+	
+	private Long bookingId;
+	
+	private Integer bookingStatus;
+	
+	private BigInteger bookingCreatedOn;
+	
+    private Integer deliveryId;
 
-	private Integer orderId;
+    private Integer orderId;
+    
+    private Integer adminId;
 
 	private Integer connectionId;
 
@@ -23,9 +49,68 @@ public class ReportMeterReadingDto {
 
 	private Integer id;
 
-	private String imagePath;
+    private LocalDateTime createdAt;
+    
+    
+    @Data
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class ReportMeterReadingResponseForAdminDto {
+    	private Integer customerId;	
+    	private String customerName;   	
+    	private String customerEmail;   	
+    	private Long bookingId;  	
+    	private Integer bookingStatus;  	
+    	private BigInteger bookingCreatedOn;
+        private CustomerDeliveryProfileDetail deliveryId;
+        private Integer orderId;
+        private Integer adminId;
+        private Integer connectionId;
+        private String category;
+        private String readingDate;
+        private String meterReading;
+        private Integer id;
+        private String imagePath;
+        private Integer status;
+        private LocalDateTime createdAt;
+    }
+    
+    public static ReportMeterReadingResponseForAdminDto mapForAdminResponse(ReportMeterReading entity, CustomerOrder order) {
+    	if(entity == null) return null;
+    	
+    	ReportMeterReadingResponseForAdminDto dto = new ReportMeterReadingResponseForAdminDto();
 
-	private Integer status;
+        dto.setId(entity.getId());
+        Customer customer = entity.getCustomer();
 
-	private LocalDateTime createdAt;
+        if(customer != null) {
+            dto.setCustomerName(
+                customer.getFirstName() + " " + customer.getLastName()
+            );
+            dto.setCustomerEmail(
+            	customer.getEmail()
+            );
+        }     
+
+        if(order != null){
+            dto.setBookingId(order.getOrderId());
+            dto.setBookingStatus(order.getOrderStatus());
+            dto.setBookingCreatedOn(order.getCreatedOn());
+        }
+        
+        dto.setDeliveryId(CustomerDeliveryResponseDto.getDeliveryResponseForProfile(order.getDelivery()));
+        dto.setOrderId(entity.getOrderId());
+        dto.setConnectionId(entity.getConnectionId());
+        dto.setCategory(entity.getCategory());
+        dto.setReadingDate(entity.getReadingDate());
+        dto.setMeterReading(entity.getMeterReading());
+        dto.setImagePath(entity.getImagePath());
+        dto.setStatus(entity.getStatus());
+        dto.setCreatedAt(entity.getCreatedAt());
+
+    	return dto;
+    }
 }

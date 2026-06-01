@@ -26,6 +26,8 @@ public interface CustomerOrderRepository extends JpaRepository<CustomerOrder, In
 
 	Optional<CustomerOrder> findByOrderIdAndAdminAdminId(Long orderId, Integer adminId);
 
+	Optional<CustomerOrder> findByOrderId(Long orderId);
+
 	List<CustomerOrder> findAllByAdminPlacedOrderAndIsExpiredAndIsCancelled(Boolean adminPlacedOrder, Boolean isExpired,
 			Boolean isCancelled);
 

@@ -97,6 +97,8 @@ export class Customer {
   isNotificationEnabled: boolean = true;
 
   fieldErrors: Record<string, string> = {};
+  meterReadingCategories: any[] = [];
+  invoiceCategories: any[] = [];
 
   customerData: any = {
     id: null,
@@ -283,7 +285,8 @@ export class Customer {
     this.fetchDeliveryByAddress();
     this.fetchCards();
     this.fetchCategories('general');
-
+    this.fetchMeterReadingCategories();
+    this.fetchInvoiceCategories();
     this.checkAttorneyStatus();
   }
 
@@ -311,6 +314,32 @@ export class Customer {
 
   checkDevice(): void {
     this.isDesktop = window.innerWidth >= 1024;
+  }
+
+  fetchMeterReadingCategories() {
+    const payload = { adminId: this.customerData?.adminId || 1 };
+    this.http.post<any>(`${API_BASE}/customer/fetch-supplier-message-category`, payload).subscribe({
+      next: (res) => {
+        if (res && res.res && res.data) {
+          this.meterReadingCategories = res.data;
+        }
+      },
+      error: (err) => console.error(err),
+    });
+  }
+
+  fetchInvoiceCategories() {
+    const payload = { adminId: this.customerData?.adminId || 1 };
+    this.http
+      .post<any>(`http://192.168.0.234:8080/customer/fetch-invoice-categories`, payload)
+      .subscribe({
+        next: (res) => {
+          if (res && res.res && res.data) {
+            this.invoiceCategories = res.data;
+          }
+        },
+        error: (err) => console.error(err),
+      });
   }
 
   /*── Fetch customer details ──*/
@@ -736,6 +765,9 @@ export class Customer {
     } else if (!/^\d+$/.test(meterValue)) {
       this.fieldErrors['meterReadingValue'] = 'Nur ganze Zahlen erlaubt';
       isValid = false;
+    } else if (Number(meterValue) <= 0) {
+      this.fieldErrors['meterReadingValue'] = 'Der Zählerstand muss größer als 0 sein';
+      isValid = false;
     }
 
     return isValid;
@@ -827,10 +859,11 @@ export class Customer {
       deliveryId: this.selectedMeter?.deliveryId,
       orderId: this.selectedMeter?.order.orderId,
       connectionId: this.selectedMeter?.id,
-
+      customerId: Number(this.authService.getUserId()),
       category: this.meterReadingCategory,
       readingDate: this.meterReadingDate,
       meterReading: this.meterReadingValue,
+      adminId: 1,
     };
 
     const formData = new FormData();
@@ -892,6 +925,7 @@ export class Customer {
       invoiceCategory: this.invoiceCategory,
       orderId: this.selectedMeter?.order.orderId,
       message: this.invoiceMessage,
+      adminId: 1,
     };
 
     this.http.post<any>(`${API_BASE}/customer/submit-invoice-request`, payload).subscribe({

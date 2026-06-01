@@ -8,14 +8,13 @@ import lombok.*;
 import java.math.BigInteger;
 
 @Entity
-@Table(name = "cancellation_service_categories")
+@Table(name = "energy_supplier_invoice_categories")
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @Getter
 @Setter
-public class CancellationServiceCategory {
-
+public class invoiceSupplierMessageCategory {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
