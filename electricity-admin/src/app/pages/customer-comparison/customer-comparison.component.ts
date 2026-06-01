@@ -65,6 +65,7 @@ type EnergyRate = {
   termBeforeNewType?: string | null;
   termBeforeNewMaxDate?: string | null;
   netzProviderId?: number | null;
+  expanded?: boolean;
 };
 
 type BaseProviderResponse = {
