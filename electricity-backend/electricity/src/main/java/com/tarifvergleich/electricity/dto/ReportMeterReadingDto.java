@@ -7,6 +7,10 @@ import lombok.Data;
 @Data
 public class ReportMeterReadingDto {
 
+	private Long customerId;
+	
+	private String customerName;
+	
     private Integer deliveryId;
 
     private Integer orderId;
