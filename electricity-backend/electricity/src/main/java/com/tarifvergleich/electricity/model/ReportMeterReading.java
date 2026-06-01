@@ -2,6 +2,8 @@ package com.tarifvergleich.electricity.model;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -27,21 +29,24 @@ public class ReportMeterReading {
     @JoinColumn(name = "customer_id")
     private Customer customer;
 
-    private Integer deliveryId;
+	private Integer orderId;
 
-    private Integer orderId;
+	private Integer connectionId;
 
-    private Integer connectionId;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "customer_id")
+	@JsonIgnore
+	private Customer customer;
 
-    private String category;
+	private String category;
 
-    private String readingDate;
+	private String readingDate;
 
-    private String meterReading;
+	private String meterReading;
 
-    private String imagePath;
+	private String imagePath;
 
-    private Integer status;
+	private Integer status;
 
     private LocalDateTime createdAt;
     

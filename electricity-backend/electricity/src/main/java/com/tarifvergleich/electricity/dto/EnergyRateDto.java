@@ -59,6 +59,34 @@ public class EnergyRateDto {
 	// Meta Data
 	private String branch;
 	private String type;
+	
+	// Extra meta data from egon
+	private Long rateFileId;
+    private boolean providerChangeFast;
+    private boolean providerDigitalSigned;
+    private int termBeforeNew;
+    private int termBeforeChange;
+    private String termBeforeChangeType;
+    @JsonFormat(pattern = "dd.MM.yyyy")
+    private LocalDate termBeforeChangeMaxDate;
+    private int termAfterNew;
+    private String termAfterNewType;
+    @JsonFormat(pattern = "dd.MM.yyyy")
+    private LocalDate termAfterNewMaxDate;
+    private boolean optinAdvertisePhone;
+    private boolean optinAdvertiseMobile;
+    private boolean optinAdvertiseEmail;
+    private boolean optinAdvertisePost;
+    private boolean optinAdvertisePersonally;
+    private int providerBirthdayMax;
+    private double optBonusInstant;
+    private double optBonusLoyalty;
+    private Long distributorId;
+    private List<Object> additionalInformation;
+    private int counterType;
+    private int rateReadingType;
+    private int rateType;
+    private boolean ratePriceStages;
 
 	public static EnergyRateDto getProviderResponse(CustomerSelectedProvider provider) {
 		if (provider == null)

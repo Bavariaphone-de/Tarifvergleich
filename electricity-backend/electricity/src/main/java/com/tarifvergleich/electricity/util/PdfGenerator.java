@@ -33,7 +33,7 @@ public class PdfGenerator {
 			builder.toStream(outputStream);
 			builder.run();
 
-			byte[] pdfContent = outputStream.toByteArray();
+			byte[] pdfContent = outputStream.toByteArray(); 
 			return Base64.getEncoder().encodeToString(pdfContent);
 
 		} catch (Exception e) {

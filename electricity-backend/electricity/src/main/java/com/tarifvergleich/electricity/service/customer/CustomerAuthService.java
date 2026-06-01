@@ -31,7 +31,7 @@ import com.tarifvergleich.electricity.repository.AdminUserRepository;
 import com.tarifvergleich.electricity.repository.CustomerAddressRepository;
 import com.tarifvergleich.electricity.repository.CustomerAttornyRepository;
 import com.tarifvergleich.electricity.repository.CustomerRepository;
-import com.tarifvergleich.electricity.repository.TokenManagementRespository;
+import com.tarifvergleich.electricity.repository.TokenManagementRepository;
 import com.tarifvergleich.electricity.service.AesEncryptionService;
 import com.tarifvergleich.electricity.service.MailService;
 import com.tarifvergleich.electricity.util.CustomEmailTemplate;
@@ -49,16 +49,16 @@ import lombok.RequiredArgsConstructor;
 public class CustomerAuthService {
 
 	private final CustomerRepository customerRepo;
-	private final CustomerAttornyRepository customerAttornyRepo;
-	private final PdfGenerator pdfGenerator;
-	private final CustomEmailTemplate customEmailTemplate;
+//	private final CustomerAttornyRepository customerAttornyRepo;
+//	private final PdfGenerator pdfGenerator;
+//	private final CustomEmailTemplate customEmailTemplate;
 	private final CustomerAddressRepository customerAddressRepo;
 	private final Helper helper;
 	private final MailService mailService;
 	private final EmailTemplate emailTemplate;
 	private final AdminUserRepository adminUserRepo;
 	private final ApplicationEventPublisher eventPublisher;
-	private final TokenManagementRespository tokenManagementRespo;
+	private final TokenManagementRepository tokenManagementRespo;
 	private final AesEncryptionService aesEncryptionService;
 	private final AdminEmailManagementRepository adminEmailManagementRepo;
 	private final EmailBodyRender emailRender;
@@ -683,6 +683,7 @@ public class CustomerAuthService {
 					() -> new InternalServerException("Customer not found with this credential", HttpStatus.OK));
 
 			manageToken.setUsed(true);
+			manageToken.setToken("");
 			tokenManagementRespo.save(manageToken);
 
 		} catch (Exception e) {

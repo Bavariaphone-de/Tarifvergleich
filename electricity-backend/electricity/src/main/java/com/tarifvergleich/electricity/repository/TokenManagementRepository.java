@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 import com.tarifvergleich.electricity.model.TokenManagement;
 
 @Repository
-public interface TokenManagementRespository extends JpaRepository<TokenManagement, Integer> {
+public interface TokenManagementRepository extends JpaRepository<TokenManagement, Integer> {
 
 	Optional<TokenManagement> findByToken(String token);
 }

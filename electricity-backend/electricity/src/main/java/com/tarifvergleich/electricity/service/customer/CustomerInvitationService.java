@@ -21,7 +21,7 @@ import com.tarifvergleich.electricity.model.ManageAdminDocument;
 import com.tarifvergleich.electricity.model.TokenManagement;
 import com.tarifvergleich.electricity.repository.CustomerInvitationRepository;
 import com.tarifvergleich.electricity.repository.CustomerRepository;
-import com.tarifvergleich.electricity.repository.TokenManagementRespository;
+import com.tarifvergleich.electricity.repository.TokenManagementRepository;
 import com.tarifvergleich.electricity.service.AesEncryptionService;
 import com.tarifvergleich.electricity.util.EmailBodyRender;
 import com.tarifvergleich.electricity.util.Helper;
@@ -35,7 +35,7 @@ public class CustomerInvitationService {
 
 	private final AesEncryptionService aesEncryptionService;
 	private final CustomerInvitationRepository customerInvitationRepo;
-	private final TokenManagementRespository tokenManagementRespo;
+	private final TokenManagementRepository tokenManagementRespo;
 	private final CustomerRepository customerRepo;
 	private final EmailBodyRender emailBodyRender;
 	private final ApplicationEventPublisher eventPublisher;
