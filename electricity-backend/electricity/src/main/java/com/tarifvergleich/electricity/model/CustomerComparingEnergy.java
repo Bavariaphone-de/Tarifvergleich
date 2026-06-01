@@ -24,8 +24,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-
-
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
@@ -37,62 +35,64 @@ public class CustomerComparingEnergy {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Integer id;
-	
+	private Long id;
+
 	private String zip;
-	
+
 	private String city;
-	
+
 	private String street;
-	
+
 	private String houseNumber;
-	
+
 	private String consumption;
-	
+
 	@Column(name = "consumer_type")
 	private String consumerType;
 
 	@Column(name = "energy_branch")
 	private String branch;
-	
+
 	@ManyToOne
 	@JoinColumn(name = "customer_id")
 	@JsonIgnore
 	private Customer customer;
-	
+
 	@Column(name = "compared_on")
 	private BigInteger comparedOn;
-	
+
 	@Column(name = "request_ip")
 	private String requestIp;
-	
+
 	@Column(name = "request_device_detail")
 	private String requestDeviceDetails;
-	
+
+	@JdbcTypeCode(SqlTypes.JSON)
+	@Column(name = "request_payload", columnDefinition = "jsonb")
+	private JsonNode requestpayload;
 
 	@JdbcTypeCode(SqlTypes.JSON)
 	@Column(name = "base_provider_response", columnDefinition = "jsonb")
-	private JsonNode baseProviderResponse; 
-
+	private JsonNode baseProviderResponse;
 
 	@JdbcTypeCode(SqlTypes.JSON)
 	@Column(name = "rate_response", columnDefinition = "jsonb")
 	private JsonNode energyRateResponse;
-	
+
 	@ManyToOne
 	@JoinColumn(name = "admin_id")
 	@JsonIgnore
 	private AdminUser admin;
-	
+
 	@PrePersist
 	protected void onCreate() {
 		comparedOn = Helper.getCurrentTimeBerlin();
 	}
-	
+
 	public void setCustomerModel(Customer customer) {
 		this.customer = customer;
 	}
-	
+
 	public void setRecordAdmin(AdminUser adminUser) {
 		this.setAdmin(adminUser);
 	}

@@ -89,6 +89,15 @@ public class ElectricityComparisonService {
 				filters.remove("customerId");
 			}
 
+			String rateType = filters.getOrDefault("rateType", "").toString();
+
+			if (rateType.length() > 0 && !rateType.contains("0"))
+				rateType += ",0";
+			else
+				rateType += "0";
+
+			filters.put("rateType", rateType);
+
 			filters.put("houseNumber", Integer.parseInt(filters.get("houseNumber").toString()));
 			filters.put("showCommission", true);
 
@@ -119,11 +128,13 @@ public class ElectricityComparisonService {
 					customerRepo.findById(customerId).ifPresent(customerCompare::setCustomerModel);
 				}
 
+				JsonNode requestPayload = objectMapper.valueToTree(filters);
 				JsonNode rateRes = objectMapper.valueToTree(rateData);
 				JsonNode providerRes = objectMapper.valueToTree(providerData);
 
 				customerCompare.setBaseProviderResponse(providerRes);
 				customerCompare.setEnergyRateResponse(rateRes);
+				customerCompare.setRequestpayload(requestPayload);
 
 				comparingRepo.save(customerCompare);
 
@@ -131,7 +142,8 @@ public class ElectricityComparisonService {
 
 			AdminTaxManagement fetchedTax = taxRepo.findByAdminAdminId(adminId).orElse(null);
 
-			return Map.of("res", true, "rates", ratesFuture.get(), "baseProvider", providersFuture.get(), "tax", fetchedTax.getValue());
+			return Map.of("res", true, "rates", ratesFuture.get(), "baseProvider", providersFuture.get(), "tax",
+					fetchedTax.getValue());
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 			throw new InternalServerException("Internal Server Error", HttpStatus.INTERNAL_SERVER_ERROR);

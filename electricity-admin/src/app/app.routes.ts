@@ -38,6 +38,7 @@ import { EnergyCategoriesComponent } from "./pages/categories/energy-categories/
 import { InvoiceCategoriesComponent } from "./pages/categories/invoice-categories/invoice-categories.component";
 import { ReportMeterReadingCategoryComponent } from "./pages/categories/meter-reading-category/report-meter-reading-category.component";
 import { CancellationServiceCategoryComponent } from "./pages/categories/cancellation-category/cancellation-service-category.component";
+import { ReportMeterReadingComponent } from "./pages/open-provider-action/report-meter-reading/report-meter-reading.component";
 
 export const routes: Routes = [
   {
@@ -191,6 +192,11 @@ export const routes: Routes = [
         path: "customers/details/:id",
         component: CustomerDetailsComponent,
         title: "Kundendetails",
+      },
+      {
+        path: "open-provider-action/report-meter-reading",
+        component: ReportMeterReadingComponent,
+        title: "Messwert melden",
       },
       {
         path: "email-template",

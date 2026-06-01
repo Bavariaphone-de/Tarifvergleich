@@ -1,0 +1,1049 @@
+<div class="page-layout">
+  <!-- ══════════ SIDEBAR ══════════ -->
+  <aside class="sidebar">
+    <div class="address-card">
+      <div class="address-card__header">
+        <!-- lightning bolt icon -->
+        <img src="assets/icons/Gasvergleich.png" class="nav-icon-vergleich" alt="gasvergleich" />
+        Gas
+      </div>
+      <div class="address-card__body">
+        <strong>Ihre Adresse:</strong>
+        <ng-container *ngIf="hasAddress && !isEditMode; else editMode">
+          <p>{{ street }} {{ houseNumber }}<br />{{ zip }} {{ city }}</p>
+          <p class="verbrauch">
+            <strong>Verbrauch / Jahr:</strong> {{ consum | number: '1.0-0' }} kWh
+          </p>
+        </ng-container>
+        <button class="btn-suche" *ngIf="hasAddress && !isEditMode" (click)="searchMode()">Suche ändern</button>
+
+        <!-- EDIT MODE -->
+        <ng-template #editMode>
+          <form [formGroup]="addressForm">
+            <div class="edit-column">
+              <input type="text" placeholder="Your postal code" formControlName="postalCode" />
+
+              <div class="dropdown-wrapper box large" #cityDropdown>
+                <input type="text" class="box large" placeholder="Ihre Ort" [(ngModel)]="citySearch"
+                  [ngModelOptions]="{ standalone: true }" (input)="onCityInput($event)"
+                  (focus)="closeAllDropdowns(); showCityDropdown = true" (click)="$event.stopPropagation()" />
+
+                <div class="dropdown" *ngIf="showCityDropdown">
+                  <div *ngIf="filteredCityOptions.length === 0" class="dropdown-item disabled">
+                    Keine Orte gefunden
+                  </div>
+
+                  <div *ngFor="let c of filteredCityOptions" (click)="selectCity(c)" class="dropdown-item"
+                    spellcheck="false" translate="no">
+                    {{ c.city }}
+                  </div>
+                </div>
+              </div>
+
+              <div class="dropdown-wrapper box large" #streetDropdown>
+                <input type="text" class="box large" placeholder="Ihre Straße" [value]="streetSearch"
+                  (input)="onStreetInput($event)" (focus)="closeAllDropdowns(); showDropdown = true"
+                  (click)="$event.stopPropagation()" [disabled]="addressForm.get('street')?.disabled" />
+
+                <div class="dropdown" *ngIf="showDropdown">
+                  <div *ngIf="isStreetLoading" class="dropdown-item">Laden...</div>
+
+                  <div *ngIf="!isStreetLoading && filteredStreetOptions.length === 0" class="dropdown-item disabled">
+                    Keine Straße gefunden
+                  </div>
+
+                  <div *ngFor="let s of filteredStreetOptions" (click)="selectStreet(s)" class="dropdown-item"
+                    spellcheck="false" translate="no">
+                    {{ s.street }}
+                  </div>
+                </div>
+              </div>
+
+              <input type="text" placeholder="Hausnummer" class="box small" formControlName="houseNumber"
+                maxlength="6" />
+
+              <div class="total-consumption">
+                <label class="consumption-label">Wohnfläche</label>
+
+                <select class="consumption-area" [(ngModel)]="selectedPersons" [ngModelOptions]="{ standalone: true }"
+                  (change)="onAreaChange($event)">
+                  <option [ngValue]="0">Wohnungsgröße</option>
+                  <option [ngValue]="1">50 m²</option>
+                  <option [ngValue]="2">100 m²</option>
+                  <option [ngValue]="3">150 m²</option>
+                  <option [ngValue]="4">180 m²</option>
+                </select>
+              </div>
+
+              <div class="consum-row">
+                <input type="text" id="consumptionValue" formControlName="consum" />
+                <!-- <span  class="consumption-number"> {{ consum | number }}</span> -->
+                <span class="watt-per-year">kWh / Jahr</span>
+              </div>
+
+              <button class="btn-suche" (click)="searchApply()">Adresse anwenden</button>
+            </div>
+          </form>
+        </ng-template>
+      </div>
+    </div>
+
+    <!-- Preisanzeige -->
+    <div class="filter-box">
+      <div class="filter-box__header">
+        Preisanzeige
+        <span class="info-base info-blue">i</span>
+      </div>
+      <div class="filter-box__body">
+        <label class="cb-row">
+          <input type="checkbox" [checked]="priceDisplayMonthly"
+            (change)="priceDisplayMonthly = true; onFilterChange()" />
+          Monatlich
+        </label>
+        <label class="cb-row">
+          <input type="checkbox" [checked]="!priceDisplayMonthly"
+            (change)="priceDisplayMonthly = false; onFilterChange()" />
+          Jährlich
+        </label>
+      </div>
+    </div>
+
+    <!-- Kundentyp -->
+    <div class="filter-box">
+      <div class="filter-box__header">
+        Kundentyp
+        <span class="info-base info-blue">i</span>
+      </div>
+      <div class="filter-box__body">
+        <label class="cb-row">
+          <input type="checkbox" [checked]="kundenPrivat"
+            (change)="kundenPrivat = true; type = 'private'; onFilterChange()" />
+          Privatkunde
+        </label>
+        <label class="cb-row">
+          <input type="checkbox" [checked]="!kundenPrivat"
+            (change)="kundenPrivat = false; type = 'business'; onFilterChange()" />
+          Geschäftskunde
+        </label>
+      </div>
+    </div>
+
+    <!-- Ökotarife -->
+    <div class="filter-box">
+      <div class="filter-box__header">
+        <span>Ökotarife</span>
+        <span class="info-base info-blue">i</span>
+      </div>
+      <div class="filter-box__body">
+        <label class="cb-row">
+          <input type="checkbox" [checked]="alleTarife" (change)="alleTarife = true; onFilterChange()" />
+          Alle Tarife
+        </label>
+        <label class="cb-row">
+          <input type="checkbox" [checked]="!alleTarife" (change)="alleTarife = false; onFilterChange()" />
+          Nur Ökotarife
+        </label>
+      </div>
+    </div>
+
+    <!-- Maximale Vertragslaufzeit -->
+    <div class="filter-box">
+      <div class="filter-box__header">
+        Maximale Vertragslaufzeit
+        <span class="info-base info-blue">i</span>
+      </div>
+      <div class="filter-box__body">
+        <div>
+          <label class="cb-row">
+            <input type="checkbox" [checked]="maxTermEgal"
+              (change)="maxTermEgal = true; maxTerm24 = false; maxTerm12 = false; onFilterChange()" />
+            Egal
+          </label>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 0.3rem">
+          <label class="cb-row">
+            <input type="checkbox" [checked]="maxTerm24"
+              (change)="maxTerm24 = true; maxTerm12 = false; maxTermEgal = false; onFilterChange()" />
+            Max. 24 Monate
+          </label>
+          <label class="cb-row">
+            <input type="checkbox" [checked]="maxTerm12"
+              (change)="maxTerm12 = true; maxTerm24 = false; maxTermEgal = false; onFilterChange()" />
+            Max. 12 Monate
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Energiepreisgarantie Dauer -->
+    <div class="filter-box">
+      <div class="filter-box__header">
+        Energiepreisgarantie Dauer
+        <span class="info-base info-blue">i</span>
+      </div>
+      <div class="filter-box__body">
+        <div>
+          <label class="cb-row">
+            <input type="checkbox" [checked]="minGuaranteeEgal" (change)="
+                minGuaranteeEgal = true;
+                minGuarantee24 = false;
+                minGuarantee12 = false;
+                minGuarantee6 = false;
+                onFilterChange()
+              " />
+            Egal
+          </label>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 0.3rem">
+          <label class="cb-row">
+            <input type="checkbox" [checked]="minGuarantee24" (change)="
+                minGuarantee24 = true;
+                minGuarantee12 = false;
+                minGuarantee6 = false;
+                minGuaranteeEgal = false;
+                onFilterChange()
+              " />
+            Min. 24 Monate
+          </label>
+          <label class="cb-row">
+            <input type="checkbox" [checked]="minGuarantee12" (change)="
+                minGuarantee12 = true;
+                minGuarantee24 = false;
+                minGuarantee6 = false;
+                minGuaranteeEgal = false;
+                onFilterChange()
+              " />
+            Min. 12 Monate
+          </label>
+          <label class="cb-row">
+            <input type="checkbox" [checked]="minGuarantee6" (change)="
+                minGuarantee6 = true;
+                minGuarantee24 = false;
+                minGuarantee12 = false;
+                minGuaranteeEgal = false;
+                onFilterChange()
+              " />
+            Min. 6 Monate
+          </label>
+        </div>
+      </div>
+    </div>
+    <app-contact-person></app-contact-person>
+    <app-need-support></app-need-support>
+  </aside>
+
+  <!-- ══════════ MAIN ══════════ -->
+  <main class="main">
+    <!-- Filter banner -->
+    <div class="filter-banner">
+      <div class="filter-banner__header">Filtereinstellungen - Bitte auswählen</div>
+      <div class="filter-banner__body">
+        <!-- Left column -->
+        <div class="filter-col">
+          <div class="filter-row">
+            <span class="filter-row__label">Sind Sie Privat- oder Geschäftskunde?</span>
+            <div class="filter-row__options">
+              <label class="cb-row">
+                <input type="checkbox" [checked]="kundenPrivat"
+                  (change)="kundenPrivat = true; type = 'private'; onFilterChange()" />
+                Privatkunde
+              </label>
+              <label class="cb-row">
+                <input type="checkbox" [checked]="!kundenPrivat"
+                  (change)="kundenPrivat = false; type = 'business'; onFilterChange()" />
+                Geschäftskunde
+              </label>
+            </div>
+          </div>
+          <div class="filter-row">
+            <span class="filter-row__label">Ist eine maximale Vertragslaufzeit gewünscht?</span>
+            <div class="opts-grid">
+              <label class="cb-row" style="padding-right: 3.1rem">
+                <input type="checkbox" [checked]="maxTermEgal" (change)="
+                    maxTermEgal = true; maxTerm24 = false; maxTerm12 = false; onFilterChange()
+                  " />
+                Egal
+              </label>
+              <label class="cb-row">
+                <input type="checkbox" [checked]="maxTerm24" (change)="
+                    maxTerm24 = true; maxTerm12 = false; maxTermEgal = false; onFilterChange()
+                  " />
+                Max. 24 Monate
+              </label>
+              <label class="cb-row"> </label>
+              <label class="cb-row">
+                <input type="checkbox" [checked]="maxTerm12" (change)="
+                    maxTerm12 = true; maxTerm24 = false; maxTermEgal = false; onFilterChange()
+                  " />
+                Max. 12 Monate
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Vertical divider -->
+        <div class="filter-divider"></div>
+
+        <!-- Right column -->
+        <div class="filter-col filter-col--right">
+          <div class="filter-row">
+            <span class="filter-row__label">Sollen alle Tarife angezeigt werden oder nur Ökotarife?</span>
+            <div class="filter-row__options filter-row__options--col">
+              <label class="cb-row">
+                <input type="checkbox" [checked]="alleTarife" (change)="alleTarife = true; onFilterChange()" />
+                Alle Tarife
+              </label>
+              <label class="cb-row">
+                <input type="checkbox" [checked]="!alleTarife" (change)="alleTarife = false; onFilterChange()" />
+                Nur Ökotarife
+              </label>
+            </div>
+          </div>
+          <div class="filter-row">
+            <span class="filter-row__label">Ist eine Energiepreisgarantie gewünscht?</span>
+            <div class="opts-grid">
+              <label class="cb-row">
+                <input type="checkbox" [checked]="minGuaranteeEgal" (change)="
+                    minGuaranteeEgal = true;
+                    minGuarantee24 = false;
+                    minGuarantee12 = false;
+                    minGuarantee6 = false;
+                    onFilterChange()
+                  " />
+                Egal
+              </label>
+              <label class="cb-row">
+                <input type="checkbox" [checked]="minGuarantee24" (change)="
+                    minGuarantee24 = true;
+                    minGuarantee12 = false;
+                    minGuarantee6 = false;
+                    minGuaranteeEgal = false;
+                    onFilterChange()
+                  " />
+                Min. 24 Monate
+              </label>
+              <label class="cb-row">
+                <input type="checkbox" [checked]="minGuarantee12" (change)="
+                    minGuarantee12 = true;
+                    minGuarantee24 = false;
+                    minGuarantee6 = false;
+                    minGuaranteeEgal = false;
+                    onFilterChange()
+                  " />
+                Min. 12 Monate
+              </label>
+              <label class="cb-row">
+                <input type="checkbox" [checked]="minGuarantee6" (change)="
+                    minGuarantee6 = true;
+                    minGuarantee24 = false;
+                    minGuarantee12 = false;
+                    minGuaranteeEgal = false;
+                    onFilterChange()
+                  " />
+                Min. 6 Monate
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="filter-banner__footer">
+        <button class="btn-weiter" (click)="toggleDiv()">
+          {{ isOpen ? 'Filterauswahl speichern' : 'Weiter zum Gasvergleich' }}
+        </button>
+      </div>
+    </div>
+    <!-- end filter-banner -->
+
+    <!-- ══════════ COMPARISON SECTION ══════════ -->
+    <div class="comp-container" *ngIf="isOpen">
+      <!-- Top navbar -->
+      <div class="comp-navbar">
+        <div class="comp-navbar__left">
+          <img src="assets/icons/Vergleich_weiss.png" class="nav-icon-vergleich" alt="gasvergleich" />
+          Ihr Vergleich
+        </div>
+        <div class="comp-navbar__right">
+          <img src="assets/icons/Gasvergleich.png" class="nav-icon-vergleich" alt="gasvergleich" />
+          Gas
+        </div>
+      </div>
+
+      <!-- Vergleichstarif bar -->
+      <div class="container-vergleich-bar">
+        <div class="vergleich-bar">
+          <span>Ihr Vergleichstarif: Grundversorger voreingestellt</span> &nbsp;<span class="info-base info-circ"
+            style="margin-top: 3px">i</span>
+          <a class="anpassen" (click)="openModal()">
+            anpassen
+            <span class="item-image">
+              <img src="assets/icons/Bearbeiten_schwarz.png" class="icon-check" alt="check" />
+            </span>
+          </a>
+        </div>
+
+        <!-- Provider comparison row — first result from API -->
+        <div class="vergleich-bar__provider" *ngIf="!isLoading && baseProvider && baseRate">
+          <div class="provider-name">{{ baseProvider.providerName }}</div>
+          <div class="provider-details">
+            <div class="tarif-title">{{ baseRate.rateName }}</div>
+            <div class="tarif-sub">
+              Arbeitspreis:
+              <strong>{{ baseRate.workPrice | number: '1.2-2' }} Ct./kWh</strong>
+              | Grundpreis:
+              <strong>{{ baseRate.basePriceMonth | number: '1.2-2' }} €/Monat</strong>
+            </div>
+          </div>
+          <div class="provider-price">
+            <div class="provider-price__amount" translate="no">
+              {{ getAveragePrice(baseRate) | number: '1.2-2' }}
+              {{ priceDisplayMonthly ? '€' : '€' }}
+            </div>
+            <div class="provider-price__sub" translate="no">
+              {{ priceDisplayMonthly ? 'Ø pro Monat' : 'pro Jahr' }} &nbsp;<span class="info-base info-circ">i</span>
+            </div>
+          </div>
+        </div>
+        <div class="vergleich-bar__provider" *ngIf="isLoading">
+          <div class="provider-name">Wird geladen...</div>
+        </div>
+        <div class="vergleich-bar__provider" *ngIf="!isLoading && hasLoadedRates && filteredRates.length === 0">
+          <div class="provider-name">Keine Daten gefunden</div>
+        </div>
+      </div>
+
+      <!-- Green tariff count bar -->
+      <div class="tariff-count-bar">
+        <span *ngIf="!isLoading">
+          {{ filteredRates.length }} Tarife ab
+          <strong>{{ getLowestPrice() | number: '1.2-2' }} €</strong>
+          {{ priceDisplayMonthly ? 'pro Monat' : 'pro Jahr' }}
+        </span>
+        <span *ngIf="isLoading">Tarife werden geladen...</span>
+        <div class="container-button">
+          <button class="btn-sortieren" (click)="toggleDropdown()">
+            {{ selectedOption }}
+            <span class="item-image">
+              <img src="assets/icons/Sortieren_schwarz.png" class="icon-sort" alt="check" />
+            </span>
+          </button>
+          <!-- Dropdown -->
+          <div class="dropdown-menu" *ngIf="isDropdownOpen">
+            <div (click)="selectOption('Sortieren nach: Beste Treffer')">
+              Sortieren nach: Beste Treffer
+            </div>
+            <div (click)="selectOption('Niedrigster Preis')">Niedrigster Preis</div>
+            <div (click)="selectOption('Niedrigster Arbeitspreis')">Niedrigster Arbeitspreis</div>
+            <div (click)="selectOption('Niedrigster Grundpreis')">Niedrigster Grundpreis</div>
+          </div>
+
+          <span class="info-base info-green">i</span>
+        </div>
+      </div>
+
+      <!-- No results -->
+      <div class="tariff-count-bar" *ngIf="!isLoading && filteredRates.length === 0">
+        <span>Keine Tarife gefunden. Bitte passen Sie Ihre Filtereinstellungen an.</span>
+      </div>
+
+      <!-- ══ Tariff cards (ngFor over API results) ══ -->
+      <div class="tariff-card" *ngFor="let rate of filteredRates; let i = index">
+        <div class="tariff-card__badge" *ngIf="rate.recommended || rate.optEco">
+          <ng-container *ngIf="rate.recommended">
+            Beliebtester Tarif
+            <span class="info-base info-blue">i</span>
+          </ng-container>
+          <ng-container *ngIf="!rate.recommended && rate.optEco"> Ökogas-Tarif </ng-container>
+        </div>
+
+        <div class="tariff-card__body">
+          <!-- Logo + name -->
+          <div class="tc-logo">
+            <div class="tc-logo__name">
+              <!-- Render provider SVG image if present, else plain name -->
+              <ng-container *ngIf="rate.providerSVGPath; else plainName">
+                <img [src]="rate.providerSVGPath" [alt]="rate.providerName" class="tc-logo__img" /> </ng-container>
+
+              <ng-template #plainName>
+                <div class="tc-logo__name-text">
+                  {{ rate.providerName }}
+                </div>
+              </ng-template>
+
+              <!-- <span class="tc-logo__circle"></span> -->
+            </div>
+            <div class="tc-logo__tarif">{{ rate.rateName }}</div>
+          </div>
+
+          <!-- Details -->
+          <div class="tc-details">
+            <div class="arbeits">
+              Arbeitspreis: <strong>{{ rate.workPrice | number: '1.2-2' }} Ct./kWh</strong> |
+              Grundpreis: <strong>{{ rate.basePriceMonth | number: '1.2-2' }} €/Monat</strong>
+            </div>
+
+            <!-- Bonus tags — only shown when non-zero -->
+            <div class="bonus-tags" *ngIf="rate.optBonusInstant || rate.optBonus">
+              <span class="bonus-tag" *ngIf="rate.optBonusInstant">
+                Sofortbonus: {{ rate.optBonusInstant | number: '1.0-0' }} €
+              </span>
+              <span class="bonus-tag" *ngIf="rate.optBonus">
+                Neukundenbonus: {{ rate.optBonus | number: '1.0-0' }} €
+              </span>
+            </div>
+
+            <ul class="tc-check-list">
+              <li>
+                <span class="item-image">
+                  <img src="assets/icons/Kreis_Haken_schwarz.png" class="icon-check" alt="check" />
+                </span>
+                Mindestvertragslaufzeit: {{ getTermLabel(rate) }}
+              </li>
+              <li *ngIf="rate.optGuarantee && rate.optGuarantee !== '0'">
+                <span class="item-image">
+                  <img src="assets/icons/Kreis_Haken_schwarz.png" class="icon-check" alt="check" />
+                </span>
+                Preisfixierung: {{ getGuaranteeLabel(rate) }}
+              </li>
+              <li>
+                <span class="item-image">
+                  <img src="assets/icons/Kreis_Haken_schwarz.png" class="icon-check" alt="check" />
+                </span>
+                Geschätzter Abschlag: {{ rate.totalPriceMonth | number: '1.0-0' }} €/Monat
+              </li>
+            </ul>
+
+            <!-- Toggle detail — same class structure as original -->
+            <div class="toggle-detail" (click)="toggleCard(rate)">
+              Tarif- und Preisdetails
+              <span class="arrow" [class.top-v]="rate.uiExpanded" [class.down-v]="!rate.uiExpanded"></span>
+            </div>
+
+            <!-- Tabs + tab content — only visible when card expanded -->
+            <ng-container *ngIf="rate.uiExpanded">
+              <div class="detail-tabs">
+                <span class="detail-tab" [class.active]="getActiveTab(rate.rateId) === 'overview'"
+                  (click)="setTab(rate.rateId, 'overview')">
+                  Tarifübersicht
+                </span>
+                <span class="detail-tab" [class.active]="getActiveTab(rate.rateId) === 'information'"
+                  (click)="setTab(rate.rateId, 'information')">
+                  Tarifinformationen
+                </span>
+                <span class="detail-tab" [class.active]="getActiveTab(rate.rateId) === 'price'"
+                  (click)="setTab(rate.rateId, 'price')">
+                  Preisdetails
+                </span>
+                <span class="detail-tab" [class.active]="getActiveTab(rate.rateId) === 'provider'"
+                  (click)="setTab(rate.rateId, 'provider')">
+                  Anbieter
+                </span>
+                <span class="detail-tab" [class.active]="getActiveTab(rate.rateId) === 'source'"
+                  (click)="setTab(rate.rateId, 'source')">
+                  Gasherkunft
+                </span>
+              </div>
+
+              <div class="tab-content">
+                <!-- Tarifübersicht -->
+                <div *ngIf="getActiveTab(rate.rateId) === 'overview'">
+                  <table class="detail-table">
+                    <tr>
+                      <td>Postleitzahl</td>
+                      <td>{{ zip }}</td>
+                    </tr>
+                    <tr>
+                      <td>Jahresverbrauch</td>
+                      <td>{{ consum | number: '1.0-0' }} kWh</td>
+                    </tr>
+                    <tr>
+                      <td>Abschlagszahlung</td>
+                      <td>{{ rate.partialPayment }}× Monatlich</td>
+                    </tr>
+                    <tr>
+                      <td>Grundpreis</td>
+                      <td>
+                        {{ rate.basePriceMonth | number: '1.2-2' }} €/Monat ({{
+                        rate.basePriceYear | number: '1.2-2'
+                        }}
+                        €/Jahr)
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Arbeitspreis</td>
+                      <td>{{ rate.workPrice | number: '1.2-2' }} Cent/kWh</td>
+                    </tr>
+                    <tr *ngIf="rate.optBonus">
+                      <td>Neukundenbonus</td>
+                      <td>{{ rate.optBonus | number: '1.0-0' }} €</td>
+                    </tr>
+                    <tr>
+                      <td>Preisgarantie</td>
+                      <td>{{ getGuaranteeLabel(rate) }}</td>
+                    </tr>
+                    <tr>
+                      <td>Mindestvertragslaufzeit</td>
+                      <td>{{ getTermLabel(rate) }} - danach jederzeit kündbar</td>
+                    </tr>
+                    <tr>
+                      <td>Kündigungsfrist</td>
+                      <td>{{ getCancelLabel(rate) }}</td>
+                    </tr>
+                    <tr>
+                      <td>Preis im 1. Jahr</td>
+                      <td>{{ rate.totalPriceMonth | number: '1.2-2' }} €/Monat</td>
+                    </tr>
+                  </table>
+                  <span style="font-size: 14px">
+                    (inkl. aller Kosten
+                    <ng-container *ngIf="rate.optBonus">
+                      , Boni ({{ rate.optBonus | number: '1.0-0' }} € Neukundenbonus)
+                    </ng-container>
+                    und Rabatte für das 1. Jahr)
+                  </span>
+                </div>
+
+                <!-- Tarifinformationen -->
+                <div *ngIf="getActiveTab(rate.rateId) === 'information'">
+                  <div class="container-information">
+                    <div *ngIf="rate.optBonus">
+                      <div class="header-info">
+                        <span>Neukundenbonus {{ rate.optBonus | number: '1.0-0' }} €</span>
+                      </div>
+                      <div class="body-info">
+                        <span>Der Bonus wird spätestens nach 12 Monaten Belieferungszeit mit der dann
+                          folgenden Belieferung gutgeschrieben oder ausbezahlt.</span>
+                      </div>
+                    </div>
+                    <div *ngIf="rate.optBonusInstant">
+                      <div class="header-info">
+                        <span>Sofortbonus {{ rate.optBonusInstant | number: '1.0-0' }} €</span>
+                      </div>
+                      <div class="body-info">
+                        <span>Der Sofortbonus wird spätestens drei Monate nach Lieferbeginn
+                          ausgezahlt.</span>
+                      </div>
+                    </div>
+                    <div>
+                      <div class="header-info"><span>Nettopreisgarantie</span></div>
+                      <div class="body-info">
+                        <span>Der Anbeiter garantiert alle Preisbestandteile des Tarifs mit Ausnahme
+                          der Mehrwertsteuer und der gas- bzw. Gassteuer sowie etwaigen nach
+                          Vertragsabschluss neu eingeführten Steuern, Abgaben und Umlagen.</span>
+                      </div>
+                    </div>
+                    <div *ngIf="rate.optEco">
+                      <div class="header-info"><span>Ökotarif</span></div>
+                      <div class="body-info">
+                        <span>Bei diesem Tarif wird der Gas zu 100% aus erneuerbaren Energiequellen
+                          erzeugt.
+                        </span>
+                      </div>
+                    </div>
+                    <div>
+                      <div class="header-info"><span>Belieferung aller Zählerarten</span></div>
+                      <div class="body-info">
+                        <span>Sollte an Ihrer Lieferstelle eine moderne Messeinrichtung oder ein
+                          intelligentes Messsystem (iMS) vom grundzuständigen Messstellenbetreiber
+                          verbaut werden oder bereits eingebaut sein, erfolgt in diesem Tarif keine
+                          Erhöhung der Messentgelte in der Grundgebühr aufgrund Ihres Messsystems.
+                          Sie erhalten die Preise wie im Auftrag abgeschlossen.</span>
+                      </div>
+                    </div>
+                    <div *ngIf="rate.requiredEmail">
+                      <div class="header-info"><span>Online-Tarif</span></div>
+                      <div class="body-info">
+                        <span>Die Kommunikation des Anbieters erfolgt bei diesem Tarif grundsätzlich
+                          online. Neben der Hinterlegung einer gültigen E-Mail-Adresse ist es bei
+                          manchen Anbietern erforderlich, sich im Online-Portal des Anbieters
+                          anzumelden. Informationen zu Lieferbeginn, Abschlagsplan, Abrechnung und
+                          möglichen Preiserhöhungen/-senkungen werden Ihnen per E-Mail an die
+                          angegebene E-Mail-Adresse zugesandt und ggf. im Kundenportal
+                          hinterlegt.</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Preisdetails -->
+                <div class="container-price" *ngIf="getActiveTab(rate.rateId) === 'price'">
+                  <div>
+                    <div class="header-info">
+                      <span>Informationen zum Preis für {{ zip }} {{ city }}</span>
+                    </div>
+                    <div class="body-info">
+                      <span>Verbrauchsannahme: {{ consum | number: '1.0-0' }} kWh/Jahr</span>
+                    </div>
+                  </div>
+                  <div>
+                    <table class="price-detail">
+                      <tr>
+                        <td>Arbeitspreis pro kWh brutto (netto)</td>
+                        <td>x</td>
+                        <td>{{ rate.workPrice | number: '1.2-2' }} Ct./kWh</td>
+                      </tr>
+                      <tr>
+                        <td>Arbeitspreis gesamt</td>
+                        <td>=</td>
+                        <td>{{ getWorkPriceAnnual(rate) | number: '1.2-2' }} €/Jahr</td>
+                      </tr>
+                      <tr>
+                        <td>Grundpreis brutto (netto)</td>
+                        <td>+</td>
+                        <td>{{ rate.basePriceYear | number: '1.2-2' }} €/Jahr</td>
+                      </tr>
+                      <tr>
+                        <td>Bruttopreis ohne Bonus im 1. Jahr</td>
+                        <td>=</td>
+                        <td>{{ rate.totalPrice | number: '1.2-2' }} €/Jahr</td>
+                      </tr>
+                      <tr>
+                        <td>Durchschnitt pro Monat</td>
+                        <td></td>
+                        <td>{{ rate.totalPriceMonth | number: '1.2-2' }} €/Monat</td>
+                      </tr>
+                      <tr *ngIf="rate.optBonus">
+                        <td>Neukundenbonus</td>
+                        <td></td>
+                        <td>{{ rate.optBonus | number: '1.0-0' }} €</td>
+                      </tr>
+                      <tr *ngIf="rate.optBonus">
+                        <td>Bruttopreis inkl. Bonus im 1. Jahr</td>
+                        <td>=</td>
+                        <td>{{ rate.totalPrice - rate.optBonus | number: '1.2-2' }} €/Jahr</td>
+                      </tr>
+                    </table>
+                    <table class="table-monthly blue">
+                      <tr>
+                        <td>Durchschnitt pro Monat</td>
+                        <td>{{ rate.totalPriceMonth | number: '1.2-2' }} €/Monat</td>
+                      </tr>
+                    </table>
+                    <table class="table-monthly">
+                      <tr>
+                        <td>Geschätzter Abschlag*</td>
+                        <td>ca. {{ rate.totalPriceMonth | number: '1.0-0' }} €/Monat</td>
+                      </tr>
+                    </table>
+                  </div>
+                  <div class="body-info">
+                    <span>* Sie zahlen bei diesem Tarif {{ rate.partialPayment }} monatliche
+                      Abschläge.</span>
+                  </div>
+                  <div class="body-info">
+                    <span>Als Berechnungsgrundlage des geschätzten Abschlags dient der
+                      <strong>Bruttopreis ohne Bonus im 1. Jahr.</strong>
+                    </span>
+                  </div>
+                  <div class="body-info">
+                    <span>Sämtliche Berechnungen beziehen sich auf das erste Vertragsjahr.
+                      <strong>Neukundenboni</strong>
+                      werden nach Ablauf von 12 Belieferungsmonaten mit der dann folgenden Rechnung
+                      gutgeschrieben oder ausgezahlt. <strong>Sofortboni</strong> werden spätestens
+                      drei Monate nach Lieferbeginn ausgezahlt. In den geschätzten Abschlägen werden
+                      diese Boni nicht berücksichtigt.</span>
+                  </div>
+                  <div class="body-info">
+                    <span>Tarifversion {{ rate.rateId }}, gültig seit {{ rate.termAfterNewMaxDate }}.
+                      <strong>Bruttopreise</strong> beinhalten alle Steuern und Abgaben.
+                      <strong>Nettopreise</strong> sind zzgl. der Mehrwertsteuer.</span>
+                  </div>
+                  <div class="body-info">
+                    <span>Fehlt ein Tarif oder haben Sie einen Fehler gefunden? <br />
+                      Dann nehmen Sie bitte Kontakt mit uns auf:
+                      <a href="">mm@energiehanbel.bayern</a>
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Anbieter -->
+                <div class="provider" *ngIf="getActiveTab(rate.rateId) === 'provider'">
+                  <div class="header-info">
+                    <span>{{ rate.providerName }}</span>
+                  </div>
+                  <div class="body-info">
+                    <span>
+                      Tarif: <strong>{{ rate.rateName }}</strong><br />
+                      Branche: {{ rate.branch }} | Kundentyp: {{ rate.type }}<br />
+                      Lieferant-ID: {{ rate.rateId }}
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Gasherkunft -->
+                <div *ngIf="getActiveTab(rate.rateId) === 'source'">Gasherkunft Content</div>
+              </div>
+            </ng-container>
+            <!-- end expanded -->
+          </div>
+          <!-- end tc-details -->
+
+          <!-- Price -->
+          <div class="tc-price">
+            <div class="tc-price__amount" translate="no">
+              {{ getDisplayPrice(rate) | number: '1.2-2' }} €
+            </div>
+            <div class="tc-price__sub">
+              {{ getDisplayPriceSuffix() }} &nbsp;<span class="info-base info-circ">i</span>
+            </div>
+            <div class="tc-price__savings" *ngIf="getSavingPerYear(rate)">
+              Sie sparen:
+              <span class="amount" style="color: red" translate="no">
+                <!-- {{
+                (priceDisplayMonthly ? getSavingPerYear(rate) / 12 : getSavingPerYear(rate))
+                | number: '1.2-2'
+                }} -->
+                {{(getAveragePrice(baseRate) - getDisplayPrice(rate) )| number: '1.2-2' }}
+                €</span>
+              &nbsp;
+              <span class="info-wrapper" #popoverContainer>
+                <span class="info-base info-circ" (click)="toggleInfo($event)">i</span>
+                <div class="info-popover" *ngIf="isInfoOpen">
+                  <div class="dialog-box">
+                    <div class="dialog-content">
+                      <div class="label" style="font-weight: 600">Preisvergleichrechnung</div>
+                      <div class="tc-price__vergleich">
+                        <div class="label">
+                          Kosten pro Jahr: &nbsp; &nbsp; &nbsp;
+                          {{ getYearlyPrice(rate) | number: '1.2-2' }} €
+                        </div>
+                        <div class="label-low" style="margin-right: 6rem">(mit diesem Tarif)</div>
+                        <br />
+                        <div class="label">
+                          Gespart: &nbsp; &nbsp; &nbsp;
+                          <span class="gespart" style="color: red">{{ getSavingPerYear(rate) | number: '1.2-2' }}
+                            €</span>
+                        </div>
+                        <div style="margin-top: 16px">
+                          (In der Preisvergleichrechnung<br />wurde nur das erste Jahr
+                          berücksichtigt)
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </span>
+            </div>
+            <button class="btn-weiter-card" style="margin-top: auto" (click)="openPage(rate)">
+              Weiter
+            </button>
+          </div>
+        </div>
+      </div>
+      <!-- end *ngFor tariff-card -->
+      <div class="modal-backdrop" *ngIf="isModalOpen" (click)="closeModal()"></div>
+
+      <div class="modal" *ngIf="isModalOpen">
+        <div class="modal-content" (click)="$event.stopPropagation()">
+          <!-- Close button -->
+          <span class="close-btn" (click)="closeModal()">✕</span>
+
+          <div class="modal-body">
+            <h3>Vergleichstarif anpassen</h3>
+
+            <p class="desc">
+              Wählen Sie Ihren aktuellen Tarif oder „anderer Tarif des Anbieters”, falls Ihr
+              aktueller Tarif in der Auswahl fehlen sollte. Es sind aktuelle Marktpreise hinterlegt,
+              die Sie jederzeit individuell auf Ihre Vertragssituation anpassen können. So können
+              Sie besser vergleichen, wie viel Sie bei einem Wechsel sparen können.
+            </p>
+
+            <!-- Anbieter -->
+            <div class="form-group" style="padding-right: 20px; gap: 10px; margin-bottom: 10px">
+              <div class="input-field select-wrap" style="display: inline-block">
+                <div>
+                  <span class="field-label"
+                    style="margin-left: 10px; font-size: 12px; font-weight: 500; display: block">
+                    Anbieter
+                  </span>
+
+                  <select class="styled-select" [(ngModel)]="selectedProviderId" (change)="onProviderChange()">
+                    <option *ngFor="let provider of baseProviders" [value]="provider.providerId">
+                      {{ provider.providerName }}
+                    </option>
+                  </select>
+
+                  <span class="material-symbols-outlined dropdown-arrow"> expand_more </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tarif -->
+            <div class="form-group" style="padding-right: 20px; gap: 10px; margin-bottom: 10px">
+              <div class="input-field select-wrap" style="display: inline-block">
+                <div>
+                  <span class="field-label"
+                    style="margin-left: 10px; font-size: 12px; font-weight: 500; display: block">
+                    Tarif
+                  </span>
+
+                  <select class="styled-select" [(ngModel)]="selectedRateId" (change)="onRateChange()">
+                    <option *ngFor="let rate of selectedProviderRates" [value]="rate.rateId">
+                      {{ rate.rateName }}
+                    </option>
+                  </select>
+
+                  <span class="material-symbols-outlined dropdown-arrow"> expand_more </span>
+                </div>
+              </div>
+            </div>
+
+            <p class="desc-small">
+              Falls Ihre aktuellen Kosten von unseren Daten abweichen, können Sie diese hier
+              anpassen. So können wir Ihre Ersparnis genau berechnen.
+            </p>
+
+            <div class="price-row">
+              <div>
+                <div class="price-label">
+                  {{ priceDisplayMonthly ? 'Durchschnitt pro Monat:' : 'Durchschnitt pro Jahr:' }}
+                </div>
+
+                <div class="sub">(gerechnet auf 12 Monate, ohne Boni und Rabatte)</div>
+              </div>
+
+              <div class="price" translate="no">
+                {{
+                activeTab === 'abschlag'
+                ? (editableMonthlyPrice | number: '1.2-2')
+                : (getPopupAveragePrice() | number: '1.2-2')
+                }}
+                €
+
+                <span class="item-image">
+                  <img src="assets/icons/Bearbeiten_schwarz.png" (click)="toggleEditSection()" class="icon-check"
+                    style="cursor: pointer" />
+                </span>
+              </div>
+            </div>
+
+            <div class="edit-section" *ngIf="showEditSection">
+              <div class="edit-tabs">
+                <div class="tab" [class.active]="activeTab === 'price'" (click)="activeTab = 'price'">
+                  Arbeits- & Grundpreis
+                </div>
+
+                <div class="tab" [class.active]="activeTab === 'abschlag'" (click)="activeTab = 'abschlag'">
+                  Abschlag
+                </div>
+              </div>
+
+              <!-- PRICE TAB -->
+              <div *ngIf="activeTab === 'price'">
+                <!-- VAT -->
+                <div class="section">
+                  <label>Mehrwertsteuer einberechnet?</label>
+
+                  <div class="toggle">
+                    <div class="toggle-btn" [class.active]="isGrossPrice" (click)="setGrossMode(true)">
+                      Bruttopreise (inkl. Mwst.)
+                    </div>
+
+                    <div class="toggle-btn" [class.active]="!isGrossPrice" (click)="setGrossMode(false)">
+                      Nettopreise (ohne Mwst.)
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Arbeitspreis -->
+                <div class="form-group" style="margin-bottom: 20px">
+                  <div class="field-wrap">
+                    <span class="field-label"> Arbeitspreis in Cent </span>
+
+                    <input type="number" [(ngModel)]="editableWorkPrice" />
+                  </div>
+                  <div class="field-error-msg" *ngIf="fieldErrors['workPrice']">
+                    {{ fieldErrors['workPrice'] }}
+                  </div>
+                </div>
+
+                <!-- Grundpreis type -->
+                <div class="section">
+                  <label>Grundpreis in €</label>
+
+                  <div class="toggle">
+                    <div class="toggle-btn" [class.active]="basePriceMode === 'year'"
+                      (click)="changeBasePriceMode('year')">
+                      pro Jahr
+                    </div>
+
+                    <div class="toggle-btn" [class.active]="basePriceMode === 'month'"
+                      (click)="changeBasePriceMode('month')">
+                      pro Monat
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Grundpreis -->
+                <div class="form-group">
+                  <div class="field-wrap">
+                    <span class="field-label"> Grundpreis in € </span>
+
+                    <input type="number" step="0.01" [(ngModel)]="editableBasePrice"
+                      (ngModelChange)="onBasePriceInputChange()" translate="no" />
+                  </div>
+
+                  <div class="field-error-msg" *ngIf="fieldErrors['basePrice']">
+                    {{ fieldErrors['basePrice'] }}
+                  </div>
+                </div>
+              </div>
+
+              <!-- ABSCHLAG -->
+              <div *ngIf="activeTab === 'abschlag'">
+                <div class="form-group" style="margin-bottom: 20px">
+                  <div class="field-wrap">
+                    <span class="field-label"> Abschlag in €/Monat </span>
+
+                    <input type="number" [(ngModel)]="editableMonthlyPrice"
+                      (ngModelChange)="onAbschlagInputChange($event)" />
+                  </div>
+                  <div class="field-error-msg" *ngIf="fieldErrors['monthlyPrice']">
+                    {{ fieldErrors['monthlyPrice'] }}
+                  </div>
+                </div>
+
+                <div class="section">
+                  <label><strong>Anzahl Abschläge pro Jahr</strong></label>
+
+                  <div class="abschlag-wrapper">
+                    <!-- LEFT -->
+                    <button type="button" class="scroll-btn" (click)="scrollAbschlag('left')">
+                      ‹
+                    </button>
+
+                    <!-- SCROLL -->
+                    <div class="abschlag-scroll" #abschlagScroll>
+                      <div class="toggle abschlag-toggle">
+                        <div class="toggle-btn" *ngFor="let count of abschlagOptions"
+                          [class.active]="abschlagCount === count" (click)="changeAbschlagCount(count)">
+                          {{ count }} Abschläge
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- RIGHT -->
+                    <button type="button" class="scroll-btn" (click)="scrollAbschlag('right')">
+                      ›
+                    </button>
+                  </div>
+                </div>
+                <div class="sub">
+                  <span>Ihr Vergleichstarif: Grundversorger voreingestellt</span> &nbsp;
+                  <div style="display: flex; gap: 8px">
+                    <span class="info-base info-circ" style="margin-top: 3px">i</span>
+                    Bitte beachten Sie: Da es zu Rück- oder Nachzahlungen kommen kann, spiegelt der
+                    Abschlag ggf. nicht Ihre tatsächlichen Kosten wider.
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="actions">
+              <button class="submit-btn" (click)="applyComparisonPrice()">übernehmen</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- end comp-container -->
+  </main>
+</div>

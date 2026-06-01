@@ -65,7 +65,7 @@ import com.tarifvergleich.electricity.repository.CustomerRepository;
 import com.tarifvergleich.electricity.repository.CustomerServiceRequestRepository;
 import com.tarifvergleich.electricity.repository.CustomerServicesRepository;
 import com.tarifvergleich.electricity.repository.ReportMeterReadingRepository;
-import com.tarifvergleich.electricity.repository.TokenManagementRespository;
+import com.tarifvergleich.electricity.repository.TokenManagementRepository;
 import com.tarifvergleich.electricity.service.AesEncryptionService;
 import com.tarifvergleich.electricity.util.CustomEmailTemplate;
 import com.tarifvergleich.electricity.util.EmailBodyRender;
@@ -96,7 +96,7 @@ public class CustomerDetailService {
 	private final ApplicationEventPublisher eventPublisher;
 	private final CustomerOrderRepository customerOrderRepo;
 	private final AesEncryptionService aesEncryptionService;
-	private final TokenManagementRespository contractTokenRespo;
+	private final TokenManagementRepository contractTokenRespo;
 	private final CustomerInvoiceRequestRepository invoiceRepo;
 	private final ReportMeterReadingRepository reportMeterReadingRepo;
 	private final CustomEmailTemplate customEmailTemplate;
@@ -261,15 +261,11 @@ public class CustomerDetailService {
 		List<ReportMeterReading> allMeterReadings = reportMeterReadingRepo.findByDeliveryIdIn(deliveryIds);
 
 		// STEP 3D: fetch discount requests
-		List<CustomerChangeDiscountRequest> allDiscountRequests =
-		        customerChangeDiscountRequestRepository
-		                .findByCustomerDeliveryIdIn(deliveryIds);
-		
-		Map<Integer, List<CustomerChangeDiscountRequest>> discountRequestMap =
-		        allDiscountRequests.stream()
-		                .collect(Collectors.groupingBy(
-		                        req -> req.getCustomerDelivery().getId()
-		                ));
+		List<CustomerChangeDiscountRequest> allDiscountRequests = customerChangeDiscountRequestRepository
+				.findByCustomerDeliveryIdIn(deliveryIds);
+
+		Map<Integer, List<CustomerChangeDiscountRequest>> discountRequestMap = allDiscountRequests.stream()
+				.collect(Collectors.groupingBy(req -> req.getCustomerDelivery().getId()));
 
 		// STEP 3C: group by deliveryId
 		Map<Integer, List<ReportMeterReading>> meterReadingMap = allMeterReadings.stream()
@@ -305,27 +301,24 @@ public class CustomerDetailService {
 					.toList();
 
 			dto.setInvoiceRequests(invoiceDtoList);
-			
-			List<CustomerChangeDiscountRequest> deliveryDiscountRequests =
-			        discountRequestMap.getOrDefault(entity.getId(), List.of());
 
-			List<CustomerChangeDiscountRequestDto> discountDtoList =
-			        deliveryDiscountRequests.stream()
-			                .map(req -> {
-			                    CustomerChangeDiscountRequestDto discountDto = new CustomerChangeDiscountRequestDto();
+			List<CustomerChangeDiscountRequest> deliveryDiscountRequests = discountRequestMap
+					.getOrDefault(entity.getId(), List.of());
 
-			                    discountDto.setId(req.getId());
-			                    discountDto.setCustomerId(req.getCustomer().getCustomerId());
-			                    discountDto.setDeliveryId(req.getCustomerDelivery().getId());
-			                    discountDto.setOrderId(req.getOrderId());
-			                    discountDto.setNewAdvanceAmount(req.getNewAdvanceAmount());
-			                    discountDto.setReason(req.getReason());
-			                    discountDto.setStatus(req.getStatus());
-			                    discountDto.setCreatedOn(req.getCreatedOn());
+			List<CustomerChangeDiscountRequestDto> discountDtoList = deliveryDiscountRequests.stream().map(req -> {
+				CustomerChangeDiscountRequestDto discountDto = new CustomerChangeDiscountRequestDto();
 
-			                    return discountDto;
-			                })
-			                .collect(java.util.stream.Collectors.toList());
+				discountDto.setId(req.getId());
+				discountDto.setCustomerId(req.getCustomer().getCustomerId());
+				discountDto.setDeliveryId(req.getCustomerDelivery().getId());
+				discountDto.setOrderId(req.getOrderId());
+				discountDto.setNewAdvanceAmount(req.getNewAdvanceAmount());
+				discountDto.setReason(req.getReason());
+				discountDto.setStatus(req.getStatus());
+				discountDto.setCreatedOn(req.getCreatedOn());
+
+				return discountDto;
+			}).collect(java.util.stream.Collectors.toList());
 
 			dto.setDiscountRequests(discountDtoList);
 
@@ -435,7 +428,7 @@ public class CustomerDetailService {
 		CustomerServiceRequest customerServiceRequest = null;
 
 		if (serviceRequestDto.getServiceRequestId() == null || serviceRequestDto.getServiceRequestId() <= 0) {
-
+			
 			if (serviceRequestDto.getTitle() == null || serviceRequestDto.getTitle().isEmpty())
 				throw new InternalServerException("Title missing", HttpStatus.OK);
 
@@ -468,7 +461,7 @@ public class CustomerDetailService {
 		}
 
 		else {
-
+			
 			customerServiceRequest = customerServiceRequestRepo.findById(serviceRequestDto.getServiceRequestId())
 					.orElseThrow(
 							() -> new InternalServerException("Customer service request not found", HttpStatus.OK));
@@ -495,58 +488,42 @@ public class CustomerDetailService {
 				.message(serviceRequestDto.getMessage()).chatUser("CUSTOMER").build();
 
 		customerServiceRequest.addCustomerServiceRequestMessage(message);
-		
+
 		CustomerRequestCounselling counselling = null;
 
-		if (!isReopened
-		        && !isNewMessage
-		        && serviceRequestDto.getPhoneNumber() != null
-		        && !serviceRequestDto.getPhoneNumber().isBlank()) {
+		if (!isReopened && !isNewMessage && serviceRequestDto.getPhoneNumber() != null
+				&& !serviceRequestDto.getPhoneNumber().isBlank()) {
 
-		    counselling = CustomerRequestCounselling.builder()
-		            .mobileNumber(
-		                    serviceRequestDto.getCountryCode() != null
-		                            ? serviceRequestDto.getCountryCode()
-		                                    + serviceRequestDto.getPhoneNumber()
-		                            : serviceRequestDto.getPhoneNumber())
-		            .weekDay(serviceRequestDto.getCallbackDate())
-		            .timeSlot(serviceRequestDto.getCallbackTimeSlot())
-		            .description(serviceRequestDto.getCallbackDescription())
-		            .scheduleDate(
-						serviceRequestDto.getCallbackDate() != null
-							? BigInteger.valueOf(
-								java.time.LocalDate
-									.parse(serviceRequestDto.getCallbackDate())
-									.atStartOfDay(java.time.ZoneId.of("Europe/Berlin"))
-									.toEpochSecond()
-							)
-							: null
-					)
-		            .customer(customer)
-		            .admin(customer.getAdmin())
-		            .build();
+			counselling = CustomerRequestCounselling.builder()
+					.mobileNumber(serviceRequestDto.getCountryCode() != null
+							? serviceRequestDto.getCountryCode() + serviceRequestDto.getPhoneNumber()
+							: serviceRequestDto.getPhoneNumber())
+					.weekDay(serviceRequestDto.getCallbackDate()).timeSlot(serviceRequestDto.getCallbackTimeSlot())
+					.description(serviceRequestDto.getCallbackDescription())
+					.scheduleDate(serviceRequestDto.getCallbackDate() != null
+							? BigInteger.valueOf(java.time.LocalDate.parse(serviceRequestDto.getCallbackDate())
+									.atStartOfDay(java.time.ZoneId.of("Europe/Berlin")).toEpochSecond())
+							: null)
+					.customer(customer).admin(customer.getAdmin()).build();
 
-		    // DELIVERY ORDER LINK
-		    if (serviceRequestDto.getDeliveryId() != null
-		            && serviceRequestDto.getDeliveryId() > 0) {
+			// DELIVERY ORDER LINK
+			if (serviceRequestDto.getDeliveryId() != null && serviceRequestDto.getDeliveryId() > 0) {
 
-		        CustomerDelivery delivery = customerDeliveryRepo
-		                .findById(serviceRequestDto.getDeliveryId())
-		                .orElse(null);
+				CustomerDelivery delivery = customerDeliveryRepo.findById(serviceRequestDto.getDeliveryId())
+						.orElse(null);
 
-		        if (delivery != null) {
-		            counselling.setCustomerOrder(delivery.getCustomerOrder());
-		        }
-		    }
+				if (delivery != null) {
+					counselling.setCustomerOrder(delivery.getCustomerOrder());
+				}
+			}
 
-		    
-		    counselling = customerRequestCounsellingRepository.save(counselling);
+			counselling = customerRequestCounsellingRepository.save(counselling);
 		}
-		
+
 		if (counselling != null) {
-		    customerServiceRequest.setCounsellingId(counselling.getId());
+			customerServiceRequest.setCounsellingId(counselling.getId());
 		}
-		
+
 		customerServiceRequest = customerServiceRequestRepo.save(customerServiceRequest);
 
 		AdminUser admin = customer.getAdmin();
@@ -906,6 +883,11 @@ public class CustomerDetailService {
 
 			customerOrderId = validToken.getOrderId();
 
+			validToken.setUsed(true);
+			validToken.setToken("");
+
+			contractTokenRespo.save(validToken);
+
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new InternalServerException("Invalid token", HttpStatus.OK);
@@ -937,75 +919,45 @@ public class CustomerDetailService {
 		return Map.of("res", true, "data", resp, "adminSignaturePath", adminSignaturePath);
 	}
 
-	
 	@Transactional
-	public Map<String, Object> saveChangeDiscountRequest(
-	        CustomerChangeDiscountRequestDto dto) {
+	public Map<String, Object> saveChangeDiscountRequest(CustomerChangeDiscountRequestDto dto) {
 
-	    if (dto.getCustomerId() == null || dto.getCustomerId() <= 0) {
-	        throw new InternalServerException(
-	                "Customer id missing",
-	                HttpStatus.OK);
-	    }
+		if (dto.getCustomerId() == null || dto.getCustomerId() <= 0) {
+			throw new InternalServerException("Customer id missing", HttpStatus.OK);
+		}
 
-	    if (dto.getDeliveryId() == null || dto.getDeliveryId() <= 0) {
-	        throw new InternalServerException(
-	                "Delivery id missing",
-	                HttpStatus.OK);
-	    }
+		if (dto.getDeliveryId() == null || dto.getDeliveryId() <= 0) {
+			throw new InternalServerException("Delivery id missing", HttpStatus.OK);
+		}
 
-	    if (dto.getOrderId() == null || dto.getOrderId() <= 0) {
-	        throw new InternalServerException(
-	                "Order id missing",
-	                HttpStatus.OK);
-	    }
+		if (dto.getOrderId() == null || dto.getOrderId() <= 0) {
+			throw new InternalServerException("Order id missing", HttpStatus.OK);
+		}
 
-	    if (dto.getNewAdvanceAmount() == null
-	            || dto.getNewAdvanceAmount().isBlank()) {
+		if (dto.getNewAdvanceAmount() == null || dto.getNewAdvanceAmount().isBlank()) {
 
-	        throw new InternalServerException(
-	                "New advance amount missing",
-	                HttpStatus.OK);
-	    }
+			throw new InternalServerException("New advance amount missing", HttpStatus.OK);
+		}
 
-	    if (dto.getReason() == null
-	            || dto.getReason().isBlank()) {
+		if (dto.getReason() == null || dto.getReason().isBlank()) {
 
-	        throw new InternalServerException(
-	                "Reason missing",
-	                HttpStatus.OK);
-	    }
+			throw new InternalServerException("Reason missing", HttpStatus.OK);
+		}
 
-	    Customer customer = customerRepo.findById(dto.getCustomerId())
-	            .orElseThrow(() -> new InternalServerException(
-	                    "Customer not found",
-	                    HttpStatus.OK));
+		Customer customer = customerRepo.findById(dto.getCustomerId())
+				.orElseThrow(() -> new InternalServerException("Customer not found", HttpStatus.OK));
 
-	    CustomerDelivery delivery = customerDeliveryRepo
-	            .findById(dto.getDeliveryId())
-	            .orElseThrow(() -> new InternalServerException(
-	                    "Delivery not found",
-	                    HttpStatus.OK));
+		CustomerDelivery delivery = customerDeliveryRepo.findById(dto.getDeliveryId())
+				.orElseThrow(() -> new InternalServerException("Delivery not found", HttpStatus.OK));
 
+		CustomerChangeDiscountRequest request = CustomerChangeDiscountRequest.builder()
+				.newAdvanceAmount(dto.getNewAdvanceAmount()).reason(dto.getReason()).customer(customer)
+				.customerDelivery(delivery).orderId(dto.getOrderId()).admin(customer.getAdmin()).build();
 
-	    CustomerChangeDiscountRequest request =
-	            CustomerChangeDiscountRequest.builder()
-	                    .newAdvanceAmount(dto.getNewAdvanceAmount())
-	                    .reason(dto.getReason())
-	                    .customer(customer)
-	                    .customerDelivery(delivery)
-	                    .orderId(dto.getOrderId())
-	                    .admin(customer.getAdmin())
-	                    .build();
+		request = customerChangeDiscountRequestRepository.save(request);
 
-	    request = customerChangeDiscountRequestRepository.save(request);
-
-	    return Map.of(
-	            "res", true,
-	            "message", "Discount change request submitted successfully",
-	            "requestId", request.getId(),
-	            "sendOn", Helper.getCurrentTimeBerlin()
-	    );
+		return Map.of("res", true, "message", "Discount change request submitted successfully", "requestId",
+				request.getId(), "sendOn", Helper.getCurrentTimeBerlin());
 	}
-	
+
 }

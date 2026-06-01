@@ -11,10 +11,12 @@ import org.springframework.web.multipart.MultipartFile;
 import com.tarifvergleich.electricity.dto.CustomerInvoiceRequestDto;
 import com.tarifvergleich.electricity.dto.ReportMeterReadingDto;
 import com.tarifvergleich.electricity.exception.InternalServerException;
+import com.tarifvergleich.electricity.model.Customer;
 import com.tarifvergleich.electricity.model.CustomerInvoiceRequest;
 import com.tarifvergleich.electricity.model.ReportMeterReading;
 import com.tarifvergleich.electricity.repository.CustomerConnectionRepository;
 import com.tarifvergleich.electricity.repository.CustomerInvoiceRequestRepository;
+import com.tarifvergleich.electricity.repository.CustomerRepository;
 import com.tarifvergleich.electricity.repository.ReportMeterReadingRepository;
 import com.tarifvergleich.electricity.util.FileServiceCustomer;
 
@@ -25,12 +27,10 @@ import lombok.RequiredArgsConstructor;
 public class CustomerMeterService {
 
 	private final CustomerInvoiceRequestRepository invoiceRepo;
-
 	private final CustomerConnectionRepository customerConnectionRepository;
-
 	private final ReportMeterReadingRepository reportMeterReadingRepo;
-
 	private final FileServiceCustomer fileServiceCustomer;
+	private final CustomerRepository customerRepo;
 
 	public Map<String, Object> updateMeterDesignation(Long connectionId, String meterDesignation) {
 
@@ -72,8 +72,14 @@ public class CustomerMeterService {
 		if (dto.getMeterReading() == null || dto.getMeterReading().trim().isEmpty())
 			throw new InternalServerException("Meter reading missing", HttpStatus.OK);
 
+		if (dto.getCustomerId() == null || dto.getCustomerId() <= 0)
+			throw new InternalServerException("Customer id missing", HttpStatus.OK);
+
 		if (files == null || files.length == 0)
 			throw new InternalServerException("Meter image missing", HttpStatus.OK);
+
+		Customer customer = customerRepo.findById(dto.getCustomerId()).orElseThrow(
+				() -> new InternalServerException("Customer not found with this credential", HttpStatus.OK));
 
 		for (MultipartFile file : files) {
 
@@ -97,6 +103,8 @@ public class CustomerMeterService {
 			report.setMeterReading(dto.getMeterReading());
 
 			report.setImagePath(filePath);
+
+			report.setCustomer(customer);
 
 			report.setStatus(1);
 

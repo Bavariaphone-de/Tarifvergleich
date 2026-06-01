@@ -18,7 +18,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class CustomerComparingEnergyDto {
 
-	private Integer id;
+	private Long id;
 	private String zip;
 	private String city;
 	private String street;

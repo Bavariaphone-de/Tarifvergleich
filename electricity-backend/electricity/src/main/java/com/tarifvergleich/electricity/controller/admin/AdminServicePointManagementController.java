@@ -7,10 +7,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.tarifvergleich.electricity.dto.CancellationServiceCategoryDto;
 import com.tarifvergleich.electricity.dto.CustomerRequestCounsellingDto;
+import com.tarifvergleich.electricity.dto.EnergySupplierInvoiceCategoryDto;
 import com.tarifvergleich.electricity.dto.EnergySupplierMessageCategoryDto;
 import com.tarifvergleich.electricity.dto.ListOfHolidaysDto;
 import com.tarifvergleich.electricity.dto.ManageAdminDocumentDto;
+import com.tarifvergleich.electricity.dto.ReportMeterReadingCategoryDto;
 import com.tarifvergleich.electricity.service.admin.AdminServicePointManagementService;
 
 import lombok.RequiredArgsConstructor;
@@ -69,5 +72,51 @@ public class AdminServicePointManagementController {
 	@PostMapping("/fetch-supplier-message-category")
 	public ResponseEntity<?> fetchSupplierMessageCategory(@RequestBody EnergySupplierMessageCategoryDto categoryDto) {
 		return ResponseEntity.ok(adminServicePointManagementService.fetchAllEnergySupplierCategory(categoryDto));
+	}
+
+	@PostMapping("/add-supplier-invoice-category")
+	public ResponseEntity<?> addSupplierInvoiceCategory(@RequestBody EnergySupplierInvoiceCategoryDto categoryDto) {
+		return ResponseEntity.ok(adminServicePointManagementService.addSupplierInvoiceCategory(categoryDto));
+	}
+
+	@PostMapping("/delete-supplier-invoice-category")
+	public ResponseEntity<?> deleteSupplierInvoiceCategory(@RequestBody EnergySupplierInvoiceCategoryDto categoryDto) {
+		return ResponseEntity.ok(adminServicePointManagementService.deleteSupplierInvoiceCategory(categoryDto));
+	}
+
+	@PostMapping("/fetch-supplier-invoice-category")
+	public ResponseEntity<?> fetchSupplierInvoiceCategory(@RequestBody EnergySupplierInvoiceCategoryDto categoryDto) {
+		return ResponseEntity.ok(adminServicePointManagementService.fetchAllSupplierInvoiceCategory(categoryDto));
+	}
+
+	@PostMapping("/add-report-meter-reading-category")
+	public ResponseEntity<?> addReportMeterReadingCategory(@RequestBody ReportMeterReadingCategoryDto categoryDto) {
+		return ResponseEntity.ok(adminServicePointManagementService.addReportMeterReadingCategory(categoryDto));
+	}
+
+	@PostMapping("/delete-report-meter-reading-category")
+	public ResponseEntity<?> deleteReportMeterReadingCategory(@RequestBody ReportMeterReadingCategoryDto categoryDto) {
+		return ResponseEntity.ok(adminServicePointManagementService.deleteReportMeterReadingCategory(categoryDto));
+	}
+
+	@PostMapping("/fetch-report-meter-reading-category")
+	public ResponseEntity<?> fetchReportMeterReadingCategory(@RequestBody ReportMeterReadingCategoryDto categoryDto) {
+		return ResponseEntity.ok(adminServicePointManagementService.fetchAllReportMeterReadingCategory(categoryDto));
+	}
+
+	@PostMapping("/add-cancellation-service-category")
+	public ResponseEntity<?> addCancellationServiceCategory(@RequestBody CancellationServiceCategoryDto categoryDto) {
+		return ResponseEntity.ok(adminServicePointManagementService.addCancellationServiceCategory(categoryDto));
+	}
+
+	@PostMapping("/delete-cancellation-service-category")
+	public ResponseEntity<?> deleteCancellationServiceCategory(
+			@RequestBody CancellationServiceCategoryDto categoryDto) {
+		return ResponseEntity.ok(adminServicePointManagementService.deleteCancellationServiceCategory(categoryDto));
+	}
+
+	@PostMapping("/fetch-cancellation-service-category")
+	public ResponseEntity<?> fetchCancellationServiceCategory(@RequestBody CancellationServiceCategoryDto categoryDto) {
+		return ResponseEntity.ok(adminServicePointManagementService.fetchAllCancellationServiceCategory(categoryDto));
 	}
 }

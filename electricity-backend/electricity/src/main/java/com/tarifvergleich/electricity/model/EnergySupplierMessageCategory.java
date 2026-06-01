@@ -65,4 +65,6 @@ public class EnergySupplierMessageCategory {
 	public void updatedon() {
 		this.updatedOn = Helper.getCurrentTimeBerlin();
 	}
+
+
 }

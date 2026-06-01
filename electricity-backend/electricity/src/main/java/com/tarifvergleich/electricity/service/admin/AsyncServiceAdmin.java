@@ -21,7 +21,7 @@ import com.tarifvergleich.electricity.model.CustomerOrder;
 import com.tarifvergleich.electricity.model.ManageAdminDocument;
 import com.tarifvergleich.electricity.model.TokenManagement;
 import com.tarifvergleich.electricity.repository.CustomerOrderRepository;
-import com.tarifvergleich.electricity.repository.TokenManagementRespository;
+import com.tarifvergleich.electricity.repository.TokenManagementRepository;
 import com.tarifvergleich.electricity.service.AesEncryptionService;
 import com.tarifvergleich.electricity.util.EmailBodyRender;
 import com.tarifvergleich.electricity.util.Helper;
@@ -35,7 +35,7 @@ public class AsyncServiceAdmin {
 
 	private final CustomerOrderRepository customerOrderRepo;
 	private final AesEncryptionService aesEncryptionService;
-	private final TokenManagementRespository contractTokenRespo;
+	private final TokenManagementRepository contractTokenRespo;
 	private final Helper helper;
 	private final ApplicationEventPublisher eventPublisher;
 	private final EmailBodyRender emailBodyRender;

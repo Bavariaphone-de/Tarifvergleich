@@ -36,14 +36,15 @@ public class CustomerDeliveryDto {
 	private String city;
 	private String street;
 	private String houseNumber;
-	
+
 	private String deliveryType;
+	private Integer rateType;
 
 	private CustomerAddress customerAddress;
 	private CustomerBillingAddress billingAddress;
 	private CustomerConnect customerConnection;
 	private CustomerPayment customerPayment;
-	
+
 	private Integer adminId;
 	private Integer customerId;
 	private Integer page;
@@ -52,14 +53,14 @@ public class CustomerDeliveryDto {
 	private Boolean orderPlaced;
 	private String search;
 	private Integer filter;
-	
+
 	@JsonSetter("dob")
 	public void setDob(String dob) {
-	    if (dob == null || dob.isBlank()) {
-	        this.dob = null;
-	    } else {
-	        this.dob = LocalDate.parse(dob, DateTimeFormatter.ofPattern("dd.MM.yyyy"));
-	    }
+		if (dob == null || dob.isBlank()) {
+			this.dob = null;
+		} else {
+			this.dob = LocalDate.parse(dob, DateTimeFormatter.ofPattern("dd.MM.yyyy"));
+		}
 	}
-	
+
 }

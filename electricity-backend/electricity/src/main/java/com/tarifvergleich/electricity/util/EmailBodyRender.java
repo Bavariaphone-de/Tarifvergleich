@@ -111,6 +111,7 @@ public class EmailBodyRender {
 				tempEmailBody);
 
 		HashMap<String, Object> response = new HashMap<String, Object>();
+		
 		response.put("body", emailBody);
 		response.put("title", title);
 		response.put("docs", adminEmailManagement.getDocuments());
