@@ -7,6 +7,8 @@ import { FormsModule } from '@angular/forms';
 
 export interface ReportMeterReading {
   id?: number;
+  customerName?: string;
+  customerEmail?: string;
   deliveryId?: number;
   orderId?: number;
   connectionId?: number;
@@ -16,6 +18,9 @@ export interface ReportMeterReading {
   imagePath?: string;
   status?: number;
   createdAt?: string;
+  bookingId?: number;
+  bookingStatus?: string;
+  bookingCreatedOn?: number;
 }
 
 @Component({
@@ -35,6 +40,9 @@ export class ReportMeterReadingComponent implements OnInit {
 
   isLoading = false;
   errorMessage = '';
+
+  selectedReading: any = null;
+  isSidebarOpen = false;
 
   filterStatus = 0;
   filterOptions = [
@@ -119,4 +127,25 @@ export class ReportMeterReadingComponent implements OnInit {
     // this.router.navigate(['/open-provider-action/report-meter-reading', reading.id]);
   }
 
+  openSidebar(reading: any): void {
+    this.selectedReading = reading;
+    this.isSidebarOpen = true;
+  }
+
+  closeSidebar(): void {
+    this.selectedReading = null;
+    this.isSidebarOpen = false;
+  }
+
+  customerInitial(name?: string): string {
+    return name?.charAt(0)?.toUpperCase() || 'G';
+  }
+
+  openBookingDetails(bookingId: number): void {
+    if (!bookingId) {
+      return;
+    }
+    window.open(`/bookings/${bookingId}`, '_blank');
+  }
+  
 }

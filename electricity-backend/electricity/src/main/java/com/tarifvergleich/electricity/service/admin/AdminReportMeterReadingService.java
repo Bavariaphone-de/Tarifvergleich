@@ -5,7 +5,11 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.tarifvergleich.electricity.dto.ReportMeterReadingDto;
+import com.tarifvergleich.electricity.dto.ReportMeterReadingDto.ReportMeterReadingResponseForAdminDto;
+import com.tarifvergleich.electricity.model.CustomerOrder;
 import com.tarifvergleich.electricity.model.ReportMeterReading;
+import com.tarifvergleich.electricity.repository.CustomerOrderRepository;
+import com.tarifvergleich.electricity.repository.CustomerRepository;
 import com.tarifvergleich.electricity.repository.ReportMeterReadingRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -14,31 +18,19 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AdminReportMeterReadingService {
 
-    private final ReportMeterReadingRepository reportMeterReadingRepository;
+	private final ReportMeterReadingRepository reportMeterReadingRepository;
+	private final CustomerRepository customerRepository;
+	private final CustomerOrderRepository customerOrderRepository;
 
-    public List<ReportMeterReadingDto> getAllMeterReadings() {
+	public List<ReportMeterReadingResponseForAdminDto> getAllMeterReadings() {
 
-        return reportMeterReadingRepository.findAll()
-                .stream()
-                .map(this::convertToDto)
-                .toList();
-    }
+		return reportMeterReadingRepository.findAll().stream().map(entity -> convertToDto(entity)).toList();
+	}
 
-    private ReportMeterReadingDto convertToDto(ReportMeterReading entity) {
+	private ReportMeterReadingResponseForAdminDto convertToDto(ReportMeterReading entity) {
 
-        ReportMeterReadingDto dto = new ReportMeterReadingDto();
+		CustomerOrder order = customerOrderRepository.findByOrderId(Long.valueOf(entity.getOrderId())).orElse(null);
 
-        dto.setId(entity.getId());
-        dto.setDeliveryId(entity.getDeliveryId());
-        dto.setOrderId(entity.getOrderId());
-        dto.setConnectionId(entity.getConnectionId());
-        dto.setCategory(entity.getCategory());
-        dto.setReadingDate(entity.getReadingDate());
-        dto.setMeterReading(entity.getMeterReading());
-        dto.setImagePath(entity.getImagePath());
-        dto.setStatus(entity.getStatus());
-        dto.setCreatedAt(entity.getCreatedAt());
-
-        return dto;
-    }
+		return ReportMeterReadingDto.mapForAdminResponse(entity, order);
+	}
 }

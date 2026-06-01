@@ -30,8 +30,8 @@
 
   <!-- Table -->
   @if (!isLoading && !errorMessage && reportMeterReadings.length > 0) {
-  <div class="overflow-x-auto">
-    <div class="bg-white dark:bg-gray-900 rounded-2xl shadow p-6">
+  <div class="relative flex overflow-hidden rounded-2xl bg-white dark:bg-gray-900 shadow">
+    <div class="flex-1 min-w-0 p-6">
 
         <h2 class="text-xl font-semibold text-gray-800 dark:text-white mb-4">Messwertmeldungen</h2>
         <div class="flex items-center gap-2 mb-6">
@@ -68,11 +68,11 @@
             </div>
 
         </div>
-    <table class="w-full text-sm text-left border-collapse">
-      <thead class="text-xs uppercase bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300">
+        <table class="w-full text-sm text-left border-collapse">
+        <thead class="text-xs uppercase bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300">
         <tr>
             <th class="px-4 py-3 rounded-tl-lg">ID</th>
-            <th class="px-4 py-3 rounded-tl-lg">Customer Name</th>
+            <th class="px-4 py-3 rounded-tl-lg">Name</th>
             <!-- <th class="px-4 py-3">Delivery ID</th>
             <th class="px-4 py-3">Order ID</th>
             <th class="px-4 py-3">Connection ID</th> -->
@@ -89,7 +89,27 @@
         @for (reading of reportMeterReadings; track reading.id) {
         <tr class="hover:bg-gray-50 dark:hover:bg-gray-800 transition cursor-pointer">
             <td class="px-4 py-4"> {{ reading.id }} </td>
-            <td class="px-4 py-4"> {{ reading.customerName || '—' }} </td>
+            <td class="px-4 py-4">
+                <div class="flex items-center gap-3">
+                    <!-- Avatar -->
+                    <div
+                    class="w-8 h-8 rounded-full bg-brand-100 text-brand-600
+                            flex items-center justify-center text-xs font-semibold">
+
+                    {{ reading.customerName?.charAt(0) }}
+                    </div>
+                    <!-- Customer Info -->
+                    <div>
+                    <p class="font-medium text-gray-900 dark:text-white">
+                        {{ reading.customerName }}
+                    </p>
+                    <p class="text-xs text-gray-500">
+                        {{ reading.customerEmail }}
+                    </p>
+                    </div>
+
+                </div>
+            </td>
             <!-- <td class="px-4 py-4"> {{ reading.deliveryId || '—' }} </td>
             <td class="px-4 py-4"> {{ reading.orderId || '—' }} </td>
             <td class="px-4 py-4"> {{ reading.connectionId || '—' }} </td> -->
@@ -117,7 +137,7 @@
 
           <!-- Actions -->
           <!-- <td class="px-4 py-4 text-right">
-            <button (click)="openMeterDetail(reading); $event.stopPropagation()" class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-lg
+            <button (click)="openSidebar(reading); $event.stopPropagation()" class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-lg
                      bg-brand-50 text-brand-600 hover:bg-brand-100
                      dark:bg-brand-900/20 dark:text-brand-400 dark:hover:bg-brand-900/40
                      transition cursor-pointer border border-brand-200 dark:border-brand-700/40">
@@ -131,7 +151,7 @@
 
           <td class="px-4 py-4 text-right">
             <button
-                (click)="openDetail(reading)"
+                (click)="openSidebar(reading)"
                 class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-lg
                     bg-brand-50 text-brand-600 hover:bg-brand-100
                     dark:bg-brand-900/20 dark:text-brand-400
@@ -156,25 +176,156 @@
             </td>
         </tr>
         }
-      </tbody>
+        </tbody>
     </table>
-  </div>
-  </div>
-  }
+    </div>
 
-  <!-- Error -->
-  @if (!isLoading && errorMessage) {
-  <div class="text-center py-12">
-    <p class="text-red-500 text-sm mb-3">{{ errorMessage }}</p>
-    <button (click)="fetchReportMeterReadings()"
-      class="px-4 py-2 text-sm bg-brand-500 text-white rounded-lg hover:bg-brand-600 transition cursor-pointer">
-      Erneut versuchen
-    </button>
-  </div>
-  }
+    @if (isSidebarOpen && selectedReading) {
+        <aside
+        class="w-80 shrink-0 border-l border-gray-200
+                dark:border-gray-700 bg-white
+                dark:bg-gray-900 flex flex-col overflow-hidden">
 
-  <!-- Empty -->
-  @if (!isLoading && !errorMessage && reportMeterReadings.length === 0) {
-  <div class="text-center py-12 text-gray-400 text-sm">Keine Messwerte gefunden.</div>
-  }
+        <div class="flex items-center justify-between px-5 py-4 border-b 
+                    border-gray-200 dark:border-gray-700">
+            <span class="text-sm font-semibold"> Messwertdetails </span>
+                <button (click)="closeSidebar()"> ✕ </button>
+        </div>
+        <div class="p-5">
+
+            <div class="flex items-center gap-3 mb-4">
+
+                <div
+                    class="h-10 w-10 rounded-full bg-violet-100
+                        flex items-center justify-center
+                        text-sm font-semibold text-violet-700">
+
+                    {{ customerInitial(selectedReading.customerName) }}
+
+                </div>
+
+                <div>
+
+                    <p class="font-semibold text-gray-900 dark:text-white">
+                        {{ selectedReading.customerName }}
+                    </p>
+
+                    <p class="text-xs text-gray-500">
+                        {{ selectedReading.customerEmail }}
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="rounded-xl bg-gray-50 dark:bg-gray-800 p-4">
+
+                <h3 class="font-semibold mb-3">
+                    Messwertinformationen
+                </h3>
+
+                <div class="space-y-2 text-sm">
+
+                    <div class="flex justify-between">
+                        <span>ID</span>
+                        <span>{{ selectedReading.id }}</span>
+                    </div>
+
+                    <div class="flex justify-between">
+                        <span>Kategorie</span>
+                        <span>{{ selectedReading.category }}</span>
+                    </div>
+
+                    <div class="flex justify-between">
+                        <span>Messdatum</span>
+                        <span>{{ selectedReading.readingDate }}</span>
+                    </div>
+
+                    <div class="flex justify-between">
+                        <span>Zählerstand</span>
+                        <span>{{ selectedReading.meterReading }}</span>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="rounded-xl bg-gray-50 dark:bg-gray-800 p-4 mt-4">
+
+                <h3 class="font-semibold mb-3">
+                    Buchungsdetails
+                </h3>
+
+                <div class="space-y-2 text-sm">
+
+                    <div class="flex justify-between">
+                        <span>Buchungs-ID</span>
+                        <span>{{ selectedReading.deliveryId?.uniqueDeliveryId || '—' }}</span>
+                    </div>
+
+                    <div class="flex justify-between">
+                        <span>Status</span>
+                        <span>
+                            {{ selectedReading.bookingStatus }}
+                        </span>
+                    </div>
+
+                    <div class="flex justify-between">
+                        <span>Erstellt am</span>
+                        <span>
+                            {{ formatDate(selectedReading.bookingCreatedOn) }}
+                        </span>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="mt-4">
+                @if (selectedReading.bookingId) {
+                    <button
+                    (click)="openBookingDetails(selectedReading.bookingId)"
+                    class="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg
+                            bg-brand-500 hover:bg-brand-600 text-white text-xs font-semibold transition">
+                    Buchung anzeigen
+                    </button>
+                }
+            </div>
+
+            <div class="mt-5 rounded-xl bg-gray-50 dark:bg-gray-800 p-4">
+                <h3 class="font-semibold mb-3"> Zählerfoto </h3>
+                @if (selectedReading.imagePath) {
+                    <a [href]="selectedReading.imagePath" target="_blank">
+                        <img [src]="selectedReading.imagePath" alt="Meter Reading"
+                        class="w-full rounded-lg border border-gray-200 dark:border-gray-700 hover:opacity-90 transition" />
+                    </a>
+                } @else {
+                    <div class="text-sm text-gray-500">
+                        Kein Bild verfügbar
+                    </div>
+                }
+            </div>
+
+        </div> 
+        </aside>
+
+        }
+    </div> 
+    }
+   
+    <!-- Error -->
+     @if (!isLoading && errorMessage) {
+    <div class="text-center py-12">
+        <p class="text-red-500 text-sm mb-3">{{ errorMessage }}</p>
+        <button (click)="fetchReportMeterReadings()"
+        class="px-4 py-2 text-sm bg-brand-500 text-white rounded-lg hover:bg-brand-600 transition cursor-pointer">
+        Erneut versuchen
+        </button>
+    </div>
+    }
+
+    <!-- Empty -->
+    @if (!isLoading && !errorMessage && reportMeterReadings.length === 0) {
+    <div class="text-center py-12 text-gray-400 text-sm">Keine Messwerte gefunden.</div>
+    }
 </div>
