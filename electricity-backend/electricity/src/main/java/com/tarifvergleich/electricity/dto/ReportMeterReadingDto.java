@@ -7,23 +7,25 @@ import lombok.Data;
 @Data
 public class ReportMeterReadingDto {
 
-    private Integer deliveryId;
+	private Integer deliveryId;
 
-    private Integer orderId;
+	private Integer orderId;
 
-    private Integer connectionId;
+	private Integer connectionId;
 
-    private String category;
+	private Integer customerId;
 
-    private String readingDate;
+	private String category;
 
-    private String meterReading;
-    
-    private Integer id;
+	private String readingDate;
 
-    private String imagePath;
+	private String meterReading;
 
-    private Integer status;
+	private Integer id;
 
-    private LocalDateTime createdAt;
+	private String imagePath;
+
+	private Integer status;
+
+	private LocalDateTime createdAt;
 }

@@ -92,8 +92,6 @@ public class CustomerBookingService {
 		if (deliveryDto.getSalutation() == null || deliveryDto.getSalutation().isEmpty())
 			throw new InternalServerException("Salutation missing", HttpStatus.OK);
 
-//		if(deliveryDto.getTelephone() == null || deliveryDto.getTelephone().isEmpty())
-//			throw new InternalServerException("Telephone number missing", HttpStatus.OK);
 
 		if (deliveryDto.getZip() == null || deliveryDto.getZip().isEmpty())
 			throw new InternalServerException("Zip code missing", HttpStatus.OK);
@@ -114,8 +112,14 @@ public class CustomerBookingService {
 
 		if (deliveryDto.getDeliveryType() == null || deliveryDto.getDeliveryType().isEmpty()
 				|| (!deliveryDto.getDeliveryType().equalsIgnoreCase("Electricity")
-						&& !deliveryDto.getDeliveryType().equalsIgnoreCase("GS")))
+						&& !deliveryDto.getDeliveryType().equalsIgnoreCase("GAS")))
 			throw new InternalServerException("Delivery type missing", HttpStatus.OK);
+
+		if (deliveryDto.getDeliveryType().equalsIgnoreCase("ELECTRICITY") && (deliveryDto.getRateType() == null
+				|| deliveryDto.getRateType() < 0 || deliveryDto.getRateType() > 3))
+			throw new InternalServerException("Undefined or missing sub type of electricity", HttpStatus.OK);
+		else
+			deliveryDto.setRateType(0);
 
 		LocalDate todayInBerlin = LocalDate.now(ZoneId.of("Europe/Berlin"));
 
@@ -197,6 +201,7 @@ public class CustomerBookingService {
 					.deliveryType(deliveryDto.getDeliveryType().toUpperCase()).customerProvider(selectedProvider)
 					.customerId(customer).numberOfPerson(deliveryDto.getPersons())
 					.totalConsumption(deliveryDto.getConsumption())
+					.rateType(deliveryDto.getRateType())
 					.dob(helper.toGermamUnixTimestamp(deliveryDto.getDob())).build();
 
 			delivery.setUserAdmin(customer.getAdmin());
@@ -214,6 +219,7 @@ public class CustomerBookingService {
 			editDelivery.setBillingAddress(billingAddress);
 			editDelivery.setNumberOfPerson(deliveryDto.getPersons());
 			editDelivery.setTotalConsumption(deliveryDto.getConsumption());
+			editDelivery.setRateType(deliveryDto.getRateType());
 
 			editDelivery.setAddress(address);
 			customerDeliveryRepo.save(editDelivery);

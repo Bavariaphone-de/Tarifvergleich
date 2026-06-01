@@ -2,37 +2,49 @@ package com.tarifvergleich.electricity.model;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
 @Table(name = "report_meter_reading")
-@Data
+@Getter
+@Setter
 public class ReportMeterReading {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Integer id;
 
-    private Integer deliveryId;
+	private Integer deliveryId;
 
-    private Integer orderId;
+	private Integer orderId;
 
-    private Integer connectionId;
+	private Integer connectionId;
 
-    private String category;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "customer_id")
+	@JsonIgnore
+	private Customer customer;
 
-    private String readingDate;
+	private String category;
 
-    private String meterReading;
+	private String readingDate;
 
-    private String imagePath;
+	private String meterReading;
 
-    private Integer status;
+	private String imagePath;
 
-    private LocalDateTime createdAt;
+	private Integer status;
+
+	private LocalDateTime createdAt;
 }

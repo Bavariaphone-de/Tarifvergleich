@@ -22,11 +22,12 @@ import com.tarifvergleich.electricity.model.AdminUser;
 import com.tarifvergleich.electricity.model.Customer;
 import com.tarifvergleich.electricity.model.CustomerAddress;
 import com.tarifvergleich.electricity.model.ManageAdminDocument;
+import com.tarifvergleich.electricity.model.TokenManagement;
 import com.tarifvergleich.electricity.repository.AdminEmailManagementRepository;
-import com.tarifvergleich.electricity.repository.AdminUserRepository;
 import com.tarifvergleich.electricity.repository.CustomerAddressRepository;
 import com.tarifvergleich.electricity.repository.CustomerRepository;
-import com.tarifvergleich.electricity.repository.TokenManagementRespository;
+import com.tarifvergleich.electricity.repository.TokenManagementRepository;
+import com.tarifvergleich.electricity.service.AesEncryptionService;
 import com.tarifvergleich.electricity.service.MailService;
 import com.tarifvergleich.electricity.util.EmailBodyRender;
 import com.tarifvergleich.electricity.util.EmailTemplate;
@@ -40,7 +41,6 @@ import lombok.RequiredArgsConstructor;
 public class BusinessCustomerInvitationAuthService {
 
 	private final CustomerRepository customerRepo;
-	private final AdminUserRepository adminUserRepo;
 	private final Helper helper;
 	private final EmailBodyRender emailRender;
 	private final ApplicationEventPublisher eventPublisher;
@@ -48,7 +48,8 @@ public class BusinessCustomerInvitationAuthService {
 	private final AdminEmailManagementRepository adminEmailManagementRepo;
 	private final MailService mailService;
 	private final EmailTemplate emailTemplate;
-	private final TokenManagementRespository tokenManagementRespo;
+	private final TokenManagementRepository tokenManagementRepo;
+	private final AesEncryptionService aesEncryptionService;
 
 	@Value("${otp.verification-timer}")
 	private int expiryMinutes;
@@ -80,20 +81,48 @@ public class BusinessCustomerInvitationAuthService {
 		if (customerDto.getHouseNumber() == null || customerDto.getHouseNumber().trim().isEmpty())
 			throw new InternalServerException("House number missing", HttpStatus.OK);
 
-		if (customerDto.getAdminId() == null || customerDto.getAdminId() <= 0)
-			throw new InternalServerException("Admin id missing", HttpStatus.OK);
-		if (customerDto.getUserType().equalsIgnoreCase("BUSINESS"))
+		if (customerDto.getUserType().equalsIgnoreCase("BUSINESS") || !customerDto.getUserType().equalsIgnoreCase("PRIVATE"))
 			throw new InternalServerException("Invited customer must be private user", HttpStatus.OK);
-
 
 		if (!(helper.isPasswordSecure(customerDto.getPassword(), customerDto.getEmail()))) {
 			throw new InternalServerException("Password not safe", HttpStatus.OK);
 		}
-		
-		
-		
-		AdminUser admin = adminUserRepo.findById(customerDto.getAdminId())
-				.orElseThrow(() -> new InternalServerException("Admin not found with this credential", HttpStatus.OK));
+
+		if (customerDto.getToken() == null || customerDto.getToken().isEmpty())
+			throw new InternalServerException("Token missing", HttpStatus.OK);
+
+		Customer businessCustomer = null;
+		try {
+			String token = aesEncryptionService.decrypt(customerDto.getToken());
+
+			TokenManagement tokenManagement = tokenManagementRepo.findByToken(token)
+					.orElseThrow(() -> new InternalServerException("Authentication token not found", HttpStatus.OK));
+
+			if (tokenManagement.getUsed())
+				throw new InternalServerException("Token already used", HttpStatus.OK);
+
+			if (tokenManagement.getCustomerId() == null)
+				throw new InternalServerException("Customer id not associated with the token", HttpStatus.OK);
+
+			Integer businessCustomerId = tokenManagement.getCustomerId();
+
+			businessCustomer = customerRepo.findById(businessCustomerId).orElseThrow(() -> new InternalServerException(
+					"Customer not found with customer id associated with the token", HttpStatus.OK));
+
+			if (!businessCustomer.getUserType().equalsIgnoreCase("BUSINESS"))
+				throw new InternalServerException("Invalid customer type token for invitation used", HttpStatus.OK);
+
+			tokenManagement.setUsed(true);
+			tokenManagement.setToken("");
+
+			tokenManagementRepo.save(tokenManagement);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new InternalServerException("Invalid token", HttpStatus.OK);
+		}
+
+		AdminUser admin = businessCustomer.getAdmin();
 
 		if (customerRepo.existsByEmail(customerDto.getEmail())) {
 
@@ -159,6 +188,7 @@ public class BusinessCustomerInvitationAuthService {
 				customer.setSalutation(customerDto.getSalutation());
 				customer.setMobileNumber(customerDto.getMobileNumber());
 				customer.setUserType(customerDto.getUserType().toUpperCase());
+				customer.setBusinessCustomerAccount(businessCustomer);
 				if (customer.getUserType().equals("BUSINESS"))
 					customer.setCompanyName(customerDto.getCompanyName());
 
@@ -186,6 +216,7 @@ public class BusinessCustomerInvitationAuthService {
 				.salutation(customerDto.getSalutation()).mobileNumber(customerDto.getMobileNumber())
 				.companyName(customerDto.getUserType().toUpperCase().equals("BUSINESS") ? customerDto.getCompanyName()
 						: null)
+				.businessCustomerAccount(businessCustomer)
 				.build();
 
 		CustomerAddress address = CustomerAddress.builder().zip(customerDto.getZip()).city(customerDto.getCity())
