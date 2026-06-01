@@ -240,7 +240,7 @@ public class CustomerDetailService {
 			throw new InternalServerException("Customer id missing", HttpStatus.OK);
 
 		Customer customer = customerRepo.findById(customerId).orElseThrow(
-				() -> new InternalServerException("Customer not found with this credentian", HttpStatus.OK));
+				() -> new InternalServerException("Customer not found with this credential", HttpStatus.OK));
 
 		List<CustomerDelivery> customerDeliveries = customer.getCustomerDelivery();
 
