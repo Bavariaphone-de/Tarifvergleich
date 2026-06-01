@@ -827,10 +827,11 @@ export class Customer {
       deliveryId: this.selectedMeter?.deliveryId,
       orderId: this.selectedMeter?.order.orderId,
       connectionId: this.selectedMeter?.id,
-
+      customerId: Number(this.authService.getUserId()),
       category: this.meterReadingCategory,
       readingDate: this.meterReadingDate,
       meterReading: this.meterReadingValue,
+      adminId: 1,
     };
 
     const formData = new FormData();
@@ -892,6 +893,7 @@ export class Customer {
       invoiceCategory: this.invoiceCategory,
       orderId: this.selectedMeter?.order.orderId,
       message: this.invoiceMessage,
+      adminId: 1,
     };
 
     this.http.post<any>(`${API_BASE}/customer/submit-invoice-request`, payload).subscribe({
