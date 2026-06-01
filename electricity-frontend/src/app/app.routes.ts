@@ -26,7 +26,8 @@ import { Contact } from './navigation-pages/contact/contact';
 import { CreateBusinessAccount } from './navigation-pages/create-account-business/create-account-business';
 import { OrderSignature } from './navigation-pages/order-signature/order-signature';
 import { ForgotOldPassword } from './navigation-pages/forgot-old-password/forgot-old-password';
-import { SelectGasProvider } from './nav-gas-comparision/select-provider/select-gas-provider';
+import { SelectGasProvider } from './nav-gas-comparision/select-gas-provider/select-gas-provider';
+
 
 export const routes: Routes = [
   { path: '', redirectTo: 'home', pathMatch: 'full' },

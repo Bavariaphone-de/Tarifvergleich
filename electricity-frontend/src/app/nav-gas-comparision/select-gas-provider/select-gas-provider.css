@@ -1,0 +1,1606 @@
+/* Address card */
+.address-card {
+  background: #fff;
+  border: 1px solid #0085e0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.address-card__header {
+  background: #0085e0;
+  color: #fff;
+  padding: 5px 10px 7px 10px;
+  font-weight: 600;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  border-radius: 7px 7px 0 0;
+}
+.address-card__body {
+  padding: 10px 12px 12px;
+}
+
+.nav-icon-strom {
+  width: 13px;
+  height: 20px;
+  padding-right: 5px;
+}
+.nav-icon-vergleich {
+  width: 20px;
+  height: 20px;
+  padding-right: 5px;
+}
+
+.address-card__body strong {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+.address-card__body p {
+  font-size: 14px;
+  font-weight: 400;
+  margin: 0;
+}
+.address-card__body .verbrauch {
+  margin-top: 12px;
+}
+.btn-suche {
+  display: block;
+  width: 100%;
+  margin-top: 12px;
+  padding: 8px;
+  background: #0085e0;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: center;
+  transition: background 0.15s;
+}
+.btn-suche:hover {
+  background: #046fb6;
+}
+
+/* Filter sidebar boxes */
+.filter-box {
+  background: #fff;
+  border: 1px solid #0085e0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.filter-box__header {
+  background: #0085e0;
+  color: #fff;
+  padding: 5px 10px 7px 10px;
+  font-weight: 600;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.filter-box__body {
+  padding: 9px 10px 10px;
+  display: flex;
+  justify-content: space-between;
+  flex-direction: row;
+  gap: 5px;
+}
+.cb-row {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 14px;
+  font-weight: 400;
+  cursor: pointer;
+  user-select: none;
+}
+
+.cb-row input[type="checkbox"] {
+  accent-color: #0085e0;
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+}
+
+/* Contact card */
+.contact-card {
+  border-radius: 8px;
+  overflow: hidden;
+  color: #fff;
+}
+.contact-card__header {
+  padding: 8px 12px;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.partner-photo-wrap img {
+  border-radius: 8px;
+  width: 130px;
+}
+
+/* ── Main area ── */
+.main {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 80%;
+}
+
+/* Filter top banner */
+.filter-banner {
+  background: #fff;
+  border: 1px solid #0085e0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.filter-banner__header {
+  background: #0085e0;
+  color: #fff;
+  text-align: center;
+  padding: 9px;
+  font-weight: 600;
+  font-size: 16px;
+}
+/* Filter banner body: two halves split by a vertical line */
+.filter-banner__body {
+  padding: 12px 0 10px;
+  display: grid;
+  grid-template-columns: 1fr 1px 1fr;
+}
+.filter-col {
+  padding: 0 20px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.filter-divider {
+  background: #0085e0;
+  align-self: stretch;
+}
+
+/* Each row: bold label + options side by side */
+.filter-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 6px;
+}
+.filter-row__label {
+  flex-shrink: 0;
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 1.4;
+  padding-top: 1px;
+}
+.filter-row__options {
+  display: flex;
+  gap: 10px 18px;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+.filter-row__options--col {
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* options grid for energiepreisgarantie: 2 columns */
+.opts-grid {
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: 4px 16px;
+}
+
+.filter-banner__footer {
+  padding: 0 18px 14px;
+  display: flex;
+  justify-content: center;
+}
+.btn-weiter {
+  background: #0085e0;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  padding: 9px 36px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.btn-weiter:hover {
+  background: #046fb6;
+}
+
+/* Divider between the two column groups inside filter-banner__body */
+.filter-col {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+.filter-col + .filter-col {
+  border-left: 1px solid #e5e9ee;
+  padding-left: 18px;
+}
+
+/* ── Comparison Section ── */
+.comp-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.comp-navbar {
+  background: #0085e0;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 5rem;
+  overflow: hidden;
+}
+.comp-navbar__left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 16px;
+  font-weight: 600;
+  font-size: 16px;
+}
+.comp-navbar__right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 16px;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+/* Vergleichstarif row */
+.container-vergleich-bar {
+  border-radius: 8px;
+  border: 1px solid #4a4949;
+  overflow: hidden;
+}
+.vergleich-bar {
+  background: #fff;
+  border-top: none;
+  padding: 10px 16px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  font-size: 14px;
+  gap: 4px;
+}
+.vergleich-bar__left {
+  flex: 1;
+  font-size: 14px;
+  color: #333;
+}
+.anpassen {
+  margin-left: auto;
+  color: #1565c0;
+  font-size: 13px;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  float: right;
+  cursor: pointer;
+}
+
+.vergleich-bar__provider {
+  display: grid;
+  grid-template-columns: 200px 1fr auto;
+  gap: 0 16px;
+  padding: 10px 16px 14px;
+  background: #fff;
+  border-top: none;
+}
+.provider-name {
+  font-size: 16px;
+  font-weight: 600;
+  padding-top: 2px;
+}
+.provider-details {
+  font-size: 14px;
+  line-height: 1.7;
+}
+.provider-details strong {
+  font-weight: 700;
+}
+.provider-details .tarif-title {
+  font-weight: 700;
+  font-size: 14px;
+}
+.provider-details .tarif-sub {
+  color: #555;
+  font-size: 14px;
+}
+.provider-details .toggle-link {
+  color: #333;
+  font-size: 14px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  text-decoration: none;
+}
+.provider-price {
+  text-align: right;
+  white-space: nowrap;
+}
+.provider-price__amount {
+  font-size: 26px;
+  font-weight: 700;
+  color: #111;
+}
+.provider-price__sub {
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.arrow {
+  width: 8px;
+  height: 8px;
+  border-left: 2px solid #000;
+  border-bottom: 2px solid #000;
+  display: inline-block;
+}
+
+.down-v {
+  transform: rotate(-45deg);
+  margin: 0 0 0 5px;
+}
+
+.top-v {
+  transform: rotate(+135deg);
+  margin: 8px 0 0 5px;
+}
+
+/* Green tariff count bar */
+.tariff-count-bar {
+  background: #00a651;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 16px;
+  font-size: 16px;
+}
+.container-button {
+  display: flex;
+  flex-direction: row;
+  gap: 15px;
+}
+
+.tariff-count-bar strong {
+  font-weight: 600;
+}
+.btn-sortieren {
+  background: #fff;
+  color: #333;
+  border: none;
+  border-radius: 8px;
+  padding: 3.5px 12px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Tariff card */
+.tariff-card {
+  background: #fff;
+  border: 1px solid #00a651;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.tariff-card__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border-radius: 8px;
+  padding: 3px 10px;
+  font-size: 16px;
+  font-weight: 600;
+  background-color: #0085e0;
+  color: #f8f9fa;
+  margin: 12px 16px 0;
+}
+.tariff-card__body {
+  display: grid;
+  grid-template-columns: 180px 0.8fr auto;
+  gap: 3rem;
+  padding: 14px 16px;
+}
+.tc-logo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.tc-logo__name {
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: -0.5px;
+  color: #111;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.tc-logo__circle {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ffe066 50%, #1565c0 50%);
+  display: inline-block;
+  flex-shrink: 0;
+}
+.tc-logo__tarif {
+  font-size: 14px;
+  color: #333;
+  margin-top: 4px;
+}
+
+/* Base styles: Mobile devices */
+.tc-logo__img {
+  max-height: 50px;
+  width: auto;
+  object-fit: contain;
+  display: block; /* Helps with clean spacing and centering */
+}
+
+/* Desktop styles: Applies when the screen is 1024px or wider */
+@media (min-width: 1024px) {
+  .tc-logo__img {
+    max-height: 80px;
+  }
+}
+
+.tc-details {
+  font-size: 14px;
+  line-height: 1.6;
+}
+.tc-details .arbeits {
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+.tc-details .arbeits strong {
+  font-weight: 700;
+}
+.bonus-tags {
+  display: flex;
+  gap: 7px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+.bonus-tag {
+  background: #43a047;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 2px 9px;
+  border-radius: 3px;
+}
+.tc-check-list {
+  list-style: none;
+  margin-bottom: 8px;
+  padding: 0;
+}
+.tc-check-list li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  margin-bottom: 2px;
+}
+
+.icon-check,
+.icon-sort {
+  width: 15px;
+  height: 15px;
+  display: flex;
+  justify-content: center;
+}
+.icon-sort {
+  width: 15px;
+  height: 15px;
+  border-radius: 4px;
+  border: 1.5px solid black;
+}
+
+.toggle-detail {
+  font-size: 14px;
+  color: #333;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.detail-tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 16px;
+}
+.detail-tab {
+  font-size: 14px;
+  padding: 4px 0;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+}
+.detail-tab.active {
+  font-weight: 600;
+}
+.detail-tab::after {
+  content: "|";
+  margin: 0 8px;
+  font-weight: 400;
+}
+.detail-tab:last-child::after {
+  content: "";
+}
+
+.detail-table,
+.price-detail,
+.table-monthly {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.detail-table tr,
+.price-detail tr {
+  border-bottom: 1px solid #555;
+}
+.detail-table tr:last-child {
+  border-bottom: none;
+  padding-top: 5px;
+}
+.detail-table tr:last-child td {
+  padding-top: 15px;
+  font-weight: 600;
+}
+.detail-table td {
+  padding: 2px 0;
+}
+.price-detail td {
+  padding: 2px 10px;
+}
+.detail-table td:first-child {
+  width: 260px;
+}
+.preis-im-jahr {
+  font-size: 13px;
+  margin-top: 10px;
+  padding-bottom: 14px;
+}
+.preis-im-jahr strong {
+  font-weight: 700;
+}
+.table-monthly td:first-child {
+  width: 365px;
+  padding: 2px 10px;
+}
+
+.tc-price {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  text-align: right;
+}
+.tc-price__amount {
+  font-size: 30px;
+  font-weight: 700;
+  padding-bottom: 10px;
+  color: #111;
+}
+.tc-price__sub {
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  padding-bottom: 10px;
+}
+.tc-price__savings {
+  font-size: 14px;
+  color: #333;
+}
+.tc-price__savings .amount {
+  color: #43a047;
+  font-weight: 500;
+  font-size: 16px;
+}
+.tc-price__vergleich {
+  font-size: 14px;
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+.tc-price__vergleich .label {
+  font-weight: 700;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.tc-price__vergleich .gespart {
+  color: #43a047;
+  font-weight: 700;
+}
+.tc-price__vergleich .note {
+  font-size: 11.5px;
+  color: #666;
+}
+.btn-weiter-card {
+  background: #0085e0;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 9px 90px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 12px;
+  display: block;
+  margin-left: auto;
+  transition: background 0.15s;
+}
+.btn-weiter-card:hover {
+  background: #046fb6;
+}
+
+.container-button {
+  position: relative;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 90%;
+  left: 0;
+  background: white;
+  border-radius: 6px;
+  margin-top: 5px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  width: 90%;
+  color: #000;
+}
+
+.dropdown-menu div {
+  padding: 10px;
+  cursor: pointer;
+}
+
+.dropdown-menu div:hover {
+  background: #f5f5f5;
+}
+
+.info-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.info-popover {
+  position: absolute;
+  right: 0;
+}
+
+.dialog-box {
+  background: white;
+  border: 1px solid #00a651;
+  border-radius: 8px;
+  width: 310px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 10px;
+  display: flex;
+}
+
+.header-info {
+  font-weight: 600;
+}
+
+.container-information {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.container-price {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.table-monthly.blue {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  border-radius: 8px;
+  background-color: #0085e0;
+  color: #fff;
+  font-weight: 600;
+  margin-top: 16px;
+  margin-bottom: 8px;
+}
+
+a {
+  text-decoration: none;
+  color: #0085e0;
+}
+
+.provider {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Edit Address */
+
+.edit-column {
+  display: flex;
+  flex-direction: column; /* 🔥 important */
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.edit-column input,
+.edit-column select {
+  width: 100%;
+  padding: 0.24rem 0.3rem;
+  border-radius: 8px;
+  font-size: 16px;
+  box-sizing: border-box;
+  border: 1px solid #a1a0a0;
+  color: #313030;
+  background-color: #f8f9fa;
+}
+
+.edit-column input:focus,
+.edit-column select:focus {
+  border-color: #0085e0;
+  background: #fff;
+}
+
+.btn-save {
+  height: 40px;
+  border-radius: 20px;
+  background: #0085e0;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+}
+.consum-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.consum-row input {
+  flex: 1;
+}
+
+.dropdown-wrapper input {
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  font: inherit;
+  padding: 0;
+}
+
+.dropdown-wrapper {
+  position: relative;
+}
+
+.dropdown {
+  position: absolute;
+  top: 100%; /* 👈 directly below input */
+  left: 0;
+  width: 100%;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-top: none;
+  z-index: 9999;
+  max-height: 200px;
+  overflow-y: auto;
+  border-radius: 0 0 6px 6px;
+}
+
+.dropdown-item {
+  padding: 10px 12px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.dropdown-item:hover {
+  background: #f5f5f5;
+}
+
+.consumption-label {
+  display: block;
+  font-size: 14px;
+  /* margin-bottom: 6px;
+  color: #333; */
+}
+
+.total-consumption {
+  display: flex;
+  flex-direction: column;
+  gap: 0px;
+  align-items: flex-start;
+}
+
+/* BACKDROP */
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+}
+
+/* MODAL POSITION */
+.modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1001;
+}
+
+/* BOX */
+.modal-content {
+  font-family: Arial, sans-serif;
+  padding: 20px 24px;
+  width: 450px;
+  max-height: 85vh;
+  overflow-y: auto;
+  background: #f7f7f7;
+  border-radius: 10px;
+  position: relative;
+}
+
+/* TOP DARK BAR */
+.modal-header {
+  background: transparent;
+  height: 50px;
+  position: relative;
+}
+
+/* CLOSE BUTTON */
+.close-btn {
+  position: absolute;
+  right: 18px;
+  top: 10px;
+  color: black;
+  font-size: 22px;
+  cursor: pointer;
+}
+
+/* BODY */
+/* TITLE */
+.modal-body h3 {
+  margin-bottom: 12px;
+  font-size: 18px;
+}
+
+/* TEXT */
+.desc {
+  font-size: 13px;
+  color: #333;
+  line-height: 1.5;
+  margin-bottom: 16px;
+}
+
+.desc-small {
+  font-size: 12px;
+  color: #666;
+  margin: 14px 0;
+}
+
+/* FIELD */
+.field {
+  margin-bottom: 12px;
+}
+
+.field label {
+  display: block;
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+
+/* SELECT STYLE */
+.fake-select {
+  background: #fff;
+  border: 1px solid #ccc;
+  padding: 10px;
+  border-radius: 6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+/* PRICE ROW */
+.price-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 10px;
+}
+
+/* PRICE TEXT */
+.price-label {
+  font-weight: 600;
+}
+
+.price {
+  display: flex;
+  align-items: center;
+  gap: 6px; /* space between price and icon */
+  font-size: 20px;
+  font-weight: bold;
+}
+
+/* SUB TEXT */
+.sub {
+  font-size: 11px;
+  color: #777;
+}
+
+/* BUTTON */
+.actions {
+  text-align: right;
+  margin-top: 15px;
+}
+
+.submit-btn {
+  background: #0085e0;
+  color: #fff;
+  border: none;
+  padding: 10px 22px;
+  border-radius: 20px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+/* REMOVE extra padding from modal-body */
+.modal-body {
+  padding: 0;
+}
+
+/* ══════════════════════════════════════════════
+   SELECT / DROPDOWN (fixed overlap issue)
+══════════════════════════════════════════════ */
+.input-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #4a4949;
+  border-radius: 8px;
+  padding: 8px 12px;
+  background: #fff;
+  transition: border-color 0.15s;
+  /* flex: 1; */
+  position: relative;
+  /* display: inline-block; */
+}
+
+.input-field.select-wrap {
+  position: relative;
+  padding: 0;
+  overflow: hidden;
+}
+
+.select-icon {
+  position: absolute;
+  left: 12px;
+  font-size: 18px !important;
+  color: #888;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.styled-select {
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 13px;
+  color: #333;
+  padding: 0 12px 10px 12px;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+}
+
+.dropdown-arrow {
+  position: absolute;
+  right: 10px;
+  font-size: 18px !important;
+  color: #888;
+  pointer-events: none;
+}
+
+/* reuse from previous */
+.section {
+  margin-bottom: 12px;
+}
+
+.toggle {
+  display: flex;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.toggle-btn {
+  flex: 1;
+  padding: 10px;
+  text-align: center;
+  background: transparent;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.toggle-btn.active {
+  background: #e6f0fb;
+  border: 1px solid #0085e0;
+  /* border-top-left-radius: 8px;
+  border-bottom-left-radius: 8px; */
+}
+.edit-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 100px;
+  border-bottom: 1px solid #ddd;
+  margin-bottom: 15px;
+}
+
+.tab {
+  padding: 10px 15px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #555;
+  border-bottom: 2px solid transparent;
+}
+
+.tab.active {
+  color: #0085e0;
+  border-bottom: 2px solid #0085e0;
+  font-weight: 600;
+}
+
+.abschlag-scroll {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.abschlag-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.abschlag-toggle {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 8px;
+  min-width: max-content;
+}
+
+.abschlag-toggle .toggle-btn {
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.abschlag-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.abschlag-scroll {
+  overflow-x: auto;
+  flex: 1;
+  scrollbar-width: none;
+}
+
+.abschlag-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.abschlag-toggle {
+  display: flex;
+  gap: 8px;
+  min-width: max-content;
+}
+
+.scroll-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 50%;
+  background: #f3f4f6;
+  cursor: pointer;
+  font-size: 22px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+/* ══════════════════════════════════════════════
+   RESPONSIVE STYLES — MOBILE & SMALL DEVICES
+   Breakpoints: ≤1024px (tablet), ≤768px (mobile)
+══════════════════════════════════════════════ */
+
+/* ── Tablet: collapse sidebar into stacked layout ── */
+@media (max-width: 1024px) {
+  .page-layout {
+    flex-direction: column !important;
+  }
+
+  .sidebar {
+    width: 100% !important;
+    max-width: 100% !important;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .main {
+    width: 100% !important;
+  }
+
+  /* Cards only as wide/tall as their content — no stretching */
+  .address-card,
+  .filter-box {
+    width: 100%;
+    flex: none;
+  }
+}
+
+/* ══════════════════════════════════════════════
+   MOBILE ≤768px
+══════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  /* ── 1. PAGE LAYOUT
+     Order on mobile:
+       [0] address-card          (sidebar > address-card)
+       [1] filter-banner         (main > filter-banner — "Filtereinstellungen")
+       [2] sidebar filter-boxes  (Preisanzeige only, rest hidden)
+       [3] comp-container        (provider cards)
+       [4] app-contact-person
+       [5] app-need-support
+     Achieved by making page-layout a flat flex column and assigning order
+     to sidebar and main, then using inner order on sidebar children.
+  ── */
+  .page-layout {
+    flex-direction: column !important;
+    gap: 12px;
+    padding: 8px !important;
+  }
+
+  /* Sidebar becomes an order-container; children will be ordered individually */
+  .sidebar {
+    width: 100% !important;
+    max-width: 100% !important;
+    display: contents; /* flatten sidebar children into page-layout flow */
+  }
+
+  /* Main also flattens so filter-banner can be ordered between sidebar items */
+  .main {
+    width: 100% !important;
+    display: contents;
+  }
+
+  /* ── 2. CHILD ORDERING within the flattened flow ── */
+
+  /* address-card: first */
+  .address-card {
+    order: 0;
+    width: 100%;
+    display: block;
+    overflow: visible; /* edit-mode inputs/dropdowns must not be clipped */
+    align-self: auto;
+  }
+
+  /* address-card body: no extra padding, tight fit */
+  .address-card__body {
+    padding: 10px 12px 12px;
+  }
+
+  /* filter-banner (Filtereinstellungen): second — right after address card */
+  .filter-banner {
+    order: 1;
+    width: 100%;
+  }
+
+  /* Preisanzeige (first filter-box): third — kept, shown on mobile */
+  .filter-box:nth-of-type(1) {
+    order: 2;
+    width: 100%;
+    display: block;
+  }
+
+  /* ── 4. DUPLICATE FILTERS: hide sidebar boxes that duplicate filter-banner
+     Sidebar filter-boxes in order: Preisanzeige(1), Kundentyp(2),
+     Ökotarife(3), Maximale Vertragslaufzeit(4), Energiepreisgarantie(5).
+     filter-banner already covers: Kundentyp, Ökotarife, Vertragslaufzeit, Garantie.
+     So hide boxes 2–5 on mobile. ── */
+  .filter-box:nth-of-type(2),
+  .filter-box:nth-of-type(3),
+  .filter-box:nth-of-type(4),
+  .filter-box:nth-of-type(5) {
+    display: none;
+  }
+
+  /* comp-container (provider cards): fourth */
+  .comp-container {
+    order: 3;
+    width: 100%;
+  }
+
+  /* contact-person: fifth */
+  app-contact-person {
+    order: 4;
+    width: 100%;
+    display: block;
+  }
+
+  /* need-support: sixth */
+  app-need-support {
+    order: 5;
+    width: 100%;
+    display: block;
+  }
+
+  /* ── 1. FIX: Cards only take space they need — no excess height ── */
+
+  /* address-card body tight — only what content needs */
+  .address-card__body p,
+  .address-card__body .verbrauch {
+    margin-bottom: 0;
+  }
+
+  /* filter-box body: compact vertical stack */
+  .filter-box__body {
+    flex-direction: column;
+    gap: 6px;
+    padding: 8px 10px 10px;
+  }
+
+  /* ── FILTER BANNER: single column layout ── */
+  .filter-banner__body {
+    display: flex;
+    flex-direction: column;
+    padding: 10px 0 6px;
+    gap: 0;
+  }
+
+  .filter-divider {
+    width: 100%;
+    height: 1px;
+    align-self: auto;
+    margin: 4px 0;
+  }
+
+  .filter-col {
+    padding: 0 12px 8px;
+    gap: 10px;
+  }
+
+  .filter-col + .filter-col {
+    border-left: none;
+    border-top: 1px solid #e5e9ee;
+    padding-left: 12px;
+    padding-top: 8px;
+  }
+
+  /* Filter rows: stack label above checkboxes */
+  .filter-row {
+    flex-direction: column;
+    gap: 5px;
+    align-items: flex-start;
+  }
+
+  .filter-row__label {
+    flex-shrink: 1;
+    font-size: 13px;
+  }
+
+  .opts-grid {
+    grid-template-columns: auto auto;
+    gap: 4px 12px;
+  }
+
+  /* Footer button: full width */
+  .filter-banner__footer {
+    padding: 0 12px 12px;
+  }
+
+  .btn-weiter {
+    width: 100%;
+    padding: 10px 20px;
+  }
+
+  /* ── COMPARISON NAVBAR ── */
+  .comp-navbar {
+    flex-direction: column;
+    gap: 0;
+    align-items: flex-start;
+  }
+
+  .comp-navbar__left,
+  .comp-navbar__right {
+    padding: 6px 12px;
+    font-size: 14px;
+  }
+
+  /* ── VERGLEICH BAR: provider grid → stacked ── */
+  .vergleich-bar__provider {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 10px 12px 12px;
+  }
+
+  .provider-price {
+    text-align: left;
+  }
+
+  .provider-price__sub {
+    justify-content: flex-start;
+    margin-top: 4px;
+  }
+
+  /* vergleich bar text wrap */
+  .vergleich-bar {
+    flex-wrap: wrap;
+    gap: 6px;
+    font-size: 13px;
+  }
+
+  .anpassen {
+    float: none;
+    margin-left: 0;
+  }
+
+  /* ── TARIFF COUNT BAR ── */
+  .tariff-count-bar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 8px 12px;
+    font-size: 14px;
+  }
+
+  .container-button {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  /* ── 3. PROVIDER CARDS: readable on mobile ── */
+  .tariff-card__body {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 14px 14px 14px;
+  }
+
+  /* Logo section */
+  .tc-logo__name {
+    font-size: 20px;
+  }
+
+  .tc-logo__tarif {
+    font-size: 14px;
+  }
+
+  /* Details section: comfortable reading size */
+  .tc-details {
+    font-size: 15px;
+    line-height: 1.7;
+  }
+
+  .tc-details .arbeits {
+    font-size: 14px;
+    margin-bottom: 12px;
+  }
+
+  .tc-check-list li {
+    font-size: 14px;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+
+  .icon-check {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+  }
+
+  .bonus-tag {
+    font-size: 14px;
+    padding: 3px 10px;
+  }
+
+  .toggle-detail {
+    font-size: 14px;
+    margin-top: 4px;
+  }
+
+  /* Price section: left-aligned, prominent */
+  .tc-price {
+    text-align: left;
+    border-top: 1px solid #e5e9ee;
+    padding-top: 12px;
+  }
+
+  .tc-price__amount {
+    font-size: 30px;
+    padding-bottom: 6px;
+  }
+
+  .tc-price__sub {
+    justify-content: flex-start;
+    font-size: 14px;
+  }
+
+  .tc-price__savings {
+    font-size: 15px;
+    margin-top: 4px;
+  }
+
+  .tc-price__vergleich .label {
+    justify-content: flex-start;
+  }
+
+  /* Weiter button: full width, prominent */
+  .btn-weiter-card {
+    width: 100%;
+    padding: 12px 20px;
+    margin-left: 0;
+    margin-top: 14px;
+    font-size: 16px;
+  }
+
+  /* Badge */
+  .tariff-card__badge {
+    margin: 8px 12px 0;
+    font-size: 14px;
+  }
+
+  /* ── EXPANDED CARD DETAIL TABS: horizontal scroll ── */
+  .detail-tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    flex-wrap: nowrap;
+    gap: 0;
+    padding-bottom: 2px;
+    scrollbar-width: none;
+  }
+
+  .detail-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .detail-tab {
+    font-size: 13px;
+    white-space: nowrap;
+  }
+
+  /* Tables: horizontal scroll container */
+  .tab-content {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .detail-table,
+  .price-detail {
+    font-size: 14px;
+  }
+
+  .detail-table td:first-child {
+    width: auto;
+    min-width: 130px;
+  }
+
+  .table-monthly td:first-child {
+    width: auto;
+    min-width: 150px;
+  }
+
+  .price-detail td {
+    padding: 3px 6px;
+  }
+
+  /* ── MODAL: full width on mobile ── */
+  .modal {
+    width: 95vw;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  .modal-content {
+    width: 100%;
+    max-width: 100%;
+    padding: 16px;
+    box-sizing: border-box;
+  }
+
+  /* Edit tabs: tighter gap */
+  .edit-tabs {
+    gap: 24px;
+  }
+
+  /* Address edit column */
+  .edit-column {
+    gap: 8px;
+  }
+
+  /* consum-row wrap */
+  .consum-row {
+    flex-wrap: wrap;
+  }
+
+  /* Sorting button */
+  .btn-sortieren {
+    width: auto;
+    min-width: 0;
+  }
+}
+
+/* ── Very small screens (≤480px) ── */
+@media (max-width: 480px) {
+  .comp-navbar__left,
+  .comp-navbar__right {
+    font-size: 13px;
+  }
+
+  .tc-logo__name {
+    font-size: 18px;
+  }
+
+  .tc-price__amount {
+    font-size: 26px;
+  }
+
+  .provider-price__amount {
+    font-size: 22px;
+  }
+
+  .filter-row__label {
+    font-size: 13px;
+  }
+
+  .opts-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .tariff-count-bar {
+    font-size: 13px;
+  }
+
+  .filter-banner__header,
+  .filter-box__header,
+  .address-card__header {
+    font-size: 14px;
+  }
+
+  .btn-weiter,
+  .btn-weiter-card,
+  .btn-suche {
+    font-size: 15px;
+  }
+}
