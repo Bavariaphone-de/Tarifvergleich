@@ -4684,8 +4684,25 @@
       <div *ngIf="activeTab === 5 && documentTab === 1">
         <br />
         <div class="attorney-berich">Auftragsdokumente zu aktiven Verträgen</div>
-        <div class="tab-row">
+        <!-- <div class="tab-row">
           <div class="document-list">
+            <div class="document-item" *ngFor="let doc of orderDocuments"> -->
+        <div class="tab-row">
+          <!-- Loading Message -->
+          <div *ngIf="isOrderDocumentsLoading" style="text-align: center; padding: 20px">
+            Lade Dokumente...
+          </div>
+
+          <!-- Empty state if no data found -->
+          <div
+            *ngIf="noOrderDocumentsFound && !isOrderDocumentsLoading"
+            style="text-align: center; color: red; padding: 20px"
+          >
+            No order data found
+          </div>
+
+          <!-- Only show list if documents exist -->
+          <div class="document-list" *ngIf="orderDocuments.length > 0 && !isOrderDocumentsLoading">
             <div class="document-item" *ngFor="let doc of orderDocuments">
               <!-- BOX (border only here) -->
               <div class="document-card">
@@ -4710,14 +4727,24 @@
               </div>
 
               <!-- BUTTONS OUTSIDE -->
-              <div class="document-actions">
+              <!-- <div class="document-actions">
                 <button class="document-btn" (click)="viewDocument()">
                   Vertragsdetails ansehen
                 </button>
                 <button class="document-btn" (click)="downloadDocument()">
                   Vertrag downloaden
+                </button> -->
+
+              <!-- BUTTONS OUTSIDE -->
+              <div class="document-actions">
+                <button class="document-btn" (click)="viewOrderDetails(doc)">
+                  Vertragsdetails ansehen
+                </button>
+                <button class="document-btn" (click)="downloadOrderDocument(doc)">
+                  Vertrag downloaden
                 </button>
               </div>
+
             </div>
           </div>
         </div>
