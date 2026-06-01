@@ -413,7 +413,7 @@
           <!-- Sidebar body -->
           <div class="flex-1 overflow-y-auto p-5 space-y-6">
             <!-- ── Admin action ── -->
-            <div
+            <!-- <div
               class="rounded-xl border border-brand-200 dark:border-brand-800 bg-brand-50 dark:bg-brand-900/20 p-4"
             >
               <p
@@ -447,7 +447,7 @@
                 </svg>
                 Im Adminbereich fortführen
               </button>
-            </div>
+            </div> -->
 
             <!-- ── Customer ── -->
             <div>
@@ -673,7 +673,8 @@
                       >
                         <!-- Rate header with logo -->
                         <div
-                          class="flex items-center gap-3 px-4 py-3 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700"
+                          class="flex items-center gap-3 px-4 py-3 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition select-none"
+                          (click)="rate.expanded = !rate.expanded"
                         >
                           @if (rate.providerSVGPath) {
                             <img
@@ -707,135 +708,155 @@
                               >
                             }
                           </div>
+                          <!-- Accordion Chevron -->
+                          <div class="text-gray-400 ml-2">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              class="h-4 w-4 transition-transform duration-200"
+                              [class.rotate-180]="rate.expanded"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M19 9l-7 7-7-7"
+                              />
+                            </svg>
+                          </div>
                         </div>
                         <!-- Rate details -->
-                        <div
-                          class="divide-y divide-gray-100 dark:divide-gray-700/60"
-                        >
-                          <div class="flex justify-between px-4 py-2">
-                            <span
-                              class="text-xs text-gray-500 dark:text-gray-400"
-                              >Gesamtpreis/Jahr</span
-                            >
-                            <span
-                              class="text-xs font-semibold text-gray-900 dark:text-white"
-                              >{{ (rate.totalPrice ?? 0).toFixed(2) }} €</span
-                            >
-                          </div>
-                          <div class="flex justify-between px-4 py-2">
-                            <span
-                              class="text-xs text-gray-500 dark:text-gray-400"
-                              >Monatlich</span
-                            >
-                            <span
-                              class="text-xs font-medium text-gray-800 dark:text-gray-200"
-                              >{{
-                                (rate.totalPriceMonth ?? 0).toFixed(2)
-                              }}
-                              €</span
-                            >
-                          </div>
-                          <div class="flex justify-between px-4 py-2">
-                            <span
-                              class="text-xs text-gray-500 dark:text-gray-400"
-                              >Arbeitspreis</span
-                            >
-                            <span
-                              class="text-xs font-medium text-gray-800 dark:text-gray-200"
-                              >{{
-                                (rate.workPrice ?? 0).toFixed(2)
-                              }}
-                              ct/kWh</span
-                            >
-                          </div>
-                          <div class="flex justify-between px-4 py-2">
-                            <span
-                              class="text-xs text-gray-500 dark:text-gray-400"
-                              >Grundpreis/Mo.</span
-                            >
-                            <span
-                              class="text-xs font-medium text-gray-800 dark:text-gray-200"
-                              >{{
-                                (rate.basePriceMonth ?? 0).toFixed(2)
-                              }}
-                              €</span
-                            >
-                          </div>
-                          @if ((rate.optBonus ?? 0) > 0) {
+                        @if (rate.expanded) {
+                          <div
+                            class="divide-y divide-gray-100 dark:divide-gray-700/60"
+                          >
                             <div class="flex justify-between px-4 py-2">
                               <span
                                 class="text-xs text-gray-500 dark:text-gray-400"
-                                >Bonus</span
+                                >Gesamtpreis/Jahr</span
                               >
                               <span
-                                class="text-xs font-medium text-green-600 dark:text-green-400"
-                                >{{ (rate.optBonus ?? 0).toFixed(2) }} €</span
+                                class="text-xs font-semibold text-gray-900 dark:text-white"
+                                >{{ (rate.totalPrice ?? 0).toFixed(2) }} €</span
                               >
                             </div>
-                          }
-                          @if (rate.optGuarantee) {
                             <div class="flex justify-between px-4 py-2">
                               <span
                                 class="text-xs text-gray-500 dark:text-gray-400"
-                                >Preisgarantie</span
-                              >
-                              <span
-                                class="text-xs font-medium text-gray-800 dark:text-gray-200"
-                                >{{ rate.optGuarantee }} Mon. ({{
-                                  rate.optGuaranteeType
-                                }})</span
-                              >
-                            </div>
-                          }
-                          @if (rate.optTerm) {
-                            <div class="flex justify-between px-4 py-2">
-                              <span
-                                class="text-xs text-gray-500 dark:text-gray-400"
-                                >Laufzeit</span
-                              >
-                              <span
-                                class="text-xs font-medium text-gray-800 dark:text-gray-200"
-                                >{{ rate.optTerm }}</span
-                              >
-                            </div>
-                          }
-                          @if (rate.termBeforeNewMaxDate) {
-                            <div class="flex justify-between px-4 py-2">
-                              <span
-                                class="text-xs text-gray-500 dark:text-gray-400"
-                                >Wechsel bis</span
-                              >
-                              <span
-                                class="text-xs font-medium text-gray-800 dark:text-gray-200"
-                                >{{ rate.termBeforeNewMaxDate }}</span
-                              >
-                            </div>
-                          }
-                          @if (rate.rateChangeType?.length) {
-                            <div class="flex justify-between px-4 py-2">
-                              <span
-                                class="text-xs text-gray-500 dark:text-gray-400"
-                                >Tarifwechsel</span
+                                >Monatlich</span
                               >
                               <span
                                 class="text-xs font-medium text-gray-800 dark:text-gray-200"
                                 >{{
-                                  rateChangeTypeLabel(rate.rateChangeType)
-                                }}</span
+                                  (rate.totalPriceMonth ?? 0).toFixed(2)
+                                }}
+                                €</span
                               >
                             </div>
-                          }
-                          <div class="flex justify-between px-4 py-2">
-                            <span
-                              class="text-xs text-gray-500 dark:text-gray-400"
-                              >Selbstzahler</span
-                            >
-                            <span
-                              class="text-xs font-medium text-gray-800 dark:text-gray-200"
-                              >{{ rate.selfPayment ? "Ja" : "Nein" }}</span
-                            >
+                            <div class="flex justify-between px-4 py-2">
+                              <span
+                                class="text-xs text-gray-500 dark:text-gray-400"
+                                >Arbeitspreis</span
+                              >
+                              <span
+                                class="text-xs font-medium text-gray-800 dark:text-gray-200"
+                                >{{
+                                  (rate.workPrice ?? 0).toFixed(2)
+                                }}
+                                ct/kWh</span
+                              >
+                            </div>
+                            <div class="flex justify-between px-4 py-2">
+                              <span
+                                class="text-xs text-gray-500 dark:text-gray-400"
+                                >Grundpreis/Mo.</span
+                              >
+                              <span
+                                class="text-xs font-medium text-gray-800 dark:text-gray-200"
+                                >{{
+                                  (rate.basePriceMonth ?? 0).toFixed(2)
+                                }}
+                                €</span
+                              >
+                            </div>
+                            @if ((rate.optBonus ?? 0) > 0) {
+                              <div class="flex justify-between px-4 py-2">
+                                <span
+                                  class="text-xs text-gray-500 dark:text-gray-400"
+                                  >Bonus</span
+                                >
+                                <span
+                                  class="text-xs font-medium text-green-600 dark:text-green-400"
+                                  >{{ (rate.optBonus ?? 0).toFixed(2) }} €</span
+                                >
+                              </div>
+                            }
+                            @if (rate.optGuarantee) {
+                              <div class="flex justify-between px-4 py-2">
+                                <span
+                                  class="text-xs text-gray-500 dark:text-gray-400"
+                                  >Preisgarantie</span
+                                >
+                                <span
+                                  class="text-xs font-medium text-gray-800 dark:text-gray-200"
+                                  >{{ rate.optGuarantee }} Mon. ({{
+                                    rate.optGuaranteeType
+                                  }})</span
+                                >
+                              </div>
+                            }
+                            @if (rate.optTerm) {
+                              <div class="flex justify-between px-4 py-2">
+                                <span
+                                  class="text-xs text-gray-500 dark:text-gray-400"
+                                  >Laufzeit</span
+                                >
+                                <span
+                                  class="text-xs font-medium text-gray-800 dark:text-gray-200"
+                                  >{{ rate.optTerm }}</span
+                                >
+                              </div>
+                            }
+                            @if (rate.termBeforeNewMaxDate) {
+                              <div class="flex justify-between px-4 py-2">
+                                <span
+                                  class="text-xs text-gray-500 dark:text-gray-400"
+                                  >Wechsel bis</span
+                                >
+                                <span
+                                  class="text-xs font-medium text-gray-800 dark:text-gray-200"
+                                  >{{ rate.termBeforeNewMaxDate }}</span
+                                >
+                              </div>
+                            }
+                            @if (rate.rateChangeType?.length) {
+                              <div class="flex justify-between px-4 py-2">
+                                <span
+                                  class="text-xs text-gray-500 dark:text-gray-400"
+                                  >Tarifwechsel</span
+                                >
+                                <span
+                                  class="text-xs font-medium text-gray-800 dark:text-gray-200"
+                                  >{{
+                                    rateChangeTypeLabel(rate.rateChangeType)
+                                  }}</span
+                                >
+                              </div>
+                            }
+                            <div class="flex justify-between px-4 py-2">
+                              <span
+                                class="text-xs text-gray-500 dark:text-gray-400"
+                                >Selbstzahler</span
+                              >
+                              <span
+                                class="text-xs font-medium text-gray-800 dark:text-gray-200"
+                                >{{ rate.selfPayment ? "Ja" : "Nein" }}</span
+                              >
+                            </div>
                           </div>
-                        </div>
+                        }
                       </div>
                     }
                   </div>
