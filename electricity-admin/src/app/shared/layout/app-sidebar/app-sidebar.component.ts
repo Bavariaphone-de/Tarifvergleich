@@ -212,6 +212,43 @@ export class AppSidebarComponent implements OnInit, OnDestroy {
       ],
     },
     {
+      name: "Categories",
+      icon: `
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="1em"
+          height="1em"
+          viewBox="0 0 24 24"
+          fill="none"
+        >
+          <path
+            d="M4 5C4 3.89543 4.89543 3 6 3H18C19.1046 3 20 3.89543 20 5V19C20 20.1046 19.1046 21 18 21H6C4.89543 21 4 20.1046 4 19V5Z"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linejoin="round"
+          />
+        </svg>
+      `,
+      subItems: [
+        {
+          name: "Energy Supply",
+          path: "/categories",
+        },
+        {
+          name: "Invoice Categories",
+          path: "/invoice-categories",
+        },
+        {
+          name: "Report Meter Reading Category",
+          path: "/report-meter-reading-category",
+        },
+        {
+          name: "Cancellation Service Category",
+          path: "/cancellation-service-category",
+        }
+      ],
+    },
+    {
       name: "Credentials",
       icon: `
         <svg

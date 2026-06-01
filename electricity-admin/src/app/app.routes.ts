@@ -34,6 +34,10 @@ import { StaticContentComponent } from "./pages/contents/static-content/static-c
 import { EmailTemplateListComponent } from "./pages/email/email-template-list/email-template-list.component";
 import { TaxManagementComponent } from "./pages/credentials/tax-management/tax-management.component";
 import { ContactQueryComponent } from "./pages/customer-query/contact-query/contact-query.component";
+import { EnergyCategoriesComponent } from "./pages/categories/energy-categories/energy-categories.component";
+import { InvoiceCategoriesComponent } from "./pages/categories/invoice-categories/invoice-categories.component";
+import { ReportMeterReadingCategoryComponent } from "./pages/categories/meter-reading-category/report-meter-reading-category.component";
+import { CancellationServiceCategoryComponent } from "./pages/categories/cancellation-category/cancellation-service-category.component";
 import { ReportMeterReadingComponent } from "./pages/open-provider-action/report-meter-reading/report-meter-reading.component";
 
 export const routes: Routes = [
@@ -230,6 +234,26 @@ export const routes: Routes = [
         path: "static-content",
         component: StaticContentComponent,
         title: "Static Content",
+      },
+      {
+        path: "categories",
+        component: EnergyCategoriesComponent,
+        title: "Categories",
+      },
+      {
+        path: "invoice-categories",
+        component: InvoiceCategoriesComponent,
+        title: "Invoice Categories",
+      },
+      {
+        path: "report-meter-reading-category",
+        component: ReportMeterReadingCategoryComponent,
+        title: "Report Meter Reading Category",
+      },
+      {
+        path: "cancellation-service-category",
+        component: CancellationServiceCategoryComponent,
+        title: "Cancellation Service Category",
       },
       {
         path: "credentials/admin-signature",

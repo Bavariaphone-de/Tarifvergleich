@@ -1,0 +1,297 @@
+<div class="p-6 bg-white dark:bg-gray-900 rounded-2xl shadow">
+  <!-- HEADER -->
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h2 class="text-xl font-semibold text-gray-800 dark:text-white">
+        Kündigungsservice-Kategorien
+      </h2>
+      <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+        Übersicht aller Kündigungsservice-Kategorien.
+      </p>
+    </div>
+
+    <!-- ADD BUTTON -->
+    <button
+      (click)="openAddModal()"
+      class="px-4 py-2 text-sm bg-brand-500 text-white rounded-lg hover:bg-brand-600 transition cursor-pointer"
+    >
+      + Kategorie hinzufügen
+    </button>
+  </div>
+
+  <!-- LOADING -->
+  @if (isLoading) {
+    <div class="flex items-center gap-2 text-gray-500 text-sm py-4">
+      <div
+        class="animate-spin rounded-full h-4 w-4 border-b-2 border-brand-500"
+      ></div>
+      <span>Kategorien werden geladen...</span>
+    </div>
+  }
+
+  <!-- TABLE -->
+  @if (!isLoading && !errorMessage && categories.length > 0) {
+    <div
+      class="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700"
+    >
+      <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+        <thead
+          class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-800 dark:text-gray-300"
+        >
+          <tr>
+            <th class="px-4 py-3">Kategoriename</th>
+            <th class="px-4 py-3">aktualisierte Zeit</th>
+            <th class="px-4 py-3 text-right">Aktion</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (
+            category of categories;
+            track category.cancellationServiceCategoryId
+          ) {
+            <tr
+              class="bg-white border-b dark:bg-gray-900 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
+            >
+              <td
+                class="px-4 py-4 font-semibold text-gray-800 dark:text-gray-200"
+              >
+                {{ category.categoryName }}
+              </td>
+
+              <td class="px-4 py-4">
+                <span
+                  class="px-2.5 py-0.5 rounded-full text-xs font-medium text-gray-700 dark:text-gray-300"
+                >
+                  @if (category.updatedOn) {
+                    {{ category.updatedOn * 1000 | date: "dd.MM.yyyy, HH:mm" }}
+                  } @else if (category.createdOn) {
+                    {{ category.createdOn * 1000 | date: "dd.MM.yyyy, HH:mm" }}
+                  } @else {
+                    N/A
+                  }
+                </span>
+              </td>
+
+              <td class="px-4 py-4 text-right">
+                <div class="flex items-center justify-end gap-2">
+                  <!-- Edit -->
+                  <button
+                    (click)="openEditModal(category)"
+                    class="p-2 text-brand-600 hover:bg-brand-50 dark:hover:bg-brand-900/20 rounded-lg transition"
+                    title="Bearbeiten"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke-width="2"
+                      stroke="currentColor"
+                      class="w-4 h-4"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
+                      />
+                    </svg>
+                  </button>
+
+                  <!-- Trigger Modal Delete -->
+                  <button
+                    (click)="
+                      promptDelete(category.cancellationServiceCategoryId)
+                    "
+                    class="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition"
+                    title="Löschen"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke-width="2"
+                      stroke="currentColor"
+                      class="w-4 h-4"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  <!-- ERROR -->
+  @if (!isLoading && errorMessage) {
+    <div class="text-center py-12">
+      <p class="text-red-500 font-medium">{{ errorMessage }}</p>
+    </div>
+  }
+
+  <!-- EMPTY -->
+  @if (!isLoading && !errorMessage && categories.length === 0) {
+    <div class="text-center py-12">
+      <p class="text-gray-500 font-medium">Keine Kategorie verfügbar.</p>
+    </div>
+  }
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     ADD / EDIT CATEGORY MODAL
+════════════════════════════════════════════════════════ -->
+@if (showCategoryModal) {
+  <div class="fixed inset-0 z-[1100] flex items-center justify-center p-4">
+    <div
+      class="absolute inset-0 bg-black/50 backdrop-blur-sm"
+      (click)="closeCategoryModal()"
+    ></div>
+    <div
+      class="relative z-10 w-full max-w-md bg-white dark:bg-gray-900 rounded-2xl shadow-2xl p-6 flex flex-col gap-4"
+    >
+      <div class="flex justify-between items-center mb-2">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+          {{
+            categoryForm.cancellationServiceCategoryId
+              ? "Edit Category"
+              : "Add Category"
+          }}
+        </h3>
+        <button
+          (click)="closeCategoryModal()"
+          class="text-gray-400 hover:text-gray-600 transition"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke-width="2"
+            stroke="currentColor"
+            class="w-6 h-6"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+        </button>
+      </div>
+
+      <div>
+        <label
+          class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+          >Kategoriename</label
+        >
+        <input
+          type="text"
+          [(ngModel)]="categoryForm.categoryName"
+          class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-brand-500 outline-none transition"
+          placeholder="Enter category name..."
+        />
+        @if (modalErrorMessage) {
+          <p class="text-sm text-red-500 mt-2 font-medium">
+            {{ modalErrorMessage }}
+          </p>
+        }
+      </div>
+
+      <div class="flex gap-3 mt-4">
+        <button
+          (click)="closeCategoryModal()"
+          [disabled]="isSaving"
+          class="flex-1 px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-600 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition disabled:opacity-50"
+        >
+          Cancel
+        </button>
+        <button
+          (click)="saveCategory()"
+          [disabled]="isSaving || !categoryForm.categoryName"
+          class="flex-1 flex items-center justify-center px-4 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-sm font-medium transition active:scale-95 disabled:opacity-50"
+        >
+          @if (isSaving) {
+            <div
+              class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"
+            ></div>
+          } @else {
+            Speichern
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ═══════════════════════════════════════════════════════
+     DELETE CATEGORY — Confirm Dialog Modal
+════════════════════════════════════════════════════════ -->
+@if (showDeleteConfirm) {
+  <div class="fixed inset-0 z-[1100] flex items-center justify-center p-4">
+    <div
+      class="absolute inset-0 bg-black/50 backdrop-blur-sm"
+      (click)="cancelDelete()"
+    ></div>
+    <div
+      class="relative z-10 w-full max-w-sm bg-white dark:bg-gray-900 rounded-2xl shadow-2xl p-6 flex flex-col gap-4"
+    >
+      <!-- Icon -->
+      <div
+        class="flex items-center justify-center w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 mx-auto"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-6 w-6 text-red-500"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+          />
+        </svg>
+      </div>
+
+      <div class="text-center">
+        <h3 class="text-base font-semibold text-gray-900 dark:text-white mb-1">
+          Kategorie löschen?
+        </h3>
+        <p class="text-sm text-gray-500 dark:text-gray-400">
+          Sind Sie sicher, dass Sie diese Kategorie löschen möchten? Diese
+          Aktion kann nicht rückgängig gemacht werden.
+        </p>
+      </div>
+
+      <div class="flex gap-3 mt-1">
+        <button
+          (click)="cancelDelete()"
+          [disabled]="isDeleting"
+          class="flex-1 px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-600 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition disabled:opacity-50"
+        >
+          Stornieren
+        </button>
+        <button
+          (click)="confirmDelete()"
+          [disabled]="isDeleting"
+          class="flex-1 flex items-center justify-center px-4 py-2 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-medium transition active:scale-95 disabled:opacity-50"
+        >
+          @if (isDeleting) {
+            <div
+              class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"
+            ></div>
+          } @else {
+            Ja, löschen
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}
