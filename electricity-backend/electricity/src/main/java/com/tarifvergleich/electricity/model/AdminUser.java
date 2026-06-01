@@ -171,10 +171,23 @@ public class AdminUser {
 	@OneToMany(mappedBy = "admin", cascade = { CascadeType.PERSIST, CascadeType.MERGE }, orphanRemoval = true)
 	@JsonIgnoreProperties("admin")
 	private List<EnergySupplierMessageCategory> energySupplierMessageCategories;
+	
+	@OneToMany(mappedBy = "admin")
+	@JsonIgnoreProperties("admin")
+	private List<EnergySupplierInvoiceCategory> energySupplierInvoiceCategories;
 
 	@OneToMany(mappedBy = "admin", cascade = { CascadeType.PERSIST, CascadeType.MERGE }, orphanRemoval = true)
 	@JsonIgnoreProperties("admin")
 	private List<EnergySupplierMessage> energySupplierMessages;
+	
+	@OneToMany(mappedBy = "admin", cascade = { CascadeType.PERSIST, CascadeType.MERGE }, orphanRemoval = true)
+	@JsonIgnoreProperties("admin")
+	private List<ReportMeterReadingCategory> reportMeterReadingCategories;
+	
+	@OneToMany(mappedBy = "admin", cascade = { CascadeType.PERSIST, CascadeType.MERGE }, orphanRemoval = true)
+	@JsonIgnoreProperties("admin")
+	private List<CancellationServiceCategory> cancellationServiceCategories;
+
 
 	@OneToMany(mappedBy = "admin", cascade = { CascadeType.PERSIST, CascadeType.MERGE }, orphanRemoval = true)
 	@JsonIgnoreProperties("admin")
@@ -328,5 +341,13 @@ public class AdminUser {
 
 		category.setAdmin(this);
 		energySupplierMessageCategories.add(category);
+	}
+	
+	public void addEnergySupplierInvoiceCategory(EnergySupplierInvoiceCategory category) {
+		if (energySupplierInvoiceCategories == null) {
+			energySupplierInvoiceCategories = new LinkedList<>();
+		}
+		energySupplierInvoiceCategories.add(category);
+		category.setAdmin(this);
 	}
 }

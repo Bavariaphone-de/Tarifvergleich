@@ -67,6 +67,7 @@ public class CustomerDto {
 	// This field is used for blocking and unblocking
 	private Boolean status;
 	private String search;
+	private String token;
 
 	@Data
 	@Builder

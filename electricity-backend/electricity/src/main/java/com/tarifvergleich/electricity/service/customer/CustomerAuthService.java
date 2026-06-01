@@ -49,9 +49,9 @@ import lombok.RequiredArgsConstructor;
 public class CustomerAuthService {
 
 	private final CustomerRepository customerRepo;
-	private final CustomerAttornyRepository customerAttornyRepo;
-	private final PdfGenerator pdfGenerator;
-	private final CustomEmailTemplate customEmailTemplate;
+//	private final CustomerAttornyRepository customerAttornyRepo;
+//	private final PdfGenerator pdfGenerator;
+//	private final CustomEmailTemplate customEmailTemplate;
 	private final CustomerAddressRepository customerAddressRepo;
 	private final Helper helper;
 	private final MailService mailService;
