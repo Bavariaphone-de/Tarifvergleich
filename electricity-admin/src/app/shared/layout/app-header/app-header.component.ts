@@ -1,21 +1,17 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { Subscription, interval } from 'rxjs';
-import { SidebarService } from '../../services/sidebar.service';
-import { CommonModule } from '@angular/common';
-import { RouterModule, Router } from '@angular/router';
-import { UserDropdownComponent } from '../../components/header/user-dropdown/user-dropdown.component';
-import { ApiService } from '../../services/api.service';
-import { AuthService } from '../../services/auth.service';
-import { HttpClient } from '@angular/common/http';
+import { Component, OnInit, OnDestroy } from "@angular/core";
+import { Subscription, interval } from "rxjs";
+import { SidebarService } from "../../services/sidebar.service";
+import { CommonModule } from "@angular/common";
+import { RouterModule, Router } from "@angular/router";
+import { UserDropdownComponent } from "../../components/header/user-dropdown/user-dropdown.component";
+import { ApiService } from "../../services/api.service";
+import { AuthService } from "../../services/auth.service";
+import { HttpClient } from "@angular/common/http";
 
 @Component({
-  selector: 'app-header',
-  imports: [
-    CommonModule,
-    RouterModule,
-    UserDropdownComponent,
-  ],
-  templateUrl: './app-header.component.html',
+  selector: "app-header",
+  imports: [CommonModule, RouterModule, UserDropdownComponent],
+  templateUrl: "./app-header.component.html",
 })
 export class AppHeaderComponent implements OnInit, OnDestroy {
   isApplicationMenuOpen = false;
@@ -29,23 +25,25 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
     private api: ApiService,
     private authService: AuthService,
     private router: Router,
-    private http: HttpClient
+    private http: HttpClient,
   ) {
     this.isMobileOpen$ = this.sidebarService.isMobileOpen$;
   }
 
   ngOnInit() {
     this.fetchPendingQueriesCount();
-    
+
     // Auto-update the count every 30 seconds (30000 milliseconds)
     this.pollSubscription = interval(30000).subscribe(() => {
       this.fetchPendingQueriesCount();
     });
 
     // Listen for manual triggers (e.g. when a query is closed)
-    this.refreshSubscription = this.api.refreshPendingQueriesCount$.subscribe(() => {
-      this.fetchPendingQueriesCount();
-    });
+    this.refreshSubscription = this.api.refreshPendingQueriesCount$.subscribe(
+      () => {
+        this.fetchPendingQueriesCount();
+      },
+    );
   }
 
   ngOnDestroy() {
@@ -59,11 +57,14 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
 
   fetchPendingQueriesCount() {
     const payload = {
-      adminId: this.authService.getUserId()
+      adminId: this.authService.getUserId(),
     };
-    
+
     this.http
-      .post("http://192.168.0.234:8080/admin/count-open-service-requests", payload)
+      .post(
+        "http://192.168.0.155:8080/admin/count-open-service-requests",
+        payload,
+      )
       .subscribe({
         next: (res: any) => {
           if (res?.res) {
@@ -77,7 +78,9 @@ export class AppHeaderComponent implements OnInit, OnDestroy {
   }
 
   navigateToQueries() {
-    this.router.navigate(['/customer-query/customer-queries'], { queryParams: { status: 'open' } });
+    this.router.navigate(["/customer-query/customer-queries"], {
+      queryParams: { status: "open" },
+    });
   }
 
   handleToggle() {

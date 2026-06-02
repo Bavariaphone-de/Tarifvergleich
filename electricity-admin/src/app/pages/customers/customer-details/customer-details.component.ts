@@ -40,23 +40,23 @@ export class CustomerDetailsComponent implements OnInit {
   lexofficeInput = "";
   isSavingLexoffice = false;
 
-    //For Send email
-    isSendEmailModalOpen = false;
-    selectedEmailCustomer: AdminCustomer | null = null;
-  
-    emailTitle = "";
-    emailSubtitle = "";
-    emailMessage = "";
-    successMessage = "";
-    errorMessageEmail = "";
-  
-    Editor = ClassicEditor;
-    emailcontent: string = "";
-  
-    selectedPdfId: number | null = null;
-    pdfList: any[] = [];
-    isPdfDropdownOpen = false;
-    selectedPdfIds: Set<number> = new Set();
+  //For Send email
+  isSendEmailModalOpen = false;
+  selectedEmailCustomer: AdminCustomer | null = null;
+
+  emailTitle = "";
+  emailSubtitle = "";
+  emailMessage = "";
+  successMessage = "";
+  errorMessageEmail = "";
+
+  Editor = ClassicEditor;
+  emailcontent: string = "";
+
+  selectedPdfId: number | null = null;
+  pdfList: any[] = [];
+  isPdfDropdownOpen = false;
+  selectedPdfIds: Set<number> = new Set();
 
   constructor(
     private route: ActivatedRoute,
@@ -259,10 +259,10 @@ export class CustomerDetailsComponent implements OnInit {
       next: (res: any) => {
         if (res?.res) {
           this.customer.isNotificationEnabled = newStatus;
-          this.gdprSuccessMessage = newStatus 
-            ? "GDPR successfully activated" 
+          this.gdprSuccessMessage = newStatus
+            ? "GDPR successfully activated"
             : "GDPR successfully inactivated";
-          
+
           setTimeout(() => {
             this.gdprSuccessMessage = "";
           }, 3000);
@@ -285,196 +285,221 @@ export class CustomerDetailsComponent implements OnInit {
   documents: any[] = [];
 
   getFullUrl(url: string): string {
-    if (!url) return '';
-    if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) {
+    if (!url) return "";
+    if (
+      url.startsWith("http://") ||
+      url.startsWith("https://") ||
+      url.startsWith("data:")
+    ) {
       return url;
     }
-    const baseUrl = this.api.baseUrl.endsWith('/') ? this.api.baseUrl.slice(0, -1) : this.api.baseUrl;
-    const path = url.startsWith('/') ? url : `/${url}`;
+    const baseUrl = this.api.baseUrl.endsWith("/")
+      ? this.api.baseUrl.slice(0, -1)
+      : this.api.baseUrl;
+    const path = url.startsWith("/") ? url : `/${url}`;
     return `${baseUrl}/assets/customers${path}`;
   }
 
   viewDocument(url: string): void {
-    if (url) {
-      window.open(this.getFullUrl(url), '_blank');
+    if (!url) return;
+
+    if (url.startsWith("data:")) {
+      try {
+        const parts = url.split(",");
+        const contentType = parts[0].split(":")[1].split(";")[0];
+        const base64Data = parts[1];
+
+        const byteCharacters = atob(base64Data);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: contentType });
+
+        const blobUrl = URL.createObjectURL(blob);
+        window.open(blobUrl, "_blank");
+
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
+      } catch (error) {
+        console.error("Failed to open Base64 URL:", error);
+      }
+    } else {
+      window.open(this.getFullUrl(url), "_blank");
     }
   }
 
   downloadDocument(url: string, fileName: string): void {
     if (!url) return;
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = this.getFullUrl(url);
-    a.download = fileName || 'document.pdf';
+    a.download = fileName || "document.pdf";
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
   }
 
   getFileName(url: any): string {
-    if (!url || typeof url !== 'string') return 'Dokument';
-    if (url.startsWith('data:')) return 'Document.pdf';
-    return url.split('/').pop() || 'Dokument';
+    if (!url || typeof url !== "string") return "Dokument";
+    if (url.startsWith("data:")) return "Document.pdf";
+    return url.split("/").pop() || "Dokument";
   }
 
   /** For Send Email */
-    openSendEmailModal(customer: AdminCustomer): void {
-      console.log(customer);
-      
-      this.selectedEmailCustomer = customer;
-      this.isSendEmailModalOpen = true;
-      this.loadPdfs();
+  openSendEmailModal(customer: AdminCustomer): void {
+    console.log(customer);
+
+    this.selectedEmailCustomer = customer;
+    this.isSendEmailModalOpen = true;
+    this.loadPdfs();
+  }
+
+  closeSendEmailModal(): void {
+    this.isSendEmailModalOpen = false;
+    this.selectedEmailCustomer = null;
+
+    this.emailTitle = "";
+    this.emailSubtitle = "";
+    this.emailMessage = "";
+    this.selectedPdfIds.clear();
+    this.uploadDocuments = [{ file: null }];
+  }
+
+  togglePdfDropdown(): void {
+    this.isPdfDropdownOpen = !this.isPdfDropdownOpen;
+  }
+
+  togglePdfSelection(pdfId: number): void {
+    if (this.selectedPdfIds.has(pdfId)) {
+      this.selectedPdfIds.delete(pdfId);
+    } else {
+      this.selectedPdfIds.add(pdfId);
+    }
+  }
+
+  loadPdfs(): void {
+    const payload = {
+      adminId: this.authService.getUserId(),
+      page: 0,
+      size: 100,
+    };
+
+    this.api.post("admin/fetch-admin-documents", payload).subscribe({
+      next: (res: any) => {
+        console.log(res);
+        this.pdfList = res.data || res.content || res;
+      },
+      error: (err) => {
+        console.log(err);
+      },
+    });
+  }
+
+  isPdfSelected(pdfId: number): boolean {
+    return this.selectedPdfIds.has(pdfId);
+  }
+
+  get selectedPdfsLabel(): string {
+    const count = this.selectedPdfIds.size;
+    if (count === 0) return "Wählen dein PDF";
+    if (count === 1) {
+      const pdf = this.pdfList.find((p) =>
+        this.selectedPdfIds.has(p.adminDocId),
+      );
+      return pdf?.type || pdf?.documentType || "1 PDF ausgewählt";
+    }
+    return `${count} PDFs ausgewählt`;
+  }
+
+  uploadDocuments: any[] = [{ file: null }];
+
+  onUploadDocumentSelect(event: any, index: number): void {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const allowedTypes = ["application/pdf", "image/png", "image/jpeg"];
+    if (!allowedTypes.includes(file.type)) {
+      alert("Only PDF, JPG, JPEG and PNG files are allowed");
+      return;
     }
 
-    closeSendEmailModal(): void {
-      this.isSendEmailModalOpen = false;
-      this.selectedEmailCustomer = null;
-  
-      this.emailTitle = "";
-      this.emailSubtitle = "";
-      this.emailMessage = "";
-      this.selectedPdfIds.clear();
-      this.uploadDocuments = [{ file: null }];
+    if (file.size > 10 * 1024 * 1024) {
+      alert("File size must be less than 10MB");
+      return;
     }
-  
-    togglePdfDropdown(): void {
-      this.isPdfDropdownOpen = !this.isPdfDropdownOpen;
-    }
-  
-    togglePdfSelection(pdfId: number): void {
-      if (this.selectedPdfIds.has(pdfId)) {
-        this.selectedPdfIds.delete(pdfId);
-      } else {
-        this.selectedPdfIds.add(pdfId);
-      }
-    }
-  
-    loadPdfs(): void {
-        const payload = {
-          adminId: this.authService.getUserId(),
-          page: 0,
-          size: 100,
-        };
-  
-        this.api
-          .post("admin/fetch-admin-documents", payload)
-          .subscribe({
-            next: (res: any) => {
-              console.log(res);
-              this.pdfList = res.data || res.content || res;
-            },
-            error: (err) => {
-              console.log(err);
-            },
-          });
-      }
-  
-    isPdfSelected(pdfId: number): boolean {
-      return this.selectedPdfIds.has(pdfId);
-    }
-  
-    get selectedPdfsLabel(): string {
-      const count = this.selectedPdfIds.size;
-      if (count === 0) return "Wählen dein PDF";
-      if (count === 1) {
-        const pdf = this.pdfList.find((p) =>
-          this.selectedPdfIds.has(p.adminDocId),
-        );
-        return pdf?.type || pdf?.documentType || "1 PDF ausgewählt";
-      }
-      return `${count} PDFs ausgewählt`;
-    }
-  
-    uploadDocuments: any[] = [{ file: null }];
-  
-    onUploadDocumentSelect(event: any, index: number): void {
-      const file = event.target.files[0];
-      if (!file) return;
-  
-      const allowedTypes = ['application/pdf','image/png','image/jpeg'];
-      if (!allowedTypes.includes(file.type)) {
-        alert('Only PDF, JPG, JPEG and PNG files are allowed');
-        return;
-      }
-  
-      if (file.size > 10 * 1024 * 1024) {
-        alert('File size must be less than 10MB');
-        return;
-      }
-      this.uploadDocuments[index].file = file;
-    }
-  
-    addUploadDocumentField(): void {
+    this.uploadDocuments[index].file = file;
+  }
+
+  addUploadDocumentField(): void {
+    this.uploadDocuments.push({ file: null });
+  }
+
+  removeUploadDocumentField(index: number): void {
+    this.uploadDocuments.splice(index, 1);
+    if (this.uploadDocuments.length === 0) {
       this.uploadDocuments.push({ file: null });
     }
-  
-    removeUploadDocumentField(index: number): void {
-      this.uploadDocuments.splice(index, 1);
-        if (this.uploadDocuments.length === 0) {
-          this.uploadDocuments.push({ file: null });
-        }
-    }
-  
-    submitSendEmail(): void {
-  
-      if (!this.selectedEmailCustomer) return;
-  
-      this.errorMessageEmail = "";
-      this.successMessage = "";
-  
-      const payload = {
-        adminId: this.authService.getUserId(),
-        customerId: this.selectedEmailCustomer.id,
-        title: this.emailTitle,
-        subtitle: this.emailSubtitle,
-        emailContent: this.emailMessage,
-        // email: this.selectedEmailCustomer.email,
-  
-        documentIds: Array.from(this.selectedPdfIds),
-      };
-  
-      const formData = new FormData();
-      formData.append("data", JSON.stringify(payload));
-  
-      // upload files
-      this.uploadDocuments.forEach((doc: any) => {
-        if (doc.file) {
-          formData.append("uploadDocuments", doc.file);
-        }
-      });
-  
-      this.api.post("admin/send-customer-email", formData)
-        .subscribe({
-          next: (res: any) => {
-  
-            if (res?.res) {
-              this.errorMessageEmail = "";
-              this.successMessage = "E-Mail erfolgreich gesendet";
-  
-              setTimeout(() => {
-                this.closeSendEmailModal();
-                this.successMessage = "";
-              }, 2000);
-  
-            } else {
-              this.successMessage = "";
-              this.errorMessageEmail =
-                res?.errorMessage || "E-Mail nicht gesendet";
-  
-              setTimeout(() => {
-                this.errorMessageEmail ="";
-              }, 3000);
-            }
-          },
-  
-          error: (err) => {
-            console.log(err);
+  }
+
+  submitSendEmail(): void {
+    if (!this.selectedEmailCustomer) return;
+
+    this.errorMessageEmail = "";
+    this.successMessage = "";
+
+    const payload = {
+      adminId: this.authService.getUserId(),
+      customerId: this.selectedEmailCustomer.id,
+      title: this.emailTitle,
+      subtitle: this.emailSubtitle,
+      emailContent: this.emailMessage,
+      // email: this.selectedEmailCustomer.email,
+
+      documentIds: Array.from(this.selectedPdfIds),
+    };
+
+    const formData = new FormData();
+    formData.append("data", JSON.stringify(payload));
+
+    // upload files
+    this.uploadDocuments.forEach((doc: any) => {
+      if (doc.file) {
+        formData.append("uploadDocuments", doc.file);
+      }
+    });
+
+    this.api.post("admin/send-customer-email", formData).subscribe({
+      next: (res: any) => {
+        if (res?.res) {
+          this.errorMessageEmail = "";
+          this.successMessage = "E-Mail erfolgreich gesendet";
+
+          setTimeout(() => {
+            this.closeSendEmailModal();
             this.successMessage = "";
-            this.errorMessageEmail = err?.error?.errorMessage || err?.error?.message ||"E-Mail nicht gesendet";
-  
-            setTimeout(() => {
-              this.errorMessageEmail ="";
-            }, 3000);
-          }
-        });
-    }
+          }, 2000);
+        } else {
+          this.successMessage = "";
+          this.errorMessageEmail = res?.errorMessage || "E-Mail nicht gesendet";
+
+          setTimeout(() => {
+            this.errorMessageEmail = "";
+          }, 3000);
+        }
+      },
+
+      error: (err) => {
+        console.log(err);
+        this.successMessage = "";
+        this.errorMessageEmail =
+          err?.error?.errorMessage ||
+          err?.error?.message ||
+          "E-Mail nicht gesendet";
+
+        setTimeout(() => {
+          this.errorMessageEmail = "";
+        }, 3000);
+      },
+    });
+  }
 }

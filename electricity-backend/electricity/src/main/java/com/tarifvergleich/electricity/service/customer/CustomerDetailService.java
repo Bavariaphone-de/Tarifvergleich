@@ -538,6 +538,7 @@ public class CustomerDetailService {
 //				+ " " + dateTimeMap.get("year").toString() + ", at " + dateTimeMap.get("hour").toString() + ":"
 //				+ dateTimeMap.get("minute").toString() + " " + dateTimeMap.get("amPm").toString();
 
+
 		if (isReopened) {
 			customerSubject = "Ticket " + customerServiceRequest.getTicketNumber() + " Reopened";
 			customerBody = emailBodyRender.serviceRequestReopenBody(customerServiceRequest);

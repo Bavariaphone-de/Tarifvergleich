@@ -216,6 +216,8 @@ export class BookingListComponent implements OnInit {
   filter = 0;
   searchTerm = "";
   isFilterOpen = false;
+  typeFilter = '';
+  isTypeFilterOpen = false;
 
   hasMoreData = true;
   currentPage = 1;
@@ -312,6 +314,22 @@ export class BookingListComponent implements OnInit {
     return (
       this.filterOptions.find((f) => f.value === this.filter)?.label || "Alle"
     );
+  }
+
+  onTypeFilterChange(type: string): void {
+    this.typeFilter = type;
+    this.isTypeFilterOpen = false;
+  }
+
+  getTypeFilterLabel(): string {
+    if (this.typeFilter === 'electric') return 'Strom';
+    if (this.typeFilter === 'gas') return 'Gas';
+    return 'Alle Typen';
+  }
+
+  get filteredBookings(): ApiBooking[] {
+    if (!this.typeFilter) return this.bookings;
+    return this.bookings.filter(b => b.provider?.branch === this.typeFilter);
   }
 
   nextPage(): void {
