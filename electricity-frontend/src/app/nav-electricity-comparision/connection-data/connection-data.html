@@ -120,7 +120,7 @@
                 <div>
                   <span class="info-base info-circ">i</span>
                 </div>
-                Bei Umzug müssen Sie Ihren aktuellen Stromvertrag selbst kündigen. Neuanmeldungen
+                Bei Umzug müssen Sie Ihren bestehenden Vertrag selbst kündigen. Neuanmeldungen
                 sind aktuell erst ab dem 16.02.2026 möglich. <br />
                 Bei einem früheren Einzugsdatum werden Sie vorübergehend vom örtlichen
                 Grundversorger beliefert.
@@ -237,7 +237,7 @@
             <div class="row-with-info" style="margin-top: 10px" *ngIf="selection === 'no'">
               <div class="field-wraper select-wraper">
                 <select name="currentProvider" [(ngModel)]="currentProvider">
-                  <option value="" disabled selected>Ihr derzeitiger Stromanbieter</option>
+                  <option value="" disabled selected>Ihr aktueller Lieferant</option>
 
                   <!-- Dynamic providers -->
                   <option *ngFor="let provider of providersList" [value]="provider">

@@ -117,7 +117,7 @@ interface SelectGasProviderState {
 }
 
 @Component({
-  selector: 'app-select-provider',
+  selector: 'app-select-gas-provider',
   standalone: true,
   imports: [
     MatIconModule,
@@ -452,28 +452,20 @@ export class SelectGasProvider implements OnInit {
     this.router.navigate(['/home/gas']);
   }
 
-  onAreaChange(value: any): void {
-    console.log('Dropdown value:', value, typeof value);
-
-    const selectedValue = Number(value);
-
-    switch (selectedValue) {
+  onAreaChange(value: number): void {
+    switch (value) {
       case 1:
         this.selectPersons(1, 5050);
         break;
-
       case 2:
         this.selectPersons(2, 12000);
         break;
-
       case 3:
         this.selectPersons(3, 20500);
         break;
-
       case 4:
         this.selectPersons(4, 28000);
         break;
-
       default:
         this.consum = 0;
         this.addressForm.patchValue({
@@ -484,7 +476,7 @@ export class SelectGasProvider implements OnInit {
 
   selectPersons(persons: number, consumption: number): void {
     this.selectedPersons = persons;
-    this.consum = consumption;
+    // this.consum = consumption;
 
     this.addressForm.patchValue({
       consum: consumption,
@@ -497,13 +489,24 @@ export class SelectGasProvider implements OnInit {
 
   searchApply() {
     console.log('Search Apply');
-    this.isEditMode = false;
-    this.addressForm.get('consum')?.setValue(this.consum);
+
+    // this.addressForm.get('consum')?.setValue(this.consum);
+
+    const consumption = Number(this.addressForm.get('consum')?.value);
+
+    if (!consumption || consumption <= 0) {
+      this.addressForm.get('consum')?.setErrors({ required: true });
+      this.addressForm.get('consum')?.markAsTouched();
+      return;
+    }
+
     if (this.addressForm.invalid) {
       this.addressForm.markAllAsTouched();
       console.log('form not valid');
       return;
     }
+    this.isEditMode = false;
+    this.consum = consumption;
 
     const selectedCityId = this.addressForm.value.city || this.lastValidCity?.city_id;
     console.log('Selected City ID:', selectedCityId);
@@ -522,7 +525,7 @@ export class SelectGasProvider implements OnInit {
       street: this.addressForm.value.street,
       houseNumber: this.addressForm.value.houseNumber,
       persons: this.selectedPersons,
-      consumption: this.addressForm.value.consum,
+      consumption: consumption,
       deliveryType: this.branch,
     };
     this.zip = data.zip;
@@ -1161,11 +1164,12 @@ export class SelectGasProvider implements OnInit {
       persons: this.selectedPersons,
       consumption: this.consum,
       deliveryType: this.branch,
+      menuActive: 'Gas',
     };
 
     this.authService.setAddressData(data);
 
-    // this.router.navigate(['/electricity-comparision/register']);
+    this.router.navigate(['/electricity-comparision/register']);
     this.cdr.detectChanges();
   }
 
