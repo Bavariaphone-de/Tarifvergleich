@@ -24,14 +24,12 @@ public class ReportMeterReading {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-    
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "customer_id")
-    private Customer customer;
 
 	private Integer orderId;
 
 	private Integer connectionId;
+	
+	private Integer deliveryId;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "customer_id")

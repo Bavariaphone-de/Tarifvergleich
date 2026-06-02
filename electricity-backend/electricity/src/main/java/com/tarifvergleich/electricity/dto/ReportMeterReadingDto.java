@@ -36,10 +36,10 @@ public class ReportMeterReadingDto {
     private Integer orderId;
     
     private Integer adminId;
+    
+    private String imagePath;
 
 	private Integer connectionId;
-
-	private Integer customerId;
 
 	private String category;
 
@@ -50,6 +50,8 @@ public class ReportMeterReadingDto {
 	private Integer id;
 
     private LocalDateTime createdAt;
+    
+    private Integer status;
     
     
     @Data
