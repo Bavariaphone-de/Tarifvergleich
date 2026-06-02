@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface EnergySupplierInvoiceCategoryRepository extends JpaRepository<EnergySupplierInvoiceCategory, Integer> {
-    Optional<EnergySupplierInvoiceCategory> findByIdAndAdminAdminId(Integer id, Integer adminId);
+    Optional<EnergySupplierInvoiceCategory> findByIdAndAdminAdminId(Long id, Integer adminId);
 
     Optional<EnergySupplierInvoiceCategory> findByCategoryNameLikeAndAdminAdminId(String categoryName, Integer adminId);
 

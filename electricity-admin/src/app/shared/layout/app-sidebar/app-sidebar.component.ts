@@ -291,8 +291,12 @@ export class AppSidebarComponent implements OnInit, OnDestroy {
         {
           name: 'Report Meter Reading',
           path: '/open-provider-action/report-meter-reading'
+        },
+                {
+          name: 'Invoice Request',
+          path: '/open-provider-action/customer-invoice-request'
         }
-      ]
+      ],
     }
   ];
 

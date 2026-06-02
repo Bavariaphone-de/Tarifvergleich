@@ -39,6 +39,7 @@ import { InvoiceCategoriesComponent } from "./pages/categories/invoice-categorie
 import { ReportMeterReadingCategoryComponent } from "./pages/categories/meter-reading-category/report-meter-reading-category.component";
 import { CancellationServiceCategoryComponent } from "./pages/categories/cancellation-category/cancellation-service-category.component";
 import { ReportMeterReadingComponent } from "./pages/open-provider-action/report-meter-reading/report-meter-reading.component";
+import { CustomerInvoiceRequestComponent } from "./pages/open-provider-action/customer-invoice-request/customer-invoice-request.component";
 
 export const routes: Routes = [
   {
@@ -197,6 +198,11 @@ export const routes: Routes = [
         path: "open-provider-action/report-meter-reading",
         component: ReportMeterReadingComponent,
         title: "Messwert melden",
+      },
+      {
+        path: "open-provider-action/customer-invoice-request",
+        component: CustomerInvoiceRequestComponent,
+        title: "Kundenrechnungsanfrage",
       },
       {
         path: "email-template",
