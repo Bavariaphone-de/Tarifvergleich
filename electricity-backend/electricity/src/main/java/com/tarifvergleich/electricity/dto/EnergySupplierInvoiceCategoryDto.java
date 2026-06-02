@@ -1,5 +1,6 @@
 package com.tarifvergleich.electricity.dto;
 
+import com.tarifvergleich.electricity.model.EnergySupplierInvoiceCategory;
 import com.tarifvergleich.electricity.model.invoiceSupplierMessageCategory;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,7 +14,7 @@ import java.math.BigInteger;
 @NoArgsConstructor
 @AllArgsConstructor
 public class EnergySupplierInvoiceCategoryDto {
-    private Long id;
+	 private Long invoiceCategoryId;
     private Integer adminId;
     private String categoryName;
 
@@ -27,6 +28,7 @@ public class EnergySupplierInvoiceCategoryDto {
         private BigInteger createdOn;
         private BigInteger updatedOn;
     }
+    
 
     public static InvoiceSupplierCategoryAdminResponseDto mapForAdmin(invoiceSupplierMessageCategory category) {
         return InvoiceSupplierCategoryAdminResponseDto.builder()
@@ -35,5 +37,14 @@ public class EnergySupplierInvoiceCategoryDto {
                 .createdOn(category.getCreatedOn())
                 .updatedOn(category.getUpdatedOn())
                 .build();
+    }
+    
+    public static InvoiceSupplierCategoryAdminResponseDto mapForAdminRes(EnergySupplierInvoiceCategory category) {
+    	return InvoiceSupplierCategoryAdminResponseDto.builder()
+    			.invoiceCategoryId(Integer.toUnsignedLong(category.getId()))
+    			.categoryName(category.getCategoryName())
+    			.createdOn(category.getCreatedOn())
+    			.updatedOn(category.getUpdatedOn())
+    			.build();
     }
 }

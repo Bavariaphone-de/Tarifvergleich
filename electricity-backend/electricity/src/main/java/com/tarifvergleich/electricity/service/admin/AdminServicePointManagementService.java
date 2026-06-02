@@ -66,7 +66,7 @@ public class AdminServicePointManagementService {
 	private final CustomerRequestCounsellingRepository customerRequestCounsellingRepo;
 	private final ManageAdminDocumentRepository adminDocumentRepo;
 	private final EnergySupplierMessageCategoryRepository energySupplierMessageCategoryRepo;
-    private final EnergySupplierInvoiceCategoryRepository energySupplierInvoiceCategoryRepo;
+	private final EnergySupplierInvoiceCategoryRepository energySupplierInvoiceCategoryRepo;
 	private final ReportMeterReadingCategoryRepo reportMeterReadingCategoryRepo;
 	private final CancellationServiceCategoryRepo cancellationServiceCategoryRepo;
 
@@ -477,11 +477,10 @@ public class AdminServicePointManagementService {
 //
 //		if (supplierMessageCategory != null)
 //			energyMessageCategoryDto.setSupplierMessageCategoryId(supplierMessageCategory.getId());
-		
+
 		if (supplierMessageCategory != null && (energyMessageCategoryDto.getSupplierMessageCategoryId() == null
 				|| energyMessageCategoryDto.getSupplierMessageCategoryId() <= 0))
 			throw new InternalServerException("Category already exists", HttpStatus.OK);
-
 
 		if (energyMessageCategoryDto.getSupplierMessageCategoryId() == null
 				|| energyMessageCategoryDto.getSupplierMessageCategoryId() <= 0) {
@@ -558,176 +557,180 @@ public class AdminServicePointManagementService {
 
 		return Map.of("res", true, "data", responseCategory);
 	}
-	
-	 @Transactional
-	    public Map<String, Object> addSupplierInvoiceCategory(EnergySupplierInvoiceCategoryDto dto) {
-	        if (dto == null || dto.getCategoryName() == null || dto.getCategoryName().isEmpty())
-	            throw new InternalServerException("Category name missing", HttpStatus.OK);
-	        if (dto.getAdminId() == null || dto.getAdminId() <= 0)
-	            throw new InternalServerException("Admin id missing", HttpStatus.OK);
 
-	        EnergySupplierInvoiceCategory category = energySupplierInvoiceCategoryRepo
-	                .findByCategoryNameLikeAndAdminAdminId(dto.getCategoryName().toUpperCase(), dto.getAdminId())
-	                .orElse(null);
+	@Transactional
+	public Map<String, Object> addSupplierInvoiceCategory(EnergySupplierInvoiceCategoryDto dto) {
+		if (dto == null || dto.getCategoryName() == null || dto.getCategoryName().isEmpty())
+			throw new InternalServerException("Category name missing", HttpStatus.OK);
+		if (dto.getAdminId() == null || dto.getAdminId() <= 0)
+			throw new InternalServerException("Admin id missing", HttpStatus.OK);
 
-	        if (category != null && (dto.getInvoiceCategoryId() == null || dto.getInvoiceCategoryId() <= 0))
-	            throw new InternalServerException("Category already exists", HttpStatus.OK);
+		EnergySupplierInvoiceCategory category = energySupplierInvoiceCategoryRepo
+				.findByCategoryNameLikeAndAdminAdminId(dto.getCategoryName().toUpperCase(), dto.getAdminId())
+				.orElse(null);
 
-	        if (dto.getInvoiceCategoryId() == null || dto.getInvoiceCategoryId() <= 0) {
-	            AdminUser admin = adminUserRepo.findById(dto.getAdminId())
-	                    .orElseThrow(() -> new InternalServerException("Admin not found", HttpStatus.OK));
-	            category = EnergySupplierInvoiceCategory.builder().categoryName(dto.getCategoryName().toUpperCase()).admin(admin).build();
-	        } else {
-	            category = energySupplierInvoiceCategoryRepo.findByIdAndAdminAdminId(dto.getInvoiceCategoryId(), dto.getAdminId())
-	                    .orElseThrow(() -> new InternalServerException("Category not found", HttpStatus.OK));
-	            category.setCategoryName(dto.getCategoryName().toUpperCase());
-	        }
+		if (category != null && (dto.getInvoiceCategoryId() == null || dto.getInvoiceCategoryId() <= 0))
+			throw new InternalServerException("Category already exists", HttpStatus.OK);
 
-	        energySupplierInvoiceCategoryRepo.save(category);
-	        return Map.of("res", true, "message", "Invoice category saved successfully");
-	    }
-
-	    @Transactional
-	    public Map<String, Object> deleteSupplierInvoiceCategory(EnergySupplierInvoiceCategoryDto dto) {
-	        if (dto == null || dto.getAdminId() == null || dto.getInvoiceCategoryId() == null)
-	            throw new InternalServerException("Insufficient credentials", HttpStatus.OK);
-
-	        EnergySupplierInvoiceCategory category = energySupplierInvoiceCategoryRepo
-	                .findByIdAndAdminAdminId(dto.getInvoiceCategoryId(), dto.getAdminId())
-	                .orElseThrow(() -> new InternalServerException("Category not found", HttpStatus.OK));
-
-	        energySupplierInvoiceCategoryRepo.delete(category);
-	        return Map.of("res", true, "message", "Invoice category deleted successfully");
-	    }
-
-	    public Map<String, Object> fetchAllSupplierInvoiceCategory(EnergySupplierInvoiceCategoryDto dto) {
-	        if (dto == null || dto.getAdminId() == null || dto.getAdminId() <= 0)
-	            throw new InternalServerException("Admin id missing", HttpStatus.OK);
-
-	        List<EnergySupplierInvoiceCategory> categories = energySupplierInvoiceCategoryRepo
-	                .findAllByAdminAdminIdOrderByCategoryNameAsc(dto.getAdminId());
-	        List<EnergySupplierInvoiceCategoryDto.EnergySupplierInvoiceCategoryAdminResponseDto> response = categories.stream()
-	                .map(EnergySupplierInvoiceCategoryDto::mapForAdmin).toList();
-	        return Map.of("res", true, "data", response);
-	    }
-
-	    
-	    @Transactional
-		public Map<String, Object> addReportMeterReadingCategory(ReportMeterReadingCategoryDto dto) {
-			if (dto == null || dto.getCategoryName() == null || dto.getCategoryName().isEmpty())
-				throw new InternalServerException("Category name missing", HttpStatus.OK);
-			if (dto.getAdminId() == null || dto.getAdminId() <= 0)
-				throw new InternalServerException("Admin id missing", HttpStatus.OK);
-
-			ReportMeterReadingCategory category = reportMeterReadingCategoryRepo
-					.findByCategoryNameLikeAndAdminAdminId(dto.getCategoryName().toUpperCase(), dto.getAdminId())
-					.orElse(null);
-
-			if (category != null && (dto.getReportMeterReadingCategoryId() == null || dto.getReportMeterReadingCategoryId() <= 0))
-				throw new InternalServerException("Category already exists", HttpStatus.OK);
-
-			if (dto.getReportMeterReadingCategoryId() == null || dto.getReportMeterReadingCategoryId() <= 0) {
-				category = new ReportMeterReadingCategory();
-				AdminUser admin = adminUserRepo.findById(dto.getAdminId()).orElseThrow(
-						() -> new InternalServerException("Admin User is not Found with this Admin Id ", HttpStatus.OK));
-				category.setAdmin(admin);
-			} else {
-				category = reportMeterReadingCategoryRepo.findById(dto.getReportMeterReadingCategoryId()).orElseThrow(
-						() -> new InternalServerException("Category is not Found with this Category Id ", HttpStatus.OK));
-			}
-
+		if (dto.getInvoiceCategoryId() == null || dto.getInvoiceCategoryId() <= 0) {
+			AdminUser admin = adminUserRepo.findById(dto.getAdminId())
+					.orElseThrow(() -> new InternalServerException("Admin not found", HttpStatus.OK));
+			category = EnergySupplierInvoiceCategory.builder().categoryName(dto.getCategoryName().toUpperCase())
+					.admin(admin).build();
+		} else {
+			category = energySupplierInvoiceCategoryRepo
+					.findByIdAndAdminAdminId(dto.getInvoiceCategoryId(), dto.getAdminId())
+					.orElseThrow(() -> new InternalServerException("Category not found", HttpStatus.OK));
 			category.setCategoryName(dto.getCategoryName().toUpperCase());
-
-			reportMeterReadingCategoryRepo.save(category);
-
-			return Map.of("res", true, "message", "Category saved successfully");
 		}
 
-		public Map<String, Object> fetchAllReportMeterReadingCategory(ReportMeterReadingCategoryDto dto) {
-			if (dto == null || dto.getAdminId() == null || dto.getAdminId() <= 0)
-				throw new InternalServerException("Admin id missing", HttpStatus.OK);
+		energySupplierInvoiceCategoryRepo.save(category);
+		return Map.of("res", true, "message", "Invoice category saved successfully");
+	}
 
-			List<ReportMeterReadingCategory> categories = reportMeterReadingCategoryRepo
-					.findAllByAdminAdminIdOrderByCategoryNameAsc(dto.getAdminId());
-			List<ReportMeterReadingCategoryAdminResponseDto> response = categories.stream()
-					.map(ReportMeterReadingCategoryDto::mapForAdmin).toList();
-			return Map.of("res", true, "data", response);
+	@Transactional
+	public Map<String, Object> deleteSupplierInvoiceCategory(EnergySupplierInvoiceCategoryDto dto) {
+		if (dto == null || dto.getAdminId() == null || dto.getInvoiceCategoryId() == null)
+			throw new InternalServerException("Insufficient credentials", HttpStatus.OK);
+
+		EnergySupplierInvoiceCategory category = energySupplierInvoiceCategoryRepo
+				.findByIdAndAdminAdminId(dto.getInvoiceCategoryId(), dto.getAdminId())
+				.orElseThrow(() -> new InternalServerException("Category not found", HttpStatus.OK));
+
+		energySupplierInvoiceCategoryRepo.delete(category);
+		return Map.of("res", true, "message", "Invoice category deleted successfully");
+	}
+
+	public Map<String, Object> fetchAllSupplierInvoiceCategory(EnergySupplierInvoiceCategoryDto dto) {
+		if (dto == null || dto.getAdminId() == null || dto.getAdminId() <= 0)
+			throw new InternalServerException("Admin id missing", HttpStatus.OK);
+
+		List<EnergySupplierInvoiceCategory> categories = energySupplierInvoiceCategoryRepo
+				.findAllByAdminAdminIdOrderByCategoryNameAsc(dto.getAdminId());
+		List<EnergySupplierInvoiceCategoryDto.InvoiceSupplierCategoryAdminResponseDto> response = categories.stream()
+				.map(EnergySupplierInvoiceCategoryDto::mapForAdminRes).toList();
+		return Map.of("res", true, "data", response);
+	}
+
+	@Transactional
+	public Map<String, Object> addReportMeterReadingCategory(ReportMeterReadingCategoryDto dto) {
+		if (dto == null || dto.getCategoryName() == null || dto.getCategoryName().isEmpty())
+			throw new InternalServerException("Category name missing", HttpStatus.OK);
+		if (dto.getAdminId() == null || dto.getAdminId() <= 0)
+			throw new InternalServerException("Admin id missing", HttpStatus.OK);
+
+		ReportMeterReadingCategory category = reportMeterReadingCategoryRepo
+				.findByCategoryNameLikeAndAdminAdminId(dto.getCategoryName().toUpperCase(), dto.getAdminId())
+				.orElse(null);
+
+		if (category != null
+				&& (dto.getReportMeterReadingCategoryId() == null || dto.getReportMeterReadingCategoryId() <= 0))
+			throw new InternalServerException("Category already exists", HttpStatus.OK);
+
+		if (dto.getReportMeterReadingCategoryId() == null || dto.getReportMeterReadingCategoryId() <= 0) {
+			category = new ReportMeterReadingCategory();
+			AdminUser admin = adminUserRepo.findById(dto.getAdminId()).orElseThrow(
+					() -> new InternalServerException("Admin User is not Found with this Admin Id ", HttpStatus.OK));
+			category.setAdmin(admin);
+		} else {
+			category = reportMeterReadingCategoryRepo.findById(dto.getReportMeterReadingCategoryId()).orElseThrow(
+					() -> new InternalServerException("Category is not Found with this Category Id ", HttpStatus.OK));
 		}
 
-		@Transactional
-		public Map<String, Object> deleteReportMeterReadingCategory(ReportMeterReadingCategoryDto dto) {
-			if (dto == null || dto.getAdminId() == null || dto.getAdminId() <= 0)
-				throw new InternalServerException("Admin id missing", HttpStatus.OK);
+		category.setCategoryName(dto.getCategoryName().toUpperCase());
 
-			if (dto.getReportMeterReadingCategoryId() == null || dto.getReportMeterReadingCategoryId() <= 0)
-				throw new InternalServerException("Category id missing", HttpStatus.OK);
+		reportMeterReadingCategoryRepo.save(category);
 
-			ReportMeterReadingCategory category = reportMeterReadingCategoryRepo
-					.findById(dto.getReportMeterReadingCategoryId()).orElseThrow(
-							() -> new InternalServerException("Category is not Found with this Category Id ", HttpStatus.OK));
+		return Map.of("res", true, "message", "Category saved successfully");
+	}
 
-			reportMeterReadingCategoryRepo.delete(category);
+	public Map<String, Object> fetchAllReportMeterReadingCategory(ReportMeterReadingCategoryDto dto) {
+		if (dto == null || dto.getAdminId() == null || dto.getAdminId() <= 0)
+			throw new InternalServerException("Admin id missing", HttpStatus.OK);
 
-			return Map.of("res", true, "message", "Category deleted successfully");
+		List<ReportMeterReadingCategory> categories = reportMeterReadingCategoryRepo
+				.findAllByAdminAdminIdOrderByCategoryNameAsc(dto.getAdminId());
+		List<ReportMeterReadingCategoryAdminResponseDto> response = categories.stream()
+				.map(ReportMeterReadingCategoryDto::mapForAdmin).toList();
+		return Map.of("res", true, "data", response);
+	}
+
+	@Transactional
+	public Map<String, Object> deleteReportMeterReadingCategory(ReportMeterReadingCategoryDto dto) {
+		if (dto == null || dto.getAdminId() == null || dto.getAdminId() <= 0)
+			throw new InternalServerException("Admin id missing", HttpStatus.OK);
+
+		if (dto.getReportMeterReadingCategoryId() == null || dto.getReportMeterReadingCategoryId() <= 0)
+			throw new InternalServerException("Category id missing", HttpStatus.OK);
+
+		ReportMeterReadingCategory category = reportMeterReadingCategoryRepo
+				.findById(dto.getReportMeterReadingCategoryId())
+				.orElseThrow(() -> new InternalServerException("Category is not Found with this Category Id ",
+						HttpStatus.OK));
+
+		reportMeterReadingCategoryRepo.delete(category);
+
+		return Map.of("res", true, "message", "Category deleted successfully");
+	}
+
+	@Transactional
+	public Map<String, Object> addCancellationServiceCategory(CancellationServiceCategoryDto dto) {
+		if (dto == null || dto.getCategoryName() == null || dto.getCategoryName().isEmpty())
+			throw new InternalServerException("Category name missing", HttpStatus.OK);
+		if (dto.getAdminId() == null || dto.getAdminId() <= 0)
+			throw new InternalServerException("Admin id missing", HttpStatus.OK);
+
+		CancellationServiceCategory category = cancellationServiceCategoryRepo
+				.findByCategoryNameLikeAndAdminAdminId(dto.getCategoryName().toUpperCase(), dto.getAdminId())
+				.orElse(null);
+
+		if (category != null
+				&& (dto.getCancellationServiceCategoryId() == null || dto.getCancellationServiceCategoryId() <= 0))
+			throw new InternalServerException("Category already exists", HttpStatus.OK);
+
+		if (dto.getCancellationServiceCategoryId() == null || dto.getCancellationServiceCategoryId() <= 0) {
+			category = new CancellationServiceCategory();
+			AdminUser admin = adminUserRepo.findById(dto.getAdminId()).orElseThrow(
+					() -> new InternalServerException("Admin User is not Found with this Admin Id ", HttpStatus.OK));
+			category.setAdmin(admin);
+		} else {
+			category = cancellationServiceCategoryRepo.findById(dto.getCancellationServiceCategoryId()).orElseThrow(
+					() -> new InternalServerException("Category is not Found with this Category Id ", HttpStatus.OK));
 		}
 
-		
-		@Transactional
-		public Map<String, Object> addCancellationServiceCategory(CancellationServiceCategoryDto dto) {
-			if (dto == null || dto.getCategoryName() == null || dto.getCategoryName().isEmpty())
-				throw new InternalServerException("Category name missing", HttpStatus.OK);
-			if (dto.getAdminId() == null || dto.getAdminId() <= 0)
-				throw new InternalServerException("Admin id missing", HttpStatus.OK);
+		category.setCategoryName(dto.getCategoryName().toUpperCase());
 
-			CancellationServiceCategory category = cancellationServiceCategoryRepo
-					.findByCategoryNameLikeAndAdminAdminId(dto.getCategoryName().toUpperCase(), dto.getAdminId())
-					.orElse(null);
+		cancellationServiceCategoryRepo.save(category);
 
-			if (category != null && (dto.getCancellationServiceCategoryId() == null || dto.getCancellationServiceCategoryId() <= 0))
-				throw new InternalServerException("Category already exists", HttpStatus.OK);
+		return Map.of("res", true, "message", "Category saved successfully");
+	}
 
-			if (dto.getCancellationServiceCategoryId() == null || dto.getCancellationServiceCategoryId() <= 0) {
-				category = new CancellationServiceCategory();
-				AdminUser admin = adminUserRepo.findById(dto.getAdminId()).orElseThrow(
-						() -> new InternalServerException("Admin User is not Found with this Admin Id ", HttpStatus.OK));
-				category.setAdmin(admin);
-			} else {
-				category = cancellationServiceCategoryRepo.findById(dto.getCancellationServiceCategoryId()).orElseThrow(
-						() -> new InternalServerException("Category is not Found with this Category Id ", HttpStatus.OK));
-			}
+	public Map<String, Object> fetchAllCancellationServiceCategory(CancellationServiceCategoryDto dto) {
+		if (dto == null || dto.getAdminId() == null || dto.getAdminId() <= 0)
+			throw new InternalServerException("Admin id missing", HttpStatus.OK);
 
-			category.setCategoryName(dto.getCategoryName().toUpperCase());
+		List<CancellationServiceCategory> categories = cancellationServiceCategoryRepo
+				.findAllByAdminAdminIdOrderByCategoryNameAsc(dto.getAdminId());
+		List<CancellationServiceCategoryAdminResponseDto> response = categories.stream()
+				.map(CancellationServiceCategoryDto::mapForAdminRes).toList();
+		return Map.of("res", true, "data", response);
+	}
 
-			cancellationServiceCategoryRepo.save(category);
+	@Transactional
+	public Map<String, Object> deleteCancellationServiceCategory(CancellationServiceCategoryDto dto) {
+		if (dto == null || dto.getAdminId() == null || dto.getAdminId() <= 0)
+			throw new InternalServerException("Admin id missing", HttpStatus.OK);
 
-			return Map.of("res", true, "message", "Category saved successfully");
-		}
+		if (dto.getCancellationServiceCategoryId() == null || dto.getCancellationServiceCategoryId() <= 0)
+			throw new InternalServerException("Category id missing", HttpStatus.OK);
 
-		public Map<String, Object> fetchAllCancellationServiceCategory(CancellationServiceCategoryDto dto) {
-			if (dto == null || dto.getAdminId() == null || dto.getAdminId() <= 0)
-				throw new InternalServerException("Admin id missing", HttpStatus.OK);
+		CancellationServiceCategory category = cancellationServiceCategoryRepo
+				.findById(dto.getCancellationServiceCategoryId())
+				.orElseThrow(() -> new InternalServerException("Category is not Found with this Category Id ",
+						HttpStatus.OK));
 
-			List<CancellationServiceCategory> categories = cancellationServiceCategoryRepo
-					.findAllByAdminAdminIdOrderByCategoryNameAsc(dto.getAdminId());
-			List<CancellationServiceCategoryAdminResponseDto> response = categories.stream()
-					.map(CancellationServiceCategoryDto::mapForAdmin).toList();
-			return Map.of("res", true, "data", response);
-		}
+		cancellationServiceCategoryRepo.delete(category);
 
-		@Transactional
-		public Map<String, Object> deleteCancellationServiceCategory(CancellationServiceCategoryDto dto) {
-			if (dto == null || dto.getAdminId() == null || dto.getAdminId() <= 0)
-				throw new InternalServerException("Admin id missing", HttpStatus.OK);
-
-			if (dto.getCancellationServiceCategoryId() == null || dto.getCancellationServiceCategoryId() <= 0)
-				throw new InternalServerException("Category id missing", HttpStatus.OK);
-
-			CancellationServiceCategory category = cancellationServiceCategoryRepo
-					.findById(dto.getCancellationServiceCategoryId()).orElseThrow(
-							() -> new InternalServerException("Category is not Found with this Category Id ", HttpStatus.OK));
-
-			cancellationServiceCategoryRepo.delete(category);
-
-			return Map.of("res", true, "message", "Category deleted successfully");
-		}
+		return Map.of("res", true, "message", "Category deleted successfully");
+	}
 }
