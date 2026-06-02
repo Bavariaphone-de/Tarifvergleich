@@ -1276,7 +1276,6 @@
                 [(ngModel)]="emailMessage"
                 name="emailMessage"
                 [config]="{
-                  shouldNotGroupWhenFull: true,
                   placeholder: 'E-Mail-Inhalte schreiben...',
                   toolbar: [
                     'heading',
@@ -1403,7 +1402,7 @@
               <label
                class="flex-2 border-2 border-dashed rounded-lg px-4 py-3 text-center cursor-pointer hover:border-brand-400 transition">
                   {{ document.file?.name || 'Choose File' }}
-                <input type="file" class="hidden" 
+                <input type="file" class="hidden"
                 accept=".pdf,.jpg,.jpeg,.png" (change)="onUploadDocumentSelect($event, i)"/>
               </label>
 
@@ -1446,9 +1445,9 @@
         </button>
 
         <button type="submit" (click)="submitSendEmail()"
-        class="px-5 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white flex 
+        class="px-5 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white flex
         items-center justify-center gap-2">
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" 
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none"
           viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               d="M3 20l18-8L3 4v6l13 2-13 2v6z"/>

@@ -5,7 +5,7 @@
   padding: 0.3rem 0.5rem 0.5rem 0.5rem;
 }
 
-.person-option{
+.person-option {
   /*   remaining in style.css  */
   padding-top: 0.3rem;
 }
@@ -13,12 +13,15 @@
 .container-callback {
   height: 25.6%;
   gap: 0.5rem;
-
 }
 
+.compare-price {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
 
-
-.consumption-number{
+.consumption-number {
   padding: 0.46rem 0.5rem 0.46rem 0.5rem;
   border: 1px solid #4a4949;
   width: 18.3rem;
@@ -35,7 +38,7 @@
   padding: 0rem;
 }
 
-.consumption-area{
+.consumption-area {
   flex: 1;
   border: none;
   font-size: 14px;
@@ -55,8 +58,6 @@
 /*   ---------- dialog box ------------- */
 
 :host ::ng-deep .dialog-content p {
-  margin: 0 ;
+  margin: 0;
   font-size: 18px;
 }
-
-

@@ -16,12 +16,11 @@ import { Router } from "@angular/router";
   styleUrl: "./email-requests.component.css",
 })
 export class EmailRequestsComponent {
-
   selectedCategory: number | null = null;
   title: string = "";
   subtitle: string = "";
   emailContent: string = "";
-  Editor = ClassicEditor;
+  public Editor: any = ClassicEditor;
 
   pdfList: any[] = [];
   selectedPdfIds: Set<number> = new Set();
@@ -38,7 +37,7 @@ export class EmailRequestsComponent {
     private http: HttpClient,
     private api: ApiService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
   ) {}
 
   ngOnInit(): void {
@@ -47,22 +46,20 @@ export class EmailRequestsComponent {
       .subscribe((res: any) => {
         console.log(res);
         this.categories = res;
-
       });
 
     this.loadPdfs();
 
-    this.managementId = this.route.snapshot.paramMap.get('id');
+    this.managementId = this.route.snapshot.paramMap.get("id");
 
-      if (this.managementId) {
+    if (this.managementId) {
+      this.isEditMode = true;
 
-        this.isEditMode = true;
-
-        this.http.get(
-          `http://192.168.0.155:8080/admin/email-management/${this.managementId}`
+      this.http
+        .get(
+          `http://192.168.0.155:8080/admin/email-management/${this.managementId}`,
         )
         .subscribe((res: any) => {
-
           console.log(res);
 
           this.title = res.title;
@@ -71,7 +68,7 @@ export class EmailRequestsComponent {
 
           this.selectedCategory = res.cateId;
         });
-      }
+    }
   }
 
   loadPdfs() {
@@ -80,17 +77,15 @@ export class EmailRequestsComponent {
       page: 0,
       size: 100,
     };
-    this.api
-      .post("admin/fetch-admin-documents", payload)
-      .subscribe({
-        next: (res) => {
-          console.log(res);
-          this.pdfList = res.data || res.content || res;
-        },
-        error: (err) => {
-          console.log(err);
-        },
-      });
+    this.api.post("admin/fetch-admin-documents", payload).subscribe({
+      next: (res) => {
+        console.log(res);
+        this.pdfList = res.data || res.content || res;
+      },
+      error: (err) => {
+        console.log(err);
+      },
+    });
   }
 
   togglePdfDropdown() {
@@ -135,7 +130,6 @@ export class EmailRequestsComponent {
   }
 
   submitForm() {
-
     if (this.isEditMode) {
       this.updateTemplate();
 
@@ -171,33 +165,28 @@ export class EmailRequestsComponent {
       .post("http://192.168.0.155:8080/admin/email-management/save", body)
       .subscribe({
         next: (res: any) => {
-
-          if(res.res === false) {
-
+          if (res.res === false) {
             //DUPLICATE TEMPLATE
-            this.message = res.errMessage || "Template already exists for this category";
+            this.message =
+              res.errMessage || "Template already exists for this category";
             this.isError = true;
-
-
           } else {
-                      
-          //SUCCESS
-          this.message = "Successfully Submitted";
-          this.isError = false;
+            //SUCCESS
+            this.message = "Successfully Submitted";
+            this.isError = false;
 
-          this.title = "";
-          this.subtitle = "";
-          this.emailContent = "";
-          this.selectedCategory = null;
-          this.selectedPdfIds = new Set();
-
+            this.title = "";
+            this.subtitle = "";
+            this.emailContent = "";
+            this.selectedCategory = null;
+            this.selectedPdfIds = new Set();
           }
 
           setTimeout(() => {
             this.message = "";
           }, 3000);
         },
-          
+
         error: (err) => {
           console.log(err);
 
@@ -210,53 +199,49 @@ export class EmailRequestsComponent {
           }, 3000);
         },
       });
-    }
+  }
 
   // FOR EDITING TEMPLATE
 
   updateTemplate() {
-      const body = {
-        adminId: 1,
-        title: this.title,
-        subtitle: this.subtitle,
-        emailContent: this.emailContent,
-        cateId: this.selectedCategory,
-        pdfIds: Array.from(this.selectedPdfIds),
-      };
+    const body = {
+      adminId: 1,
+      title: this.title,
+      subtitle: this.subtitle,
+      emailContent: this.emailContent,
+      cateId: this.selectedCategory,
+      pdfIds: Array.from(this.selectedPdfIds),
+    };
 
-      this.http.put(
+    this.http
+      .put(
         `http://192.168.0.155:8080/admin/email-management/update/${this.managementId}`,
-        body
+        body,
       )
       .subscribe({
         next: (res: any) => {
-
-          if(res.res === false) {
-
+          if (res.res === false) {
             //DUPLICATE TEMPLATE
-            this.message = res.errMessage || "Template already exists for this category";
+            this.message =
+              res.errMessage || "Template already exists for this category";
             this.isError = true;
-
-
           } else {
-                      
-          //SUCCESS
-          this.message = "Successfully Updated";
-          this.isError = false;
+            //SUCCESS
+            this.message = "Successfully Updated";
+            this.isError = false;
 
-          this.title = "";
-          this.subtitle = "";
-          this.emailContent = "";
-          this.selectedCategory = null;
-          this.selectedPdfIds = new Set();
-
+            this.title = "";
+            this.subtitle = "";
+            this.emailContent = "";
+            this.selectedCategory = null;
+            this.selectedPdfIds = new Set();
           }
 
           setTimeout(() => {
             this.message = "";
           }, 3000);
         },
-          
+
         error: (err) => {
           console.log(err);
 
@@ -269,7 +254,7 @@ export class EmailRequestsComponent {
           }, 3000);
         },
       });
-    }
+  }
 
   cancelForm() {
     this.selectedCategory = null;
