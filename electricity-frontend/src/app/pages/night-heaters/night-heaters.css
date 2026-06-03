@@ -24,20 +24,20 @@
   width: 16.2rem;
 }
 
-.container-per-year {
+/* .container-per-year {
   display: flex;
   justify-content: center;
   align-items: center;
   padding: 0.74rem 0rem 0.4rem 0rem;
-}
+} */
 
 .container-nein {
   display: flex;
   flex-direction: column;
   position: relative;
-  border: 1.5px solid #e6a817;
-  border-radius: 8px;
-  padding: 0.2rem 0.7rem 0.5rem 1rem;
+  /* border: 1.5px solid #e6a817; */
+  /* border-radius: 8px; */
+  /* padding: 0.2rem 0.7rem 0.5rem 1rem; */
   background-color: rgba(255, 255, 255, 0.75);
   gap: 0;
 }
@@ -92,10 +92,137 @@
   top: 74%;
   right: 3%;
 }
+.container-per-year{
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* optional */
+  gap: 1rem;
+  padding: 0.74rem 0rem 0.4rem 0rem;
+}
 
 /*   ---------- dialog box ------------- */
 
 :host ::ng-deep .dialog-content p {
   margin: 0;
   font-size: 18px;
+}
+
+.dropdown-wrapper input {
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  font: inherit;
+  padding: 0;
+}
+
+.dropdown-wrapper {
+  position: relative;
+}
+
+.dropdown {
+  position: absolute;
+  top: 100%; /* 👈 directly below input */
+  left: 0;
+  width: 100%;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-top: none;
+  z-index: 9999;
+  max-height: 200px;
+  overflow-y: auto;
+  border-radius: 0 0 6px 6px;
+}
+
+.dropdown-item {
+  padding: 10px 12px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.dropdown-item:hover {
+  background: #f5f5f5;
+}
+
+/* =========================
+   MOBILE HIDE REGISTRATION
+========================= */
+
+@media screen and (max-width: 768px) {
+  app-registration {
+    display: none;
+  }
+
+  /* ---------- ADDRESS ROWS: 2×2 grid with proportional widths ---------- */
+
+  /* Row 1: postleitzahl (narrow) + ort (wide) — already natural, just enforce widths */
+  .row.row-1 {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 8px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .row.row-1 .box.small {
+    flex: 0 0 30%;
+    width: 30%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  .row.row-1 .box.large,
+  .row.row-1 .dropdown-wrapper.box.large {
+    flex: 1 1 0;
+    width: auto;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  /* Row 2: straße (wide) + hausnummer (narrow) */
+  .row.row-2 {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 8px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .row.row-2 .box.large,
+  .row.row-2 .dropdown-wrapper.box.large {
+    flex: 1 1 0;
+    width: auto;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  .row.row-2 .box.small {
+    flex: 0 0 28%;
+    width: 28%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  /* Ensure the inner input inside dropdown-wrapper also fills its container */
+  .row .dropdown-wrapper input {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* ---------- JETZT VERGLEICHEN: fit content, not full width ---------- */
+
+  .compare {
+    width: auto !important;
+    align-self: flex-start;
+    display: inline-flex;
+  }
+
+  /* ---------- HIDE 4-PERSON TAB ---------- */
+
+  .person.person-4 {
+    display: none;
+  }
+  .input-arrow{
+    width: 100% !important;
+  }
 }
