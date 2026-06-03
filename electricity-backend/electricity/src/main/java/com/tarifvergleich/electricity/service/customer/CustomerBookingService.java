@@ -115,10 +115,10 @@ public class CustomerBookingService {
 						&& !deliveryDto.getDeliveryType().equalsIgnoreCase("GAS")))
 			throw new InternalServerException("Delivery type missing", HttpStatus.OK);
 
-		if (deliveryDto.getDeliveryType().equalsIgnoreCase("ELECTRICITY") && (deliveryDto.getRateType() == null
-				|| deliveryDto.getRateType() < 0 || deliveryDto.getRateType() > 3))
-			throw new InternalServerException("Undefined or missing sub type of electricity", HttpStatus.OK);
-		else
+//		if (deliveryDto.getDeliveryType().equalsIgnoreCase("ELECTRICITY") && (deliveryDto.getRateType() == null
+//				|| deliveryDto.getRateType() < 0 || deliveryDto.getRateType() > 3))
+//			throw new InternalServerException("Undefined or missing sub type of electricity", HttpStatus.OK);
+//		else
 			deliveryDto.setRateType(0);
 
 		LocalDate todayInBerlin = LocalDate.now(ZoneId.of("Europe/Berlin"));
@@ -271,7 +271,7 @@ public class CustomerBookingService {
 		if (customerConnectDto.getSubmitLater() == null)
 			throw new InternalServerException("Submit later not found", HttpStatus.OK);
 
-		if (customerConnectDto.getMeterNumber() == null || customerConnectDto.getMeterNumber().isEmpty())
+		if (!customerConnectDto.getSubmitLater() && (customerConnectDto.getMeterNumber() == null || customerConnectDto.getMeterNumber().isEmpty()))
 			throw new InternalServerException("Meter number missing", HttpStatus.OK);
 
 		CustomerDelivery delivery = customerDeliveryRepo.findById(deliveryId)

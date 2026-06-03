@@ -884,9 +884,6 @@ public class CustomerDetailService {
 
 			customerOrderId = validToken.getOrderId();
 
-			validToken.setUsed(true);
-			validToken.setToken("");
-
 			contractTokenRespo.save(validToken);
 
 		} catch (Exception e) {

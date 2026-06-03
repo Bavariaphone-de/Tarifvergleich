@@ -4,7 +4,7 @@
   <div class="card accordion-card" [class.accordion-open]="open['preis']">
     <div class="card-header accordion-header" (click)="toggle('preis')">
       <span class="accordion-header-left">
-        <img src="assets/icons/Stromvergleich.png" class="nav-icon-strom" alt="stromvergleich">
+        <img src="{{ branch === 'gas' ? 'assets/icons/Gasvergleich.png' : 'assets/icons/Stromvergleich.png' }}" class="nav-icon-strom" alt="stromvergleich">
         Preis
       </span>
       <span class="accordion-chevron" [class.rotated]="open['preis']">&#8250;</span>
@@ -80,7 +80,7 @@
 
           <div class="d-row-inline">
             <div>
-              <div class="d-label">Ökostromtarif</div>
+              <div class="d-label">Grüner Tarif</div>
               <div class="d-value">{{ isEco ? 'Ja · Öko KlimaPlus' : 'Nein' }}</div>
             </div>
             <span class="info-base info-circ" style="margin-top: 8px;">i</span>

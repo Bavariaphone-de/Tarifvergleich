@@ -92,6 +92,9 @@
           <input type="text" class="consumption-number" [(ngModel)]="consumption" (input)="onConsumptionInput()" />
           <span class="watt-per-year">kWh / Jahr</span>
         </div>
+        <div class="error-message" *ngIf="consumptionError">
+          Bitte geben Sie einen gültigen Verbrauch größer als 0 ein.
+        </div>
         <div class="container-compare">
           <button class="compare" (click)="goToComparison()">Jetzt Vergleichen</button>
         </div>

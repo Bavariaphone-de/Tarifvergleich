@@ -11,8 +11,7 @@
     </button>
 
     <ul class="nav-links" [class.active]="isMenuOpen">
-      <li *ngFor="let item of navItems" routerLinkActive="active"
-        [routerLinkActiveOptions]="{ exact: item.originalFileName !== 'Stromvergleich.png' }">
+      <li *ngFor="let item of navItems" [class.active]="isActive(item)">
 
         <a [routerLink]="getRouterLink(item.originalFileName)" (click)="closeMenu()">
           <img [src]="getImageUrl(item.contentUrl)" [class]="getIconClass(item.originalFileName)"

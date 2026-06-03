@@ -5,18 +5,16 @@ import { Router } from "@angular/router";
 import { HttpClient } from "@angular/common/http";
 import { FormsModule } from '@angular/forms';
 
-export interface ReportMeterReading {
+export interface CustomerInvoiceRequest {
   id?: number;
   salutation? : string;
   customerName?: string;
   customerEmail?: string;
+  message?: string;
   deliveryId?: number;
   orderId?: number;
   connectionId?: number;
-  category?: string;
-  readingDate?: string;
-  meterReading?: string;
-  imagePath?: string;
+  invoiceCategory?: string;
   status?: number;
   createdAt?: string;
   bookingId?: number;
@@ -25,24 +23,24 @@ export interface ReportMeterReading {
 }
 
 @Component({
-  selector: 'app-report-meter-reading',
+  selector: 'app-customer-invoice-request',
   imports: [
     CommonModule,
     NgClass,
     FormsModule
   ],
   standalone: true,
-  templateUrl: './report-meter-reading.component.html',
-  styleUrl: './report-meter-reading.component.css',
+  templateUrl: './customer-invoice-request.component.html',
+  styleUrl: './customer-invoice-request.component.css',
 })
-export class ReportMeterReadingComponent implements OnInit {
+export class CustomerInvoiceRequestComponent implements OnInit {
 
-  reportMeterReadings: ReportMeterReading[] = [];
+  customerInvoiceRequests: CustomerInvoiceRequest[] = [];
 
   isLoading = false;
   errorMessage = '';
 
-  selectedReading: any = null;
+  selectedRequest: any = null;
   isSidebarOpen = false;
 
   filterStatus = 0;
@@ -54,8 +52,6 @@ export class ReportMeterReadingComponent implements OnInit {
   isFilterOpen = false;
 
   searchTerm = '';
-  readonly IMAGE_BASE_URL = 'http://localhost:8080/assets/customers/';
-  isImageModalOpen = false;
 
   constructor(
     // private api: ApiService,
@@ -64,26 +60,26 @@ export class ReportMeterReadingComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.fetchReportMeterReadings();
+    this.fetchCustomerInvoiceRequests();
   }
 
-  fetchReportMeterReadings(): void {
+  fetchCustomerInvoiceRequests(): void {
 
     this.isLoading = true;
     this.errorMessage = '';
 
-    this.http.get('http://localhost:8080/admin/report-meter-reading')
+    this.http.get('http://localhost:8080/admin/customer-invoice-request')
       .subscribe({
         next: (res: any) => {
 
           this.isLoading = false;
 
           if (Array.isArray(res)) {
-            this.reportMeterReadings = res;
+            this.customerInvoiceRequests = res;
           } else if (res?.data) {
-            this.reportMeterReadings = res.data;
+            this.customerInvoiceRequests = res.data;
           } else {
-            this.reportMeterReadings = [];
+            this.customerInvoiceRequests = [];
           }
         },
 
@@ -112,7 +108,7 @@ export class ReportMeterReadingComponent implements OnInit {
   }
 
   getActiveCount(): number {
-    return this.reportMeterReadings.filter(
+    return this.customerInvoiceRequests.filter(
       item => item.status === 1
     ).length;
   }
@@ -124,26 +120,24 @@ export class ReportMeterReadingComponent implements OnInit {
     );
   }
 
-  openDetail(reading: ReportMeterReading): void {
-    console.log(reading);
-    // later navigate to detail page
-    // this.router.navigate(['/open-provider-action/report-meter-reading', reading.id]);
+  openDetail(request: CustomerInvoiceRequest): void {
+    console.log(request);
   }
 
-  openSidebar(reading: ReportMeterReading): void {
+  openSidebar(request: CustomerInvoiceRequest): void {
     if (
       this.isSidebarOpen &&
-      this.selectedReading?.id === reading.id
+      this.selectedRequest?.id === request.id
     ) {
       this.closeSidebar();
       return;
     }
-    this.selectedReading = reading;
+    this.selectedRequest = request;
     this.isSidebarOpen = true;
   }
 
   closeSidebar(): void {
-    this.selectedReading = null;
+    this.selectedRequest = null;
     this.isSidebarOpen = false;
   }
 
@@ -158,33 +152,20 @@ export class ReportMeterReadingComponent implements OnInit {
     window.open(`/bookings/${deliveryId}`, '_blank');
   }
   
-  getBookingStatus(reading: any): string {
-    if (reading.isExpired === true) {
+  getBookingStatus(request: any): string {
+    if (request.isExpired === true) {
       return "Expired";
     }
-    if (reading.signedFileUrl) {
+    if (request.signedFileUrl) {
       return "Document Uploaded";
     }
-    if (reading.adminPlacedOrder === true) {
+    if (request.adminPlacedOrder === true) {
       return "Order Created";
     }
-    if (reading.bookingOrderId == null) {
+    if (request.bookingOrderId == null) {
       return "Open Order";
     }
     return "Pending";
-  }
-
-  getImageUrl(path?: string): string {
-    if (!path) return '';
-    return this.IMAGE_BASE_URL + path;
-  }
-
-  openImageModal(): void {
-    this.isImageModalOpen = true;
-  }
-
-  closeImageModal(): void {
-    this.isImageModalOpen = false;
   }
 
 }

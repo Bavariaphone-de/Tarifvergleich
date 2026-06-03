@@ -1126,6 +1126,7 @@ export class SelectProvider implements OnInit {
       persons: this.selectedPersons,
       consumption: this.consum,
       deliveryType: this.deliveryType,
+      menuActive: 'Strom',
     };
 
     this.authService.setAddressData(data);
