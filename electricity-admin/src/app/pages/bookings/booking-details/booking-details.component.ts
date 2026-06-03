@@ -182,6 +182,8 @@ export type ApiBooking = {
   orderPlaced?: boolean | null;
   expiryOn?: number | null; // Unix timestamp (seconds)
   notificationEnabled?: boolean | null;
+  deliveryType: string | null;
+  rateType: number | null;
 
   // ── Addresses ───────────────────────────────────────────────────────────────
   customerAddress?: CustomerAddress | null;
