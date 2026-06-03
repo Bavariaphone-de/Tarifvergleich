@@ -94,7 +94,7 @@ public class ElectricityComparisonService {
 			if (rateType.length() > 0 && !rateType.contains("0"))
 				rateType += ",0";
 			else
-				rateType += "0";
+				rateType = "0";
 
 			filters.put("rateType", rateType);
 

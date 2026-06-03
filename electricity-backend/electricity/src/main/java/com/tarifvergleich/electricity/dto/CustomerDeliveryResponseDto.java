@@ -88,6 +88,8 @@ public class CustomerDeliveryResponseDto {
 		private Boolean orderPlaced;
 		private BigInteger expiryOn;
 		private Boolean notificationEnabled;
+		private String deliveryType;
+		private Integer rateType;
 
 		private CustomerAddressRes customerAddress;
 		private CustomerBillingAddressRes billingAddress;
@@ -170,7 +172,8 @@ public class CustomerDeliveryResponseDto {
 						.isDifferent(delivery.getBillingAddress().getIsDifferent()).build())
 				.orderPlaced(delivery.getOrderPlaced()).orderPlacedOn(delivery.getOrderPlacedOn())
 				.orderStatus(CustomerOrderStatusRecordDto.mapForCustomerDeliveryDetails(delivery.getCustomerOrder()))
-				.notificationEnabled(delivery.getNotificationEnabled())
+				.notificationEnabled(delivery.getNotificationEnabled()).rateType(delivery.getRateType())
+				.deliveryType(delivery.getDeliveryType())
 //				.admin(
 //					    admin.getAdminSignature() != null
 //					        ? AdminSignatureDto.builder()
