@@ -21,6 +21,8 @@ public class ReportMeterReadingDto {
 
 	private Integer customerId;
 	
+	private String salutation;
+	
 	private String customerName;
 	
 	private String customerEmail;
@@ -62,11 +64,16 @@ public class ReportMeterReadingDto {
     @Builder
     public static class ReportMeterReadingResponseForAdminDto {
     	private Integer customerId;	
+    	private String salutation;
     	private String customerName;   	
     	private String customerEmail;   	
     	private Long bookingId;  	
     	private Integer bookingStatus;  	
     	private BigInteger bookingCreatedOn;
+    	private Boolean isExpired;
+    	private Boolean adminPlacedOrder;
+    	private String signedFileUrl;
+    	private Long bookingOrderId;
         private CustomerDeliveryProfileDetail deliveryId;
         private Integer orderId;
         private Integer adminId;
@@ -95,15 +102,40 @@ public class ReportMeterReadingDto {
             dto.setCustomerEmail(
             	customer.getEmail()
             );
+            dto.setSalutation(
+            	customer.getSalutation()
+            );
         }     
 
         if(order != null){
+
             dto.setBookingId(order.getOrderId());
+
             dto.setBookingStatus(order.getOrderStatus());
+
             dto.setBookingCreatedOn(order.getCreatedOn());
+
+            dto.setIsExpired(order.getIsExpired());
+
+            dto.setAdminPlacedOrder(order.getAdminPlacedOrder());
+
+            dto.setBookingOrderId(order.getOrderId());
+
+            if(order.getCustomerBookingDocument() != null){
+                dto.setSignedFileUrl(
+                    order.getCustomerBookingDocument().getSignedFileUrl()
+                );
+            }
         }
         
-        dto.setDeliveryId(CustomerDeliveryResponseDto.getDeliveryResponseForProfile(order.getDelivery()));
+        if(order != null){
+            dto.setDeliveryId(
+                CustomerDeliveryResponseDto.getDeliveryResponseForProfile(
+                    order.getDelivery()
+                )
+            );
+        }
+        
         dto.setOrderId(entity.getOrderId());
         dto.setConnectionId(entity.getConnectionId());
         dto.setCategory(entity.getCategory());
