@@ -77,6 +77,9 @@ export type AdminCustomer = {
   notes?: any[];
   /** Lexoffice number — admin-only field */
   lexofficeNumber: string | null;
+  /** URL to the attorney PDF — admin-only field */
+  attornyPdfUrl?: string | null;
+  hasAttornyPdf?: boolean;
 };
 
 @Component({
@@ -255,7 +258,7 @@ export class CustomerListComponent implements OnInit {
   /** For Send Email */
   // openSendEmailModal(customer: AdminCustomer): void {
   //   console.log(customer);
-    
+
   //   this.selectedEmailCustomer = customer;
   //   this.isSendEmailModalOpen = true;
   //   this.loadPdfs();
@@ -472,7 +475,6 @@ export class CustomerListComponent implements OnInit {
         newData.forEach((c) => {
           if (!(c.id in this.gdprContactStatus)) {
             this.gdprContactStatus[c.id] = false;
-        
           }
 
           if (!(c.id in this.customerNotes)) {
@@ -648,6 +650,13 @@ export class CustomerListComponent implements OnInit {
 
       notes: item.notes ?? [],
       lexofficeNumber: item.lexofficeNumber ?? null,
+      attornyPdfUrl: item.attornyPdfUrl ?? null,
+      hasAttornyPdf:
+        !!item.attornyPdfUrl ||
+        (Array.isArray(item.attornies) &&
+          item.attornies.some(
+            (a: any) => a.approvalStatus !== 2 && !a.isRevoked,
+          )),
     }));
   }
 }

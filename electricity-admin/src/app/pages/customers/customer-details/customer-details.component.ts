@@ -50,7 +50,7 @@ export class CustomerDetailsComponent implements OnInit {
   successMessage = "";
   errorMessageEmail = "";
 
-  public Editor: any = ClassicEditor;
+  Editor = ClassicEditor;
   emailcontent: string = "";
 
   selectedPdfId: number | null = null;
@@ -301,7 +301,30 @@ export class CustomerDetailsComponent implements OnInit {
   }
 
   viewDocument(url: string): void {
-    if (url) {
+    if (!url) return;
+
+    if (url.startsWith("data:")) {
+      try {
+        const parts = url.split(",");
+        const contentType = parts[0].split(":")[1].split(";")[0];
+        const base64Data = parts[1];
+
+        const byteCharacters = atob(base64Data);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: contentType });
+
+        const blobUrl = URL.createObjectURL(blob);
+        window.open(blobUrl, "_blank");
+
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
+      } catch (error) {
+        console.error("Failed to open Base64 URL:", error);
+      }
+    } else {
       window.open(this.getFullUrl(url), "_blank");
     }
   }

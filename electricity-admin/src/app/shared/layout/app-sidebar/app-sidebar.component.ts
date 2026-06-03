@@ -102,22 +102,19 @@ export class AppSidebarComponent implements OnInit, OnDestroy {
     },
     {
       name: "Customer comparison",
-      icon: `<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none">
-      <path d="M12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-      <path d="M9.5 9C9.5 7.61929 10.6193 6.5 12 6.5C13.3807 6.5 14.5 7.61929 14.5 9C14.5 10.3807 13.3807 11.5 12 11.5C10.6193 11.5 9.5 10.3807 9.5 9Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-      <path d="M12 11.5V14M12 17H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      icon: `<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M8 7h12m0 0l-4-4m4 4l-4 4M16 17H4m0 0l4 4m-4-4l4-4" />
     </svg>`,
       subItems: [{ name: "Comparison List", path: "/comparisons" }],
     },
     {
       name: "Customer Queries",
-      icon: `<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none">
-      <path d="M12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-      <path d="M9.5 9C9.5 7.61929 10.6193 6.5 12 6.5C13.3807 6.5 14.5 7.61929 14.5 9C14.5 10.3807 13.3807 11.5 12 11.5C10.6193 11.5 9.5 10.3807 9.5 9Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-      <path d="M12 11.5V14M12 17H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      icon: `<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+      <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+      <path d="M12 17h.01" />
     </svg>`,
       subItems: [
-        { name: "Query Categories", path: "/customer-query/categories" },
         { name: "Customer Queries", path: "/customer-query/customer-queries" },
         { name: "Contact Queries", path: "/contact-query/list" },
       ],
@@ -221,12 +218,7 @@ export class AppSidebarComponent implements OnInit, OnDestroy {
           viewBox="0 0 24 24"
           fill="none"
         >
-          <path
-            d="M4 5C4 3.89543 4.89543 3 6 3H18C19.1046 3 20 3.89543 20 5V19C20 20.1046 19.1046 21 18 21H6C4.89543 21 4 20.1046 4 19V5Z"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linejoin="round"
-          />
+          <path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       `,
       subItems: [
@@ -234,6 +226,7 @@ export class AppSidebarComponent implements OnInit, OnDestroy {
           name: "Energy Supply",
           path: "/categories",
         },
+        { name: "Query Categories", path: "/customer-query/categories" },
         {
           name: "Invoice Categories",
           path: "/invoice-categories",
@@ -245,7 +238,7 @@ export class AppSidebarComponent implements OnInit, OnDestroy {
         {
           name: "Cancellation Service Category",
           path: "/cancellation-service-category",
-        }
+        },
       ],
     },
     {
@@ -258,13 +251,7 @@ export class AppSidebarComponent implements OnInit, OnDestroy {
           viewBox="0 0 24 24"
           fill="none"
         >
-          <path
-            d="M12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2Z"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          />
+          <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       `,
       subItems: [
@@ -280,7 +267,7 @@ export class AppSidebarComponent implements OnInit, OnDestroy {
     },
 
     {
-      name: 'Open Provider Action',
+      name: "Open Provider Action",
       icon: `<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none"
               xmlns="http://www.w3.org/2000/svg">
               <path d="M12 2C7.03 2 3 6.03 3 11V20C3 20.55 3.45 21 4 21H20C20.55 21 21 20.55 21 20V11C21 6.03 16.97 2 12 2Z"

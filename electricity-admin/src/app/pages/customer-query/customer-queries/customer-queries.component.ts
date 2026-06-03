@@ -125,13 +125,13 @@ export class CustomerQueriesComponent implements OnInit {
     private api: ApiService,
     private authService: AuthService,
     private route: ActivatedRoute,
-    private http: HttpClient
+    private http: HttpClient,
   ) {}
 
   ngOnInit(): void {
-    this.route.queryParams.subscribe(params => {
-      if (params['status'] === 'open') {
-        this.selectedTab = 'open';
+    this.route.queryParams.subscribe((params) => {
+      if (params["status"] === "open") {
+        this.selectedTab = "open";
       }
       this.fetchRequests(1);
     });
@@ -168,28 +168,30 @@ export class CustomerQueriesComponent implements OnInit {
       size: this.PAGE_SIZE,
     };
 
-    this.http.post("http://192.168.0.234:8080/admin/fetch-service-requests", payload).subscribe({
-      next: (res: any) => {
-        this.isLoading = false;
-        const data = res?.data;
-        if (!data) {
-          this.errorMessage = "Ungültige Serverantwort.";
-          return;
-        }
+    this.http
+      .post("http://192.168.0.155:8080/admin/fetch-service-requests", payload)
+      .subscribe({
+        next: (res: any) => {
+          this.isLoading = false;
+          const data = res?.data;
+          if (!data) {
+            this.errorMessage = "Ungültige Serverantwort.";
+            return;
+          }
 
-        this.allRequests = Array.isArray(data.all) ? data.all : [];
-        this.openRequests = Array.isArray(data.open) ? data.open : [];
-        this.inProgressRequests = Array.isArray(data.inProgress)
-          ? data.inProgress
-          : [];
-        this.closedRequests = Array.isArray(data.closed) ? data.closed : [];
-        this.totalPages = data.totalPage ?? 1;
-      },
-      error: () => {
-        this.isLoading = false;
-        this.errorMessage = "Fehler beim Laden der Anfragen.";
-      },
-    });
+          this.allRequests = Array.isArray(data.all) ? data.all : [];
+          this.openRequests = Array.isArray(data.open) ? data.open : [];
+          this.inProgressRequests = Array.isArray(data.inProgress)
+            ? data.inProgress
+            : [];
+          this.closedRequests = Array.isArray(data.closed) ? data.closed : [];
+          this.totalPages = data.totalPage ?? 1;
+        },
+        error: () => {
+          this.isLoading = false;
+          this.errorMessage = "Fehler beim Laden der Anfragen.";
+        },
+      });
   }
 
   // ── Row expand ────────────────────────────────────────────────────────────
@@ -234,41 +236,43 @@ export class CustomerQueriesComponent implements OnInit {
       serviceRequestId: request.serviceRequestId,
     };
 
-    this.http.post("http://localhost:8080/admin/close-service-request", payload).subscribe({
-      // next: () => {
-      //   this.closingId = null;
-      //   request.isClosed = true;
-      //   request.isOpen = false;
-      //   request.inProgress = false;
-      //   request.requestClosedOn = Math.floor(Date.now() / 1000);
-      //   this.fetchRequests(this.currentPage);
-      // },
-      next: () => {
-        this.closingId = null;
+    this.http
+      .post("http://192.168.0.155:8080/admin/close-service-request", payload)
+      .subscribe({
+        // next: () => {
+        //   this.closingId = null;
+        //   request.isClosed = true;
+        //   request.isOpen = false;
+        //   request.inProgress = false;
+        //   request.requestClosedOn = Math.floor(Date.now() / 1000);
+        //   this.fetchRequests(this.currentPage);
+        // },
+        next: () => {
+          this.closingId = null;
 
-        // 🔁 Toggle state
-        const wasClosed = request.isClosed;
+          // 🔁 Toggle state
+          const wasClosed = request.isClosed;
 
-        request.isClosed = !wasClosed;
-        request.isOpen = wasClosed; // reopen -> open
-        request.inProgress = false;
+          request.isClosed = !wasClosed;
+          request.isOpen = wasClosed; // reopen -> open
+          request.inProgress = false;
 
-        if (wasClosed) {
-          // reopening
-          request.requestClosedOn = null;
-          request.requestReopenedOn = Math.floor(Date.now() / 1000);
-        } else {
-          // closing
-          request.requestClosedOn = Math.floor(Date.now() / 1000);
-        }
+          if (wasClosed) {
+            // reopening
+            request.requestClosedOn = null;
+            request.requestReopenedOn = Math.floor(Date.now() / 1000);
+          } else {
+            // closing
+            request.requestClosedOn = Math.floor(Date.now() / 1000);
+          }
 
-        this.fetchRequests(this.currentPage);
-        this.api.refreshPendingQueriesCount$.next();
-      },
-      error: () => {
-        this.closingId = null;
-      },
-    });
+          this.fetchRequests(this.currentPage);
+          this.api.refreshPendingQueriesCount$.next();
+        },
+        error: () => {
+          this.closingId = null;
+        },
+      });
   }
 
   // ── Chat ──────────────────────────────────────────────────────────────────
@@ -335,21 +339,26 @@ export class CustomerQueriesComponent implements OnInit {
       message: text.trim(),
     };
 
-    this.http.post("http://localhost:8080/admin/add-service-request-response", payload).subscribe({
-      next: () => {
-        const newMsg: ChatMessage = {
-          message: text.trim(),
-          chatUser: "ADMIN",
-          sendOn: Math.floor(Date.now() / 1000),
-        };
-        this.chatMessages = [...this.chatMessages, newMsg];
-        this.replyMessage = "";
-        this.isSendingReply = false;
-        this.api.refreshPendingQueriesCount$.next();
-      },
-      error: () => {
-        this.isSendingReply = false;
-      },
-    });
+    this.http
+      .post(
+        "http://192.168.0.155:8080/admin/add-service-request-response",
+        payload,
+      )
+      .subscribe({
+        next: () => {
+          const newMsg: ChatMessage = {
+            message: text.trim(),
+            chatUser: "ADMIN",
+            sendOn: Math.floor(Date.now() / 1000),
+          };
+          this.chatMessages = [...this.chatMessages, newMsg];
+          this.replyMessage = "";
+          this.isSendingReply = false;
+          this.api.refreshPendingQueriesCount$.next();
+        },
+        error: () => {
+          this.isSendingReply = false;
+        },
+      });
   }
 }

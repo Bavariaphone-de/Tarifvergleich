@@ -45,11 +45,56 @@
         </svg>
       </div>
 
+      <!-- Type Filter dropdown -->
+      <div class="relative">
+        <button (click)="isTypeFilterOpen = !isTypeFilterOpen"
+          class="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm bg-white hover:bg-gray-50 dark:hover:bg-gray-700 transition flex items-center gap-2 whitespace-nowrap">
+          <span class="flex items-center gap-1">
+            <span>Type:</span>
+            <span class="font-medium" [innerText]="getTypeFilterLabel()"></span>
+          </span>
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" [class.rotate-180]="isTypeFilterOpen" fill="none"
+            viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+          </svg>
+        </button>
+
+        <!-- Dropdown menu -->
+        @if (isTypeFilterOpen) {
+        <div
+          class="absolute top-full left-0 mt-1 w-40 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-10">
+          <div class="p-2">
+            <button (click)="onTypeFilterChange('')" [class.bg-brand-50]="typeFilter === ''"
+              [class.dark:bg-brand-900/20]="typeFilter === ''" [class.text-brand-600]="typeFilter === ''"
+              [class.dark:text-brand-400]="typeFilter === ''"
+              class="w-full text-left px-3 py-2 rounded-md text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition">
+              Alle Typen
+            </button>
+            <button (click)="onTypeFilterChange('electric')" [class.bg-brand-50]="typeFilter === 'electric'"
+              [class.dark:bg-brand-900/20]="typeFilter === 'electric'" [class.text-brand-600]="typeFilter === 'electric'"
+              [class.dark:text-brand-400]="typeFilter === 'electric'"
+              class="w-full text-left px-3 py-2 rounded-md text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition">
+              Strom
+            </button>
+            <button (click)="onTypeFilterChange('gas')" [class.bg-brand-50]="typeFilter === 'gas'"
+              [class.dark:bg-brand-900/20]="typeFilter === 'gas'" [class.text-brand-600]="typeFilter === 'gas'"
+              [class.dark:text-brand-400]="typeFilter === 'gas'"
+              class="w-full text-left px-3 py-2 rounded-md text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition">
+              Gas
+            </button>
+          </div>
+        </div>
+        }
+      </div>
+
       <!-- Filter dropdown -->
       <div class="relative">
         <button (click)="isFilterOpen = !isFilterOpen"
           class="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm bg-white hover:bg-gray-50 dark:hover:bg-gray-700 transition flex items-center gap-2 whitespace-nowrap">
-          <span>Status: {{ getSelectedFilterLabel() }}</span>
+          <span class="flex items-center gap-1">
+            <span>Status:</span>
+            <span class="font-medium" [innerText]="getSelectedFilterLabel()"></span>
+          </span>
           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" [class.rotate-180]="isFilterOpen" fill="none"
             viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
@@ -89,11 +134,17 @@
         @if (searchTerm) {
         Suche: "{{ searchTerm }}"
         }
-        @if (searchTerm && filter !== 0) {
+        @if (searchTerm && (filter !== 0 || typeFilter !== '')) {
         |
         }
         @if (filter !== 0) {
-        Filter: {{ getSelectedFilterLabel() }}
+        <span>Status: <span [innerText]="getSelectedFilterLabel()"></span></span>
+        }
+        @if (filter !== 0 && typeFilter !== '') {
+        |
+        }
+        @if (typeFilter !== '') {
+        <span>Typ: <span [innerText]="getTypeFilterLabel()"></span></span>
         }
       </p>
       }
@@ -121,6 +172,7 @@
           <th class="px-4 py-3 rounded-tl-lg">ID</th>
           <th class="px-4 py-3">Kunde</th>
           <th class="px-4 py-3">E-Mail</th>
+          <th class="px-4 py-3">Type</th>
           <th class="px-4 py-3">Status</th>
           <th class="px-4 py-3">Kontakt</th>
           <th class="px-4 py-3">Bestellt am</th>
@@ -129,7 +181,7 @@
         </tr>
       </thead>
       <tbody class="divide-y dark:divide-gray-700">
-        @for (booking of bookings; track booking.deliveryId) {
+        @for (booking of filteredBookings; track booking.deliveryId) {
         <tr class="hover:bg-gray-50 dark:hover:bg-gray-800 transition cursor-pointer" (click)="openDetail(booking)">
           <!-- ID -->
           <td class="px-4 py-4 text-gray-500 dark:text-gray-400 font-mono text-xs">
@@ -147,6 +199,29 @@
           <!-- Email -->
           <td class="px-4 py-4 text-gray-600 dark:text-gray-400 text-xs">
             {{ booking.email || '—' }}
+          </td>
+
+          <!-- Type -->
+          <td class="px-4 py-4">
+            @if (booking.provider?.branch === 'electric') {
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 whitespace-nowrap">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd" />
+                </svg>
+                Strom
+              </span>
+            } @else if (booking.provider?.branch === 'gas') {
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400 whitespace-nowrap">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" clip-rule="evenodd" />
+                </svg>
+                Gas
+              </span>
+            } @else {
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300 whitespace-nowrap">
+                Andere
+              </span>
+            }
           </td>
 
           <!-- Order status badge -->
