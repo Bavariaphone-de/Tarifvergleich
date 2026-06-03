@@ -62,6 +62,7 @@ import com.tarifvergleich.electricity.repository.CustomerDeliveryRepository;
 import com.tarifvergleich.electricity.repository.CustomerInvoiceRequestRepository;
 import com.tarifvergleich.electricity.repository.CustomerOrderRepository;
 import com.tarifvergleich.electricity.repository.CustomerRepository;
+import com.tarifvergleich.electricity.repository.CustomerRequestCounsellingRepository;
 import com.tarifvergleich.electricity.repository.CustomerServiceRequestRepository;
 import com.tarifvergleich.electricity.repository.CustomerServicesRepository;
 import com.tarifvergleich.electricity.repository.ReportMeterReadingRepository;
@@ -76,7 +77,6 @@ import com.tarifvergleich.electricity.util.PdfGenerator;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import com.tarifvergleich.electricity.repository.CustomerRequestCounsellingRepository;
 
 @Service
 @RequiredArgsConstructor
@@ -234,7 +234,7 @@ public class CustomerDetailService {
 		return Map.of("res", true, "createdOn", attornyEntity.getSubmittedOn());
 	}
 
-	public Map<String, Object> fetchAllCustomerDeliveries(Integer customerId) {
+	public Map<String, Object> fetchAllCustomerDeliveries(Integer customerId, Integer adminId) {
 
 		if (customerId == null || customerId <= 0)
 			throw new InternalServerException("Customer id missing", HttpStatus.OK);
@@ -325,7 +325,7 @@ public class CustomerDetailService {
 			// METER READING LIST
 			List<ReportMeterReadingDto> meterReadingDtoList = meterReadingMap.getOrDefault(entity.getId(), List.of())
 					.stream().map(reading -> {
-
+						
 						ReportMeterReadingDto meterDto = new ReportMeterReadingDto();
 
 						meterDto.setId(reading.getId());
@@ -336,7 +336,7 @@ public class CustomerDetailService {
 
 						meterDto.setConnectionId(reading.getConnectionId());
 
-						meterDto.setCategory(reading.getCategory());
+						meterDto.setCategory(reading.getCategory().getCategoryName());
 
 						meterDto.setReadingDate(reading.getReadingDate());
 

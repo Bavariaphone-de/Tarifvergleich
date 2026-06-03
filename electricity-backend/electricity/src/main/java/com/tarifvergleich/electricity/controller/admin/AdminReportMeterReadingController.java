@@ -1,10 +1,13 @@
 package com.tarifvergleich.electricity.controller.admin;
 
+import java.util.Map;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import com.tarifvergleich.electricity.service.admin.AdminReportMeterReadingService;
 
@@ -16,13 +19,18 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/admin")
 public class AdminReportMeterReadingController {
 
-    private final AdminReportMeterReadingService reportMeterReadingservice;
+    private final AdminReportMeterReadingService reportMeterReadingService;
 
-    @GetMapping("/report-meter-reading")
-    public ResponseEntity<?> getAllMeterReadings() {
+    @PostMapping("/report-meter-reading")
+    public ResponseEntity<?> getAllMeterReadings(
+            @RequestBody Map<String, Object> payload) {
+
+        String search = payload.get("search") != null
+                ? payload.get("search").toString()
+                : "";
 
         return ResponseEntity.ok(
-        		reportMeterReadingservice.getAllMeterReadings()
+            reportMeterReadingService.getAllMeterReadings(search)
         );
     }
 }

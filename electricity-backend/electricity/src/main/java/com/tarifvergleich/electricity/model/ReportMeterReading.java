@@ -36,7 +36,10 @@ public class ReportMeterReading {
 	@JsonIgnore
 	private Customer customer;
 
-	private String category;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "category")
+	@JsonIgnore
+	private ReportMeterReadingCategory category;
 
 	private String readingDate;
 

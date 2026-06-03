@@ -138,7 +138,7 @@ public class ReportMeterReadingDto {
         
         dto.setOrderId(entity.getOrderId());
         dto.setConnectionId(entity.getConnectionId());
-        dto.setCategory(entity.getCategory());
+        dto.setCategory(entity.getCategory().getCategoryName());
         dto.setReadingDate(entity.getReadingDate());
         dto.setMeterReading(entity.getMeterReading());
         dto.setImagePath(entity.getImagePath());

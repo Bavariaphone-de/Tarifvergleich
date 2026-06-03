@@ -1,9 +1,11 @@
-import { Component, OnInit } from "@angular/core";
+import { Component, OnInit, OnDestroy } from "@angular/core";
 import { CommonModule, NgClass } from "@angular/common";
 import { ApiService } from "../../../shared/services/api.service";
 import { Router } from "@angular/router";
 import { HttpClient } from "@angular/common/http";
 import { FormsModule } from '@angular/forms';
+import { Subject, Subscription } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 export interface ReportMeterReading {
   id?: number;
@@ -38,6 +40,7 @@ export interface ReportMeterReading {
 export class ReportMeterReadingComponent implements OnInit {
 
   reportMeterReadings: ReportMeterReading[] = [];
+  filteredReportMeterReadings: ReportMeterReading[] = [];
 
   isLoading = false;
   errorMessage = '';
@@ -45,15 +48,15 @@ export class ReportMeterReadingComponent implements OnInit {
   selectedReading: any = null;
   isSidebarOpen = false;
 
-  filterStatus = 0;
-  filterOptions = [
-    { value: 0, label: 'Alle' },
-    { value: 1, label: 'Aktiv' },
-    { value: 2, label: 'Inaktiv' }
-  ];
+  // filterStatus = 0;
+  categories: string[] = [];
+  selectedCategory = '';
   isFilterOpen = false;
 
   searchTerm = '';
+  private searchTerm$ = new Subject<string>();
+  private searchSub!: Subscription;
+  
   readonly IMAGE_BASE_URL = 'http://localhost:8080/assets/customers/';
   isImageModalOpen = false;
 
@@ -64,7 +67,29 @@ export class ReportMeterReadingComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.searchSub = this.searchTerm$
+      .pipe(
+        debounceTime(350),
+        distinctUntilChanged()
+      )
+      .subscribe(() => {
+        this.fetchReportMeterReadings();
+      });
     this.fetchReportMeterReadings();
+  }
+
+  ngOnDestroy(): void {
+    this.searchSub?.unsubscribe();
+  }
+
+  onSearchInput(value: string): void {
+    this.searchTerm = value;
+    this.searchTerm$.next(value);
+  }
+
+  clearSearch(): void {
+    this.searchTerm = '';
+    this.searchTerm$.next('');
   }
 
   fetchReportMeterReadings(): void {
@@ -72,7 +97,11 @@ export class ReportMeterReadingComponent implements OnInit {
     this.isLoading = true;
     this.errorMessage = '';
 
-    this.http.get('http://localhost:8080/admin/report-meter-reading')
+    const payload = {
+      search: this.searchTerm?.trim() || ''
+    };
+
+    this.http.post('http://localhost:8080/admin/report-meter-reading',payload)
       .subscribe({
         next: (res: any) => {
 
@@ -80,6 +109,16 @@ export class ReportMeterReadingComponent implements OnInit {
 
           if (Array.isArray(res)) {
             this.reportMeterReadings = res;
+              this.categories = [
+                ...new Set(
+                  this.reportMeterReadings
+                    .map(x => x.category)
+                    .filter((category): category is string => !!category)
+                )
+              ];
+              console.log('Categories:', this.categories);
+              console.log('Data:', this.reportMeterReadings);
+              this.applyCategoryFilter();
           } else if (res?.data) {
             this.reportMeterReadings = res.data;
           } else {
@@ -117,12 +156,12 @@ export class ReportMeterReadingComponent implements OnInit {
     ).length;
   }
 
-  getSelectedFilterLabel(): string {
-    return (
-      this.filterOptions.find(f => f.value === this.filterStatus)?.label ||
-      'Alle'
-    );
-  }
+  // getSelectedFilterLabel(): string {
+  //   return (
+  //     this.filterOptions.find(f => f.value === this.filterStatus)?.label ||
+  //     'Alle'
+  //   );
+  // }
 
   openDetail(reading: ReportMeterReading): void {
     console.log(reading);
@@ -185,6 +224,24 @@ export class ReportMeterReadingComponent implements OnInit {
 
   closeImageModal(): void {
     this.isImageModalOpen = false;
+  }
+
+  applyCategoryFilter(): void {
+    if (!this.selectedCategory) {
+      this.filteredReportMeterReadings =
+        this.reportMeterReadings;
+      return;
+    }
+    this.filteredReportMeterReadings =
+      this.reportMeterReadings.filter(
+        x => x.category === this.selectedCategory
+      );
+  }
+
+  selectCategory(category: string): void {
+    this.selectedCategory = category;
+    this.isFilterOpen = false;
+    this.applyCategoryFilter();
   }
 
 }

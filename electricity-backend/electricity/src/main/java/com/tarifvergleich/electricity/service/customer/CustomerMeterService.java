@@ -14,9 +14,11 @@ import com.tarifvergleich.electricity.exception.InternalServerException;
 import com.tarifvergleich.electricity.model.Customer;
 import com.tarifvergleich.electricity.model.CustomerInvoiceRequest;
 import com.tarifvergleich.electricity.model.ReportMeterReading;
+import com.tarifvergleich.electricity.model.ReportMeterReadingCategory;
 import com.tarifvergleich.electricity.repository.CustomerConnectionRepository;
 import com.tarifvergleich.electricity.repository.CustomerInvoiceRequestRepository;
 import com.tarifvergleich.electricity.repository.CustomerRepository;
+import com.tarifvergleich.electricity.repository.ReportMeterReadingCategoryRepo;
 import com.tarifvergleich.electricity.repository.ReportMeterReadingRepository;
 import com.tarifvergleich.electricity.util.FileServiceCustomer;
 
@@ -31,6 +33,7 @@ public class CustomerMeterService {
 	private final ReportMeterReadingRepository reportMeterReadingRepo;
 	private final FileServiceCustomer fileServiceCustomer;
 	private final CustomerRepository customerRepo;
+	private final ReportMeterReadingCategoryRepo reportMeterReadingCategoryRepo;
 
 	public Map<String, Object> updateMeterDesignation(Long connectionId, String meterDesignation) {
 
@@ -86,6 +89,10 @@ public class CustomerMeterService {
 			if (file.isEmpty())
 				continue;
 
+			ReportMeterReadingCategory meterCat = reportMeterReadingCategoryRepo
+					.findByCategoryNameLikeAndAdminAdminId(dto.getCategory().trim().toUpperCase(), dto.getAdminId())
+					.orElseThrow(() -> new InternalServerException("Category not found", HttpStatus.OK));
+
 			String filePath = fileServiceCustomer.saveFile(file, "meter-reading");
 
 			ReportMeterReading report = new ReportMeterReading();
@@ -96,7 +103,7 @@ public class CustomerMeterService {
 
 			report.setConnectionId(dto.getConnectionId());
 
-			report.setCategory(dto.getCategory());
+			report.setCategory(meterCat);
 
 			report.setReadingDate(dto.getReadingDate());
 
