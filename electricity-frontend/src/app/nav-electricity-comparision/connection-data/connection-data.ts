@@ -248,7 +248,7 @@ export class ConnectionData implements OnInit, OnDestroy {
     if (this.selection === 'no') {
       // Current provider
       if (!this.currentProvider) {
-        errors['currentProvider'] = 'Bitte wählen Sie Ihren derzeitigen Stromanbieter.';
+        errors['currentProvider'] = 'Bitte wählen Sie Ihren aktuellen Lieferanten aus.';
       }
 
       const isAnySelected = this.autoCancellation || this.alreadyCancelled || this.selfCancellation;

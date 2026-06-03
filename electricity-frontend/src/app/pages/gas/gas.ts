@@ -78,6 +78,7 @@ export class Gas implements OnInit {
   showDropdown = false;
   lastValidCity: { city: string; city_id: string } | null = null;
   lastValidStreet: string | null = null;
+  consumptionError = false;
 
   ngOnInit(): void {
     this.contentService.getSidebar().subscribe((sidebar: any[]) => {
@@ -310,6 +311,7 @@ export class Gas implements OnInit {
     const match = predefinedValues.find((item) => item.value === Number(this.consumption));
 
     this.selectedPersons = match ? match.person : 0;
+    this.consumptionError = false;
   }
 
   selectPersons(persons: number, value: number) {
@@ -331,6 +333,14 @@ export class Gas implements OnInit {
       this.addressForm.markAllAsTouched();
       return;
     }
+    const consumptionValue = Number(this.consumption);
+
+    if (!consumptionValue || consumptionValue <= 0) {
+      this.consumptionError = true;
+      return;
+    }
+
+    this.consumptionError = false;
 
     const selectedCityId = this.addressForm.value.city;
 

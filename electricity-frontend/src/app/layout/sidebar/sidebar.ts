@@ -43,6 +43,7 @@ export class Sidebar implements OnChanges {
   /** Annual saving (positive = saving, negative = extra cost). */
   savingPerYear: string = '';
   isSaving: boolean = false;
+  branch: string = '';
 
   /** Tariff / rate name */
   rateName: string = '';
@@ -93,9 +94,11 @@ export class Sidebar implements OnChanges {
     this.isSaving = saving > 0;
     this.savingPerYear = this.formatEuro(Math.abs(saving - totalCommission));
 
+
     // Tariff details
     this.rateName = p.rateName ?? '';
     this.isEco = !!p.optEco;
+    this.branch = p.branch ?? '';
     this.minTerm = p.optTerm ? `${p.optTerm} Monate` : '';
 
     // Tariff overview — the API doesn't return kWh usage directly;

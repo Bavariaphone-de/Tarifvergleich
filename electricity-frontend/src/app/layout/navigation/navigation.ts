@@ -1,11 +1,12 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { ContentService } from '../../services/content.service';
+import { AuthService } from '../../services/auth.service';
 
 export interface NavItem {
   id: number;
@@ -55,6 +56,8 @@ export class Navigation implements OnInit {
     private http: HttpClient,
     private cdr: ChangeDetectorRef,
     public contentService: ContentService,
+    private authService: AuthService,
+    private router: Router,
   ) {}
 
   ngOnInit(): void {
@@ -105,5 +108,22 @@ export class Navigation implements OnInit {
   }
   closeMenu() {
     this.isMenuOpen = false;
+  }
+
+  isActive(item: any): boolean {
+    const menuActive = this.authService.getAddressData()?.menuActive;
+
+    if (menuActive) {
+      return item.heading?.startsWith(menuActive);
+    }
+
+    // fallback to URL logic
+    const route = this.getRouterLink(item.originalFileName);
+
+    if (item.originalFileName === 'Stromvergleich.png') {
+      return this.router.url.startsWith(route);
+    }
+
+    return this.router.url === route;
   }
 }
