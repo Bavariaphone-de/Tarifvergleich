@@ -51,7 +51,7 @@ public class AdminEmailManagement {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "cate_id")
-//    @JsonIgnore
+    @JsonIgnore
     private AdminEmailRequestCategory category;
     
     @ManyToMany

@@ -491,13 +491,16 @@ public class AdminServicePointManagementService {
 			supplierMessageCategory = EnergySupplierMessageCategory.builder()
 					.categoryName(energyMessageCategoryDto.getCategoryName().toUpperCase()).admin(admin).build();
 		} else {
-			supplierMessageCategory = energySupplierMessageCategoryRepo
-					.findByIdAndAdminAdminId(energyMessageCategoryDto.getSupplierMessageCategoryId(),
-							energyMessageCategoryDto.getAdminId())
-					.orElseThrow(() -> new InternalServerException(
-							"Energy supplier message not found with this credential", HttpStatus.OK));
+			if (supplierMessageCategory == null) {
+				supplierMessageCategory = energySupplierMessageCategoryRepo
+						.findByIdAndAdminAdminId(energyMessageCategoryDto.getSupplierMessageCategoryId(),
+								energyMessageCategoryDto.getAdminId())
+						.orElseThrow(() -> new InternalServerException(
+								"Energy supplier message not found with this credential", HttpStatus.OK));
 
-			supplierMessageCategory.setCategoryName(energyMessageCategoryDto.getCategoryName().toUpperCase());
+				supplierMessageCategory.setCategoryName(energyMessageCategoryDto.getCategoryName().toUpperCase());
+			} else
+				throw new InternalServerException("Category already exists with this name", HttpStatus.OK);
 		}
 
 		supplierMessageCategory = energySupplierMessageCategoryRepo.save(supplierMessageCategory);
@@ -578,6 +581,10 @@ public class AdminServicePointManagementService {
 			category = EnergySupplierInvoiceCategory.builder().categoryName(dto.getCategoryName().toUpperCase())
 					.admin(admin).build();
 		} else {
+
+			if (category != null)
+				throw new InternalServerException("Category already exists", HttpStatus.OK);
+
 			category = energySupplierInvoiceCategoryRepo
 					.findByIdAndAdminAdminId(dto.getInvoiceCategoryId(), dto.getAdminId())
 					.orElseThrow(() -> new InternalServerException("Category not found", HttpStatus.OK));
@@ -633,6 +640,10 @@ public class AdminServicePointManagementService {
 					() -> new InternalServerException("Admin User is not Found with this Admin Id ", HttpStatus.OK));
 			category.setAdmin(admin);
 		} else {
+
+			if (category != null)
+				throw new InternalServerException("Category already exists", HttpStatus.OK);
+
 			category = reportMeterReadingCategoryRepo.findById(dto.getReportMeterReadingCategoryId()).orElseThrow(
 					() -> new InternalServerException("Category is not Found with this Category Id ", HttpStatus.OK));
 		}
@@ -694,6 +705,10 @@ public class AdminServicePointManagementService {
 					() -> new InternalServerException("Admin User is not Found with this Admin Id ", HttpStatus.OK));
 			category.setAdmin(admin);
 		} else {
+
+			if (category != null)
+				throw new InternalServerException("Category already exists", HttpStatus.OK);
+
 			category = cancellationServiceCategoryRepo.findById(dto.getCancellationServiceCategoryId()).orElseThrow(
 					() -> new InternalServerException("Category is not Found with this Category Id ", HttpStatus.OK));
 		}

@@ -21,10 +21,10 @@ public class ClientConfig {
 	public RestClient energyApiClient(RestClient.Builder builder, @Value("${api.energy.url}") String url,
 			@Value("${api.energy.apikey}") String token) {
 
-		HttpClient httpClient = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(15)).build();
+		HttpClient httpClient = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(30)).build();
 
 		JdkClientHttpRequestFactory factory = new JdkClientHttpRequestFactory(httpClient);
-		factory.setReadTimeout(Duration.ofSeconds(15));
+		factory.setReadTimeout(Duration.ofSeconds(60));
 
 		return builder.baseUrl(url).requestFactory(factory).defaultHeader("Accept", "application/json")
 				.defaultHeader("Authorization", "Bearer " + token).build();
