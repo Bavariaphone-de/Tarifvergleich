@@ -78,6 +78,7 @@ type EnergyRateResponse = {
 };
 
 export type ComparisonEntry = {
+  [x: string]: any;
   id?: number | null;
   zip?: string | null;
   city?: string | null;
@@ -93,6 +94,7 @@ export type ComparisonEntry = {
   baseProviderResponse?: BaseProviderResponse | null;
   energyRateResponse?: EnergyRateResponse | null;
   adminId?: number | null;
+  rateType?: string | number | null;
 };
 
 @Component({
@@ -123,6 +125,9 @@ export class ComparisonListComponent implements OnInit, OnDestroy {
   private searchTerm$ = new Subject<string>();
   private searchSub!: Subscription;
 
+  // ── Filter ────────────────────────────────────────────────────
+  filterType = "";
+
   constructor(
     private api: ApiService,
     private authService: AuthService,
@@ -133,7 +138,7 @@ export class ComparisonListComponent implements OnInit, OnDestroy {
     // Debounce search input: wait 350 ms after last keystroke, skip unchanged values
     this.searchSub = this.searchTerm$
       .pipe(debounceTime(350), distinctUntilChanged())
-      .subscribe(() => this.fetchComparisons(1));
+      .subscribe(() => this.applyFiltersAndPagination(1));
 
     this.fetchComparisons();
   }
@@ -141,6 +146,8 @@ export class ComparisonListComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.searchSub?.unsubscribe();
   }
+
+  allComparisons: ComparisonEntry[] = [];
 
   onSearchInput(value: string): void {
     this.searchTerm = value;
@@ -152,15 +159,16 @@ export class ComparisonListComponent implements OnInit, OnDestroy {
     this.searchTerm$.next("");
   }
 
+  onFilterChange(): void {
+    this.applyFiltersAndPagination(1);
+  }
+
   // ── Data fetching ────────────────────────────────────────────
 
-  fetchComparisons(page: number = 1): void {
-    this.currentPage = page;
+  fetchComparisons(): void {
+    // Fetch all records by omitting page and limit
     const payload = {
       adminId: this.authService.getUserId(),
-      page: this.currentPage,
-      limit: this.PAGE_LIMIT,
-      search: this.searchTerm.trim() || undefined,
     };
     this.isLoading = true;
     this.errorMessage = "";
@@ -169,31 +177,9 @@ export class ComparisonListComponent implements OnInit, OnDestroy {
     this.api.post("admin/fetch-customer-comparisons", payload).subscribe({
       next: (res: any) => {
         this.isLoading = false;
-        const newData = this.extractList(res);
-        this.comparisons = newData;
-        this.hasMoreData = newData.length === this.PAGE_LIMIT;
-
-        // Prefer explicit total from API; fall back to estimating from current page
-        if (typeof res?.totalRecords === "number") {
-          this.totalCount = res.totalRecords;
-          this.totalComparisons = res.totalRecords;
-        } else if (typeof res?.total === "number") {
-          this.totalCount = res.total;
-          this.totalComparisons = res.total;
-        } else if (typeof res?.data?.total === "number") {
-          this.totalCount = res.data.total;
-          this.totalComparisons = res.data.total;
-        } else {
-          // Conservative fallback: known pages so far
-          this.totalCount = this.hasMoreData
-            ? this.currentPage * this.PAGE_LIMIT + 1 // at least one more page
-            : (this.currentPage - 1) * this.PAGE_LIMIT + newData.length;
-          this.totalComparisons = this.totalCount;
-        }
-        this.totalPages = Math.max(
-          1,
-          Math.ceil(this.totalCount / this.PAGE_LIMIT),
-        );
+        this.allComparisons = this.extractList(res);
+        this.totalComparisons = this.allComparisons.length;
+        this.applyFiltersAndPagination(this.currentPage);
       },
       error: (err) => {
         this.isLoading = false;
@@ -203,19 +189,64 @@ export class ComparisonListComponent implements OnInit, OnDestroy {
     });
   }
 
+  applyFiltersAndPagination(page: number): void {
+    let filtered = this.allComparisons;
+
+    // Search filter (client-side)
+    if (this.searchTerm) {
+      const s = this.searchTerm.toLowerCase();
+      filtered = filtered.filter(entry => {
+        const idMatch = entry.id?.toString().includes(s);
+        const emailMatch = entry.customer?.email?.toLowerCase().includes(s);
+        const zipMatch = entry.zip?.toLowerCase().includes(s);
+        const cityMatch = entry.city?.toLowerCase().includes(s);
+        const nameMatch = this.customerFullName(entry.customer).toLowerCase().includes(s);
+        return idMatch || emailMatch || zipMatch || cityMatch || nameMatch;
+      });
+    }
+
+    // Dropdown filter
+    if (this.filterType) {
+      filtered = filtered.filter(entry => {
+        const clryf = this.getRateTypeLabel(entry.rateType, entry.branch);
+        switch (this.filterType) {
+          case 'strom': return clryf === 'Strom';
+          case 'gas': return clryf === 'Gas';
+          case 'heizstrom-waermepumpe': return clryf === 'Heizstrom | Wärmepumpe';
+          case 'heizstrom-nachtspeicher': return clryf === 'Heizstrom | Nachtspeicher';
+          case 'ladestrom': return clryf === 'Ladestrom | Autostrom';
+          default: return true;
+        }
+      });
+    }
+
+    // Pagination metrics
+    this.totalCount = filtered.length;
+    this.totalPages = Math.max(1, Math.ceil(this.totalCount / this.PAGE_LIMIT));
+
+    if (page > this.totalPages) page = this.totalPages;
+    if (page < 1) page = 1;
+    this.currentPage = page;
+
+    // Slice for current page
+    const startIndex = (this.currentPage - 1) * this.PAGE_LIMIT;
+    this.comparisons = filtered.slice(startIndex, startIndex + this.PAGE_LIMIT);
+    this.hasMoreData = this.currentPage < this.totalPages;
+  }
+
   nextPage(): void {
-    if (this.hasMoreData) this.fetchComparisons(this.currentPage + 1);
+    if (this.hasMoreData) this.applyFiltersAndPagination(this.currentPage + 1);
   }
 
   prevPage(): void {
-    if (this.currentPage > 1) this.fetchComparisons(this.currentPage - 1);
+    if (this.currentPage > 1) this.applyFiltersAndPagination(this.currentPage - 1);
   }
 
   // ── Pagination display helpers ───────────────────────────────
 
   /** First record number on current page, e.g. 21 */
   get pageRangeFrom(): number {
-    return (this.currentPage - 1) * this.PAGE_LIMIT + 1;
+    return this.totalCount === 0 ? 0 : (this.currentPage - 1) * this.PAGE_LIMIT + 1;
   }
 
   /** Last record number on current page, e.g. 40 */
@@ -346,6 +377,16 @@ export class ComparisonListComponent implements OnInit, OnDestroy {
       MODIFICATION: "Änderung",
     };
     return types.map((t) => map[t] ?? t).join(", ");
+  }
+
+  getRateTypeLabel(rateType?: string | number | null, branch?: string | null): string {
+    if (rateType === undefined || rateType === null || rateType === "") return "—";
+    const val = String(rateType);
+    if (val === '0') return branch === 'electric' ? 'Strom' : 'Gas';
+    if (val === '1') return 'Heizstrom | Wärmepumpe';
+    if (val === '2') return 'Heizstrom | Nachtspeicher';
+    if (val === '3') return 'Ladestrom | Autostrom';
+    return val;
   }
 
   // ── Date helpers ─────────────────────────────────────────────

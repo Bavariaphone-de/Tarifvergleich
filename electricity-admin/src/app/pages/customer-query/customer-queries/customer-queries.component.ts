@@ -1,4 +1,4 @@
-import { Component, OnInit } from "@angular/core";
+import { Component, OnInit, ViewChild, ElementRef } from "@angular/core";
 import { CommonModule, DatePipe, UpperCasePipe } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { ApiService } from "../../../shared/services/api.service";
@@ -107,6 +107,7 @@ export class CustomerQueriesComponent implements OnInit {
   }
 
   // ── Chat panel ────────────────────────────────────────────────────────────
+  @ViewChild('chatContainer') chatContainer!: ElementRef;
   chatOpen = false;
   activeChatRequest: ServiceRequest | null = null;
   chatMessages: ChatMessage[] = [];
@@ -169,7 +170,7 @@ export class CustomerQueriesComponent implements OnInit {
     };
 
     this.http
-      .post("http://192.168.0.155:8080/admin/fetch-service-requests", payload)
+      .post("http://192.168.0.234:8080/admin/fetch-service-requests", payload)
       .subscribe({
         next: (res: any) => {
           this.isLoading = false;
@@ -237,7 +238,7 @@ export class CustomerQueriesComponent implements OnInit {
     };
 
     this.http
-      .post("http://192.168.0.155:8080/admin/close-service-request", payload)
+      .post("http://192.168.0.234:8080/admin/close-service-request", payload)
       .subscribe({
         // next: () => {
         //   this.closingId = null;
@@ -247,6 +248,7 @@ export class CustomerQueriesComponent implements OnInit {
         //   request.requestClosedOn = Math.floor(Date.now() / 1000);
         //   this.fetchRequests(this.currentPage);
         // },
+
         next: () => {
           this.closingId = null;
 
@@ -287,6 +289,17 @@ export class CustomerQueriesComponent implements OnInit {
     this.replyMessage = "";
     this.chatOpen = true;
     this.showSendConfirm = false;
+
+    setTimeout(() => {
+      this.scrollToBottom();
+    }, 50);
+  }
+
+  private scrollToBottom(): void {
+    if (this.chatContainer) {
+      const el = this.chatContainer.nativeElement;
+      el.scrollTop = el.scrollHeight;
+    }
   }
 
   closeChat(): void {
@@ -355,6 +368,10 @@ export class CustomerQueriesComponent implements OnInit {
           this.replyMessage = "";
           this.isSendingReply = false;
           this.api.refreshPendingQueriesCount$.next();
+
+          setTimeout(() => {
+            this.scrollToBottom();
+          }, 50);
         },
         error: () => {
           this.isSendingReply = false;

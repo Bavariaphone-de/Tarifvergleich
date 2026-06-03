@@ -1,6 +1,6 @@
 <div class="flex justify-start mt-4 mb-4">
   <!-- STATS CARDS -->
-  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 my-6">
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
     <!-- TOTAL REQUESTS -->
     <div
       class="bg-white dark:bg-gray-900 rounded-2xl shadow p-5 border border-gray-100 dark:border-gray-800"
@@ -31,60 +31,33 @@
         <!-- Header -->
         <div class="flex items-center justify-between mb-4">
           <div>
-            <h2 class="text-xl font-semibold text-gray-800 dark:text-white">
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2.5">
               Vergleichsliste
               @if (!isLoading && totalCount > 0) {
                 <span
-                  class="ml-2 text-sm font-normal text-gray-400 dark:text-gray-500"
+                  class="bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 text-sm font-semibold px-2.5 py-0.5 rounded-full border border-gray-200 dark:border-gray-700"
                 >
                   {{ totalCount }} Einträge
                 </span>
               }
             </h2>
           </div>
-          <button
+          <!-- <button
             (click)="fetchComparisons()"
             class="px-4 py-2 text-sm bg-brand-500 text-white rounded-lg hover:bg-brand-600 transition cursor-pointer"
           >
             Neu laden
-          </button>
+          </button> -->
         </div>
 
-        <!-- Search bar -->
-        <div class="relative mb-5">
-          <div
-            class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3"
-          >
-            <svg
-              class="h-4 w-4 text-gray-400"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"
-              />
-            </svg>
-          </div>
-          <input
-            type="text"
-            [ngModel]="searchTerm"
-            (ngModelChange)="onSearchInput($event)"
-            placeholder="Suchen nach Name, E-Mail, PLZ, Ort oder ID…"
-            class="block w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 py-2.5 pl-10 pr-10 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-400 transition"
-          />
-          @if (searchTerm) {
-            <button
-              (click)="clearSearch()"
-              class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-              aria-label="Suche löschen"
+        <!-- Search & Filter bar -->
+        <div class="flex flex-col sm:flex-row gap-4 mb-5">
+          <div class="relative flex-1">
+            <div
+              class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3"
             >
               <svg
-                class="h-4 w-4"
+                class="h-4 w-4 text-gray-400"
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
@@ -94,11 +67,55 @@
                   stroke-linecap="round"
                   stroke-linejoin="round"
                   stroke-width="2"
-                  d="M6 18L18 6M6 6l12 12"
+                  d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"
                 />
               </svg>
-            </button>
-          }
+            </div>
+            <input
+              type="text"
+              [ngModel]="searchTerm"
+              (ngModelChange)="onSearchInput($event)"
+              placeholder="Suchen nach Name, E-Mail, PLZ, Ort oder ID…"
+              class="block w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 py-2.5 pl-10 pr-10 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-400 transition"
+            />
+            @if (searchTerm) {
+              <button
+                (click)="clearSearch()"
+                class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                aria-label="Suche löschen"
+              >
+                <svg
+                  class="h-4 w-4"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            }
+          </div>
+          <div class="w-full sm:w-auto flex-shrink-0">
+            <select
+              [(ngModel)]="filterType"
+              (ngModelChange)="onFilterChange()"
+              class="block w-full sm:w-auto rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 py-2.5 pl-4 pr-10 text-sm font-medium text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-400 transition cursor-pointer appearance-none shadow-sm"
+              style="background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2024%2024%22%20stroke%3D%22%23374151%22%20stroke-width%3D%221.5%22%3E%3Cpath%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20d%3D%22M12%204.5v15m0%200l6.75-6.75M12%2019.5l-6.75-6.75%22%2F%3E%3C%2Fsvg%3E'); background-repeat: no-repeat; background-position: right 0.75rem top 50%; background-size: 1rem auto;"
+            >
+              <option value="">Type: Alle Typen</option>
+              <option value="strom">Type: Strom | Hausstrom</option>
+              <option value="gas">Type: Gas</option>
+              <option value="heizstrom-waermepumpe">Type: Heizstrom | Wärmepumpe</option>
+              <option value="heizstrom-nachtspeicher">Type: Heizstrom | Nachtspeicher</option>
+              <option value="ladestrom">Type: Ladestrom | Autostrom</option>
+            </select>
+          </div>
         </div>
 
         <!-- Loading -->
@@ -125,6 +142,7 @@
                   <th class="px-4 py-3">Verbrauch</th>
                   <th class="px-4 py-3">Sparte</th>
                   <th class="px-4 py-3">Tarife</th>
+                  <th class="px-4 py-3">CLRYF</th>
                   <th class="px-4 py-3">Günstigster Preis</th>
                   <th class="px-4 py-3">Verglichen am</th>
                   <th class="px-4 py-3 rounded-tr-lg text-right">Details</th>
@@ -204,35 +222,25 @@
 
                     <!-- Branch -->
                     <td class="px-4 py-4">
-                      <span
-                        class="px-2.5 py-0.5 rounded-full text-xs font-medium capitalize"
-                        [class.bg-yellow-100]="entry.branch === 'electric'"
-                        [class.text-yellow-700]="entry.branch === 'electric'"
-                        [class.dark:bg-yellow-900\/30]="
-                          entry.branch === 'electric'
-                        "
-                        [class.dark:text-yellow-400]="
-                          entry.branch === 'electric'
-                        "
-                        [class.bg-blue-100]="entry.branch === 'gas'"
-                        [class.text-blue-700]="entry.branch === 'gas'"
-                        [class.dark:bg-blue-900\/30]="entry.branch === 'gas'"
-                        [class.dark:text-blue-400]="entry.branch === 'gas'"
-                        [class.bg-gray-100]="
-                          entry.branch !== 'electric' && entry.branch !== 'gas'
-                        "
-                        [class.text-gray-600]="
-                          entry.branch !== 'electric' && entry.branch !== 'gas'
-                        "
-                      >
-                        {{
-                          entry.branch === "electric"
-                            ? "Strom"
-                            : entry.branch === "gas"
-                              ? "Gas"
-                              : entry.branch || "—"
-                        }}
-                      </span>
+                      @if (entry.branch === 'electric') {
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 whitespace-nowrap">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd" />
+                          </svg>
+                          Strom
+                        </span>
+                      } @else if (entry.branch === 'gas') {
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400 whitespace-nowrap">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" clip-rule="evenodd" />
+                          </svg>
+                          Gas
+                        </span>
+                      } @else {
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300 whitespace-nowrap">
+                          Andere
+                        </span>
+                      }
                     </td>
 
                     <!-- Rate count -->
@@ -243,6 +251,13 @@
                         {{ rateCount(entry) }}
                       </span>
                       <span class="text-xs text-gray-400"> Tarife</span>
+                    </td>
+
+                    <!-- CLRYF -->
+                    <td class="px-4 py-4">
+                      <span class="text-xs font-medium text-gray-800 dark:text-gray-200 capitalize">
+                        {{ getRateTypeLabel(entry.rateType, entry.branch) }}
+                      </span>
                     </td>
 
                     <!-- Best price -->
@@ -581,13 +596,35 @@
                   <span
                     class="text-xs font-medium text-gray-800 dark:text-gray-200 capitalize"
                   >
-                    {{
-                      selectedEntry.branch === "electric"
-                        ? "Strom"
-                        : selectedEntry.branch === "gas"
-                          ? "Gas"
-                          : selectedEntry.branch || "—"
-                    }}
+                    @if (selectedEntry.branch === 'electric') {
+                      <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 whitespace-nowrap">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+                          <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd" />
+                        </svg>
+                        Strom
+                      </span>
+                    } @else if (selectedEntry.branch === 'gas') {
+                      <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400 whitespace-nowrap">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+                          <path fill-rule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" clip-rule="evenodd" />
+                        </svg>
+                        Gas
+                      </span>
+                    } @else {
+                      <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300 whitespace-nowrap">
+                        Andere
+                      </span>
+                    }
+                  </span>
+                </div>
+                <div class="flex justify-between px-4 py-2.5">
+                  <span class="text-xs text-gray-500 dark:text-gray-400"
+                    >CLRYF</span
+                  >
+                  <span
+                    class="text-xs font-medium text-gray-800 dark:text-gray-200 capitalize"
+                  >
+                    {{ getRateTypeLabel(selectedEntry.rateType, selectedEntry.branch) }}
                   </span>
                 </div>
                 <div class="flex flex-col px-4 py-2.5 gap-0.5">

@@ -3,6 +3,9 @@ package com.tarifvergleich.electricity.controller.customer;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.tarifvergleich.electricity.dto.ReportMeterReadingDto;
+import com.tarifvergleich.electricity.model.ReportMeterReading;
+import com.tarifvergleich.electricity.service.customer.CustomerMeterService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -29,6 +32,7 @@ public class CustomerPublicController {
 	private final CustomerDetailService customerDetailService;
 	private final CustomerGeneralService customerGeneralService;
 	private final CustomerEnergySupplierService customerEnergySupplierService;
+	private final CustomerMeterService customerMeterService;
 
 	@PostMapping("/add-contract-signature")
 	public ResponseEntity<?> addCustomerContractSignatures(@RequestPart("data") String token,
@@ -59,5 +63,10 @@ public class CustomerPublicController {
 	public ResponseEntity<?> fetchAllSupplierMessageCategory(
 			@RequestBody EnergySupplierMessageCategoryDto categoryDto) {
 		return ResponseEntity.ok(customerEnergySupplierService.fetchEnergySupplierMessageCategory(categoryDto));
+	}
+
+	@PostMapping("/fetch-report-meter-reading-category")
+	public ResponseEntity<?> fetchAllReportMeterReadingCategory(@RequestBody ReportMeterReadingDto categoryDto) {
+		return ResponseEntity.ok(customerMeterService.fetchCustomerReportMeterReading(categoryDto));
 	}
 }
