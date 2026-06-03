@@ -1,77 +1,101 @@
-.feature-header, .feature-header1{
-  padding: 0.25rem 0.5rem 0.35rem 0.5rem;
+.feature-header,
+.feature-header1 {
+  padding: 0.3rem 0.5rem 0.4rem 0.5rem;
 }
 
-.info-icon-home {
-  vertical-align: super;
-  position: relative;
-  margin-left: 1px;
-  cursor: pointer;
-  color:  #ffffff;
-  width: 1em;
-  height: 1em;
-  font-size: 0.7em;
-  font-weight: 500;
-  border-radius: 50%;
+.compare-price {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.container-address {
+  padding-bottom: 0;
+  margin: 0;
 }
 
 .container-compare {
-  padding-bottom: 0.25rem;
+  padding: 0.4rem 0rem 0.93rem 0rem;
+}
+
+.consumption-number {
+  padding: 0.4rem 0.5rem 0.4rem 0.5rem;
+  border: 1px solid #4a4949;
+  width: 16.2rem;
 }
 
 .container-per-year {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 1rem;
-  padding: 0.52rem 0rem 0.53rem 0rem;
+  padding: 0.74rem 0rem 0.4rem 0rem;
 }
 
-
-
-.container-double {
+.container-nein {
   display: flex;
   flex-direction: column;
-  gap: 1.7rem;
+  position: relative;
+  border: 1.5px solid #e6a817;
+  border-radius: 8px;
+  padding: 0.2rem 0.7rem 0.5rem 1rem;
+  background-color: rgba(255, 255, 255, 0.75);
+  gap: 0;
 }
 
-.double{
-  margin-bottom: 0.62rem;
+.feature-header-no {
+  font-weight: 700;
+  font-size: 15px;
+  color: #222;
+  display: flex;
+  justify-content: space-between;
+  padding-bottom: 0.5rem;
 }
 
+.close-banner {
+  padding-top: 0.5rem;
+  display: flex;
+  cursor: pointer;
+  line-height: 0.5;
+  font-weight: 600;
+  width: 100%;
+  justify-content: flex-end;
+}
+
+.container-description {
+  .container-message {
+    display: flex;
+    flex-direction: column;
+
+    .message {
+      font-size: 15px;
+      color: #333;
+      line-height: 1.5;
+
+      a {
+        color: #0066cc;
+        text-decoration: none;
+
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+    }
+  }
+}
 
 .top {
   top: 44%;
-  right: 20%;
+  right: 13%;
 }
 
-.bottom {
-  top: 55%;
-  right: 21%;
+.discount {
+  top: 74%;
+  right: 3%;
 }
 
-
-/* ------------------------------------------------  Dialog box --------------------------------- */
-
-.dialog-image {
-  width: 160px;
-  height: 100px;
-  object-fit: contain;
-  margin-bottom: 8px;
-  padding: 0.5rem;
-}
-
-.image {
-  height: 60px;
-  width: 60px;
-}
-
+/*   ---------- dialog box ------------- */
 
 :host ::ng-deep .dialog-content p {
-  margin: 0 ;
+  margin: 0;
   font-size: 18px;
 }
-
-
-
-

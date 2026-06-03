@@ -27,6 +27,12 @@
     contrast(96%);
 }
 
+.compare-price {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
 .icon-family-1 {
   height: 30px;
   width: 12px;
