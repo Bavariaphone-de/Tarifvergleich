@@ -45,6 +45,7 @@ export class DeliveryAddress implements OnInit, OnDestroy {
   deliveryMobile: string = '';
   deliveryPhone: string = '';
   deliveryType: string = 'electricity';
+  rateType: number = 0;
   dob: Date | null = null;
   providerDetails: any = null;
   hasDifferentBilling: boolean = false;
@@ -203,6 +204,7 @@ export class DeliveryAddress implements OnInit, OnDestroy {
       this.consumption = storedAddress.consumption || 0;
       this.persons = storedAddress.persons || 0;
       this.deliveryType = storedAddress.deliveryType || 'electricity';
+      this.rateType = storedAddress.rateType || 0;
     }
     this.providerDetails = {
       ...this.authService.getSelectedProvider(),
@@ -424,6 +426,7 @@ export class DeliveryAddress implements OnInit, OnDestroy {
         street: this.deliveryStreet,
         houseNumber: this.deliveryHouseNumber,
         deliveryType: this.deliveryType,
+        rateType: this.rateType,
         persons: this.persons,
         consumption: this.consumption,
       },

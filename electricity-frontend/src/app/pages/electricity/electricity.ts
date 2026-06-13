@@ -60,7 +60,8 @@ export class Electricity implements OnInit {
     private contentService: ContentService,
   ) {}
 
-  discountinfo: string | null = 'Die mögliche Ersparnis berechnet sich aus dem Vergleich zum örtlichen Grundversorger bei einem durchschnittlichen Verbrauch.';
+  discountinfo: string | null =
+    'Die mögliche Ersparnis berechnet sich aus dem Vergleich zum örtlichen Grundversorger bei einem durchschnittlichen Verbrauch.';
 
   activeInfo: 'discountinfo' | null = null;
 
@@ -84,10 +85,11 @@ export class Electricity implements OnInit {
   citySearch = '';
   filteredCityOptions: any[] = [];
   showCityDropdown = false;
+  consumptionError = false;
 
   ngOnInit(): void {
     this.contentService.getSidebar().subscribe((sidebar: any[]) => {
-      const item = sidebar.find(s => s.originalFileName === 'Hausstrom.png');
+      const item = sidebar.find((s) => s.originalFileName === 'Hausstrom.png');
       if (item && item.savingPriceDetail) {
         this.discountinfo = item.savingPriceDetail;
       }
@@ -383,6 +385,15 @@ export class Electricity implements OnInit {
   }
 
   goToComparison() {
+    const consumptionValue = Number(this.consumption);
+
+    if (!consumptionValue || consumptionValue <= 0) {
+      this.consumptionError = true;
+      return;
+    }
+
+    this.consumptionError = false;
+
     if (this.addressForm.invalid) {
       console.log('invalid address');
       this.addressForm.markAllAsTouched();

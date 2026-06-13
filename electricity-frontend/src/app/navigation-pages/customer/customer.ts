@@ -317,25 +317,37 @@ export class Customer {
   }
 
   fetchMeterReadingCategories() {
-    const payload = { adminId: this.customerData?.adminId || 1 };
-    this.http.post<any>(`${API_BASE}/customer/fetch-supplier-message-category`, payload).subscribe({
-      next: (res) => {
-        if (res && res.res && res.data) {
-          this.meterReadingCategories = res.data;
-        }
-      },
-      error: (err) => console.error(err),
-    });
+    const payload = { adminId: 1 };
+    this.http
+      .post<any>(`${API_BASE}/customer/fetch-report-meter-reading-category`, payload)
+      .subscribe({
+        next: (res) => {
+          if (res?.res) {
+            this.meterReadingCategories = res.data.map((item: any) => {
+              return {
+                label: item.categoryName,
+                value: item.reportMeterReadingCategoryId,
+              };
+            });
+          }
+        },
+        error: (err) => console.error(err),
+      });
   }
 
   fetchInvoiceCategories() {
     const payload = { adminId: this.customerData?.adminId || 1 };
     this.http
-      .post<any>(`http://192.168.0.234:8080/customer/fetch-invoice-categories`, payload)
+      .post<any>(`${API_BASE}/customer/fetch-invoice-categories`, payload)
       .subscribe({
         next: (res) => {
-          if (res && res.res && res.data) {
-            this.invoiceCategories = res.data;
+          if (res?.res) {
+            this.invoiceCategories = res.data.map((item: any) => {
+              return {
+                label: item.categoryName,
+                value: item.invoiceCategoryId,
+              };
+            });
           }
         },
         error: (err) => console.error(err),
@@ -735,7 +747,7 @@ export class Customer {
   }
 
   // Report meter reading
-  meterReadingCategory: string = '';
+  meterReadingCategory: number | null = null;
   meterReadingDate: string = '';
   meterReadingValue: string = '';
   submittedReportMeterReading: boolean = false;
@@ -894,7 +906,7 @@ export class Customer {
   }
 
   /*--- Request Invoice ---*/
-  invoiceCategory: string = '';
+  invoiceCategory: number | null = null;
   invoiceMessage: string = '';
   submittedInvoice: boolean = false;
 
@@ -931,7 +943,7 @@ export class Customer {
     this.http.post<any>(`${API_BASE}/customer/submit-invoice-request`, payload).subscribe({
       next: (res) => {
         if (res?.res) {
-          this.invoiceCategory = '';
+          this.invoiceCategory = null;
           this.invoiceMessage = '';
           this.submittedInvoice = true;
         }

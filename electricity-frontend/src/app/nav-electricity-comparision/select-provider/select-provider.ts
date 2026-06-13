@@ -236,6 +236,9 @@ export class SelectProvider implements OnInit {
   hasAddress = false;
   isEditMode = false;
   isModalOpen = false;
+  rateType: number = 0;
+  title: string = ' Strom | Hausstrom';
+  icon: string = 'assets/icons/Stromvergleich.png';
 
   @ViewChild('popoverContainer', { static: false }) popoverContainer!: ElementRef;
 
@@ -266,6 +269,7 @@ export class SelectProvider implements OnInit {
       this.houseNumber = data.houseNumber;
       this.consum = data.consumption ?? this.consum;
       this.selectedPersons = data.persons ?? this.selectedPersons;
+      this.rateType = data.rateType ?? this.rateType;
       this.hasAddress = true;
       // this.isOpen = true;
       // this.isOpen = false;
@@ -310,9 +314,6 @@ export class SelectProvider implements OnInit {
     this.handleCityChanges();
     this.handleStreetChanges();
 
-    //   const saved = data.address;
-    // const saved = this.authService.getAddressData();
-    // if (saved) {
     const localData = this.authService.getAddressData();
 
     if (localData?.route === 'electricity') {
@@ -337,11 +338,24 @@ export class SelectProvider implements OnInit {
         this.prefillAddress(apiData);
       });
     }
+
+    if (this.rateType === 1) {
+      this.title = 'Heizstrom | Wärmepumpe';
+      this.icon = 'assets/icons/Warmepumpe.png';
+    } else if (this.rateType === 2) {
+      this.title = 'Heizstrom | Nachtspeicher';
+      this.icon = 'assets/icons/Nachtspeicherofen.png';
+    } else if (this.rateType === 3) {
+      this.title = 'Ladestrom | Autostrom';
+      this.icon = 'assets/icons/Ladestrom.png';
+    } else {
+      this.title = 'Strom | Hausstrom';
+      this.icon = 'assets/icons/Stromvergleich.png';
+    }
+    this.cdr.detectChanges();
   }
 
   prefillAddress(saved: any) {
-    console.log('Prefill Address:', saved);
-    console.log('Prefill Address:', saved);
 
     this.isRestoring = true;
 
@@ -563,7 +577,7 @@ export class SelectProvider implements OnInit {
         debounceTime(500),
         switchMap((zip) => {
           const isValidZip = /^\d{5}$/.test(zip);
-          if (this.isRestoring) return of([]);
+          // if (this.isRestoring) return of([]);
           this.resetCity();
           this.resetStreet();
           this.resetHouseNumber();
@@ -728,6 +742,7 @@ export class SelectProvider implements OnInit {
       consum: this.consum,
       type: this.type,
       branch: this.branch,
+      rateType: this.rateType,
       customerId: Number(customerId),
       adminId: 1,
     };
@@ -1127,6 +1142,7 @@ export class SelectProvider implements OnInit {
       consumption: this.consum,
       deliveryType: this.deliveryType,
       menuActive: 'Strom',
+      rateType: this.rateType,
     };
 
     this.authService.setAddressData(data);
