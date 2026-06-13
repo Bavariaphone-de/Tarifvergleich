@@ -601,7 +601,7 @@ export class SelectGasProvider implements OnInit {
         debounceTime(500),
         switchMap((zip) => {
           const isValidZip = /^\d{5}$/.test(zip);
-          if (this.isRestoring) return of([]);
+          // if (this.isRestoring) return of([]);
           this.resetCity();
           this.resetStreet();
           this.resetHouseNumber();

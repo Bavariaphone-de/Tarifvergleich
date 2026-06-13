@@ -92,7 +92,6 @@ public class CustomerBookingService {
 		if (deliveryDto.getSalutation() == null || deliveryDto.getSalutation().isEmpty())
 			throw new InternalServerException("Salutation missing", HttpStatus.OK);
 
-
 		if (deliveryDto.getZip() == null || deliveryDto.getZip().isEmpty())
 			throw new InternalServerException("Zip code missing", HttpStatus.OK);
 
@@ -115,10 +114,10 @@ public class CustomerBookingService {
 						&& !deliveryDto.getDeliveryType().equalsIgnoreCase("GAS")))
 			throw new InternalServerException("Delivery type missing", HttpStatus.OK);
 
-//		if (deliveryDto.getDeliveryType().equalsIgnoreCase("ELECTRICITY") && (deliveryDto.getRateType() == null
-//				|| deliveryDto.getRateType() < 0 || deliveryDto.getRateType() > 3))
-//			throw new InternalServerException("Undefined or missing sub type of electricity", HttpStatus.OK);
-//		else
+		if (deliveryDto.getDeliveryType().equalsIgnoreCase("ELECTRICITY") && (deliveryDto.getRateType() == null
+				|| deliveryDto.getRateType() < 0 || deliveryDto.getRateType() > 3))
+			throw new InternalServerException("Undefined or missing sub type of electricity", HttpStatus.OK);
+		else if (deliveryDto.getDeliveryType().equalsIgnoreCase("GAS"))
 			deliveryDto.setRateType(0);
 
 		LocalDate todayInBerlin = LocalDate.now(ZoneId.of("Europe/Berlin"));
@@ -200,8 +199,7 @@ public class CustomerBookingService {
 					.mobile(deliveryDto.getMobile()).telephone(deliveryDto.getTelephone())
 					.deliveryType(deliveryDto.getDeliveryType().toUpperCase()).customerProvider(selectedProvider)
 					.customerId(customer).numberOfPerson(deliveryDto.getPersons())
-					.totalConsumption(deliveryDto.getConsumption())
-					.rateType(deliveryDto.getRateType())
+					.totalConsumption(deliveryDto.getConsumption()).rateType(deliveryDto.getRateType())
 					.dob(helper.toGermamUnixTimestamp(deliveryDto.getDob())).build();
 
 			delivery.setUserAdmin(customer.getAdmin());
@@ -271,7 +269,8 @@ public class CustomerBookingService {
 		if (customerConnectDto.getSubmitLater() == null)
 			throw new InternalServerException("Submit later not found", HttpStatus.OK);
 
-		if (!customerConnectDto.getSubmitLater() && (customerConnectDto.getMeterNumber() == null || customerConnectDto.getMeterNumber().isEmpty()))
+		if (!customerConnectDto.getSubmitLater()
+				&& (customerConnectDto.getMeterNumber() == null || customerConnectDto.getMeterNumber().isEmpty()))
 			throw new InternalServerException("Meter number missing", HttpStatus.OK);
 
 		CustomerDelivery delivery = customerDeliveryRepo.findById(deliveryId)

@@ -180,6 +180,9 @@ export type ApiBooking = {
   orderPlaced?: boolean | null;
   expiryOn?: number | null;
 
+  deliveryType: string | null;
+  rateType: number | null;
+
   notificationEnabled?: boolean | null;
 
   customerAddress?: Address | null;
@@ -216,7 +219,7 @@ export class BookingListComponent implements OnInit {
   filter = 0;
   searchTerm = "";
   isFilterOpen = false;
-  typeFilter = '';
+  typeFilter = "";
   isTypeFilterOpen = false;
 
   hasMoreData = true;
@@ -322,14 +325,14 @@ export class BookingListComponent implements OnInit {
   }
 
   getTypeFilterLabel(): string {
-    if (this.typeFilter === 'electric') return 'Strom';
-    if (this.typeFilter === 'gas') return 'Gas';
-    return 'Alle Typen';
+    if (this.typeFilter === "electric") return "Strom";
+    if (this.typeFilter === "gas") return "Gas";
+    return "Alle Typen";
   }
 
   get filteredBookings(): ApiBooking[] {
     if (!this.typeFilter) return this.bookings;
-    return this.bookings.filter(b => b.provider?.branch === this.typeFilter);
+    return this.bookings.filter((b) => b.provider?.branch === this.typeFilter);
   }
 
   nextPage(): void {
@@ -375,7 +378,11 @@ export class BookingListComponent implements OnInit {
     }
 
     // Open Order
-    if (booking.order && booking.order != null && booking.order?.orderId === null) {
+    if (
+      booking.order &&
+      booking.order != null &&
+      booking.order?.orderId === null
+    ) {
       return "Open Order";
     }
 
@@ -391,31 +398,30 @@ export class BookingListComponent implements OnInit {
 
     return "Unknown";
   }
-
   getBookingStatusClass(booking: ApiBooking): string {
     const status = this.getBookingStatus(booking);
 
     switch (status) {
       case "Expired":
-        return "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400";
+        return "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 ring-1 ring-red-600/20";
 
       case "Document Uploaded":
-        return "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400";
+        return "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 ring-1 ring-green-600/20";
 
       case "Order Created":
-        return "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400";
+        return "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 ring-1 ring-purple-600/20";
 
       case "Open Order":
-        return "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400";
+        return "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 ring-1 ring-blue-600/20";
 
       case "Pending":
-        return "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400";
+        return "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400 ring-1 ring-gray-600/20 animate-pulse";
 
       case "Incomplete":
-        return "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400";
+        return "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400 ring-1 ring-yellow-600/20";
 
       default:
-        return "bg-gray-100 text-gray-700";
+        return "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400 ring-1 ring-gray-600/20";
     }
   }
 

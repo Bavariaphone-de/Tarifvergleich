@@ -421,14 +421,14 @@ public class AdminCustomerManagementService {
 				.findByIdAndAdminAdminId(serviceRequestId, adminId).orElseThrow(() -> new InternalServerException(
 						"Customer Service request not found with this credential", HttpStatus.OK));
 
-		if (serviceRequest.getInProgress()) {
+		if (!Boolean.TRUE.equals(serviceRequest.getIsClosed())) {
 			serviceRequest.setIsOpen(false);
 			serviceRequest.setInProgress(false);
 			serviceRequest.setIsClosed(true);
 			serviceRequest.setRequestClosedOn(Helper.getCurrentTimeBerlin());
-		} else if (serviceRequest.getIsClosed()) {
-			serviceRequest.setIsOpen(false);
-			serviceRequest.setInProgress(true);
+		} else {
+			serviceRequest.setIsOpen(true);
+			serviceRequest.setInProgress(false);
 			serviceRequest.setIsClosed(false);
 			serviceRequest.setRequestClosedOn(null);
 		}

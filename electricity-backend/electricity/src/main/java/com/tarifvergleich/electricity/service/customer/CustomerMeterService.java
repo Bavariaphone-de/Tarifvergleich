@@ -1,8 +1,11 @@
 package com.tarifvergleich.electricity.service.customer;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 
+import com.tarifvergleich.electricity.dto.ReportMeterReadingCategoryDto;
+import com.tarifvergleich.electricity.model.ReportMeterReadingCategory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,7 +36,7 @@ public class CustomerMeterService {
 	private final ReportMeterReadingRepository reportMeterReadingRepo;
 	private final FileServiceCustomer fileServiceCustomer;
 	private final CustomerRepository customerRepo;
-	private final ReportMeterReadingCategoryRepo reportMeterReadingCategoryRepo;
+	private final com.tarifvergleich.electricity.repository.ReportMeterReadingCategoryRepo reportMeterReadingCategoryRepo;
 
 	public Map<String, Object> updateMeterDesignation(Long connectionId, String meterDesignation) {
 
@@ -121,5 +124,17 @@ public class CustomerMeterService {
 		}
 
 		return Map.of("res", true, "message", "Meter reading submitted successfully");
+	}
+
+	public Map<String, Object> fetchCustomerReportMeterReading(ReportMeterReadingDto categoryDto) {
+		if (categoryDto == null || categoryDto.getAdminId() == null || categoryDto.getAdminId() <= 0)
+			throw new InternalServerException("Admin id missing", HttpStatus.OK);
+
+		List<ReportMeterReadingCategory> categories = reportMeterReadingCategoryRepo
+				.findAllByAdminAdminIdOrderByCategoryNameAsc(categoryDto.getAdminId());
+
+		List<ReportMeterReadingCategoryDto.ReportMeterReadingCategoryAdminResponseDto> response = categories.stream()
+				.map(ReportMeterReadingCategoryDto::mapForAdmin).toList();
+		return Map.of("res", true, "data", response);
 	}
 }

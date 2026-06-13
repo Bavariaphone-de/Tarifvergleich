@@ -1433,6 +1433,7 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  width: 50%;
 }
 
 .document-logo {
@@ -3252,6 +3253,10 @@ input {
 
   .payment-cards-grid {
     grid-template-columns: 1fr;
+  }
+
+  .document-top{
+    display: block;
   }
 }
 

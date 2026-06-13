@@ -321,7 +321,6 @@ public class AdminCustomerDeliveryManagementService {
 
 		CustomerDelivery delivery = order.getDelivery();
 
-
 		/* Map egon place order payload */
 		AdminCreateOrderEgonDto placeOrderRequest = AdminCreateOrderEgonDto.mapToEgonRequest(delivery, "new");
 
@@ -453,6 +452,14 @@ public class AdminCustomerDeliveryManagementService {
 		CustomerDelivery delivery = customerDeliveryRepo
 				.findByIdAndAdminAdminId(deliveryDto.getDeliveryId(), deliveryDto.getAdminId()).orElseThrow(
 						() -> new InternalServerException("Delivery not found with this credential", HttpStatus.OK));
+
+		CustomerConnect connectionData = delivery.getCustomerConnection();
+
+		if (connectionData == null)
+			throw new InternalServerException("Connection data missing", HttpStatus.OK);
+
+		if (connectionData.getMeterNumber() == null || connectionData.getMeterNumber().isEmpty())
+			throw new InternalServerException("Meter number missing", HttpStatus.OK);
 
 		CustomerOrder existingOrder = customerOrderRepo.findByDeliveryId(delivery.getId()).orElse(null);
 		if (existingOrder != null)
@@ -634,8 +641,8 @@ public class AdminCustomerDeliveryManagementService {
 
 		return Map.of("res", true, "message", "Contract Mail send successfully");
 	}
-	
-	public Map<String, Object> fetchEnergyProviderMessagesByCustomer(){
+
+	public Map<String, Object> fetchEnergyProviderMessagesByCustomer() {
 		return Map.of();
 	}
 

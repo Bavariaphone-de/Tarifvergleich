@@ -31,28 +31,24 @@ public class CustomerComparingEnergyDto {
 	private String requestIp;
 	private String requestDeviceDetails;
 	@JsonRawValue
-	private JsonNode baseProviderResponse; 
+	private JsonNode baseProviderResponse;
 	@JsonRawValue
 	private JsonNode energyRateResponse;
 	private Integer adminId;
-	
+	private Integer rateType;
+
 	public static CustomerComparingEnergyDto customerComparisonResponse(CustomerComparingEnergy energyComp) {
-		return CustomerComparingEnergyDto.builder()
-				.id(energyComp.getId())
-				.zip(energyComp.getZip())
-	            .city(energyComp.getCity())
-	            .street(energyComp.getStreet())
-	            .houseNumber(energyComp.getHouseNumber())
-	            .consumption(energyComp.getConsumption())
-	            .consumerType(energyComp.getConsumerType())
-	            .branch(energyComp.getBranch())
-	            .customer(CustomerDto.customerShortResponse(energyComp.getCustomer()))
-	            .comparedOn(energyComp.getComparedOn())
-	            .requestIp(energyComp.getRequestIp())
-	            .requestDeviceDetails(energyComp.getRequestDeviceDetails())
-	            .baseProviderResponse(energyComp.getBaseProviderResponse())
-	            .energyRateResponse(energyComp.getEnergyRateResponse())
-	            .adminId(energyComp.getAdmin().getAdminId())
-				.build();
+		String[] rateVal = new String[0];
+		if (energyComp.getRequestpayload() != null)
+			rateVal = energyComp.getRequestpayload().path("rateType").asText().split(",");
+		return CustomerComparingEnergyDto.builder().id(energyComp.getId()).zip(energyComp.getZip())
+				.city(energyComp.getCity()).street(energyComp.getStreet()).houseNumber(energyComp.getHouseNumber())
+				.consumption(energyComp.getConsumption()).consumerType(energyComp.getConsumerType())
+				.branch(energyComp.getBranch()).customer(CustomerDto.customerShortResponse(energyComp.getCustomer()))
+				.comparedOn(energyComp.getComparedOn()).requestIp(energyComp.getRequestIp())
+				.requestDeviceDetails(energyComp.getRequestDeviceDetails())
+				.baseProviderResponse(energyComp.getBaseProviderResponse())
+				.energyRateResponse(energyComp.getEnergyRateResponse()).adminId(energyComp.getAdmin().getAdminId())
+				.rateType(rateVal.length > 1 ? Integer.valueOf(rateVal[0]) : 0).build();
 	}
 }

@@ -79,7 +79,7 @@
                             </div>
 
                             <div class="consum-row">
-                                <input type="text" id="consumptionValue" formControlName="consum" />
+                                <input type="text" id="consumptionValue" [(ngModel)]="consum" formControlName="consum" />
                                 <!-- <span  class="consumption-number"> {{ consum | number }}</span> -->
                                 <span class="watt-per-year">kWh / Jahr</span>
                             </div>
