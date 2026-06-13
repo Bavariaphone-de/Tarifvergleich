@@ -50,7 +50,7 @@ export class CustomerDetailsComponent implements OnInit {
   successMessage = "";
   errorMessageEmail = "";
 
-  Editor = ClassicEditor;
+  public Editor: any = ClassicEditor;
   emailcontent: string = "";
 
   selectedPdfId: number | null = null;

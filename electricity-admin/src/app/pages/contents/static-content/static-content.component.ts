@@ -47,7 +47,7 @@ export class StaticContentComponent implements OnInit {
   savedImageTitle: string = "";
   savedPopupContent: string = "";
 
-  public Editor = ClassicEditor;
+  public Editor: any = ClassicEditor;
 
   constructor(
     private api: ApiService,
