@@ -29,7 +29,6 @@
   }
 
   <!-- Table -->
-  @if (!isLoading && !errorMessage && reportMeterReadings.length > 0) {
   <div class="relative flex overflow-hidden rounded-2xl bg-white dark:bg-gray-900 shadow">
     <div class="flex-1 min-w-0 p-6">
 
@@ -37,6 +36,7 @@
         <div class="flex items-center gap-2 mb-6">
             <div class="flex-1">
                 <input type="text" [(ngModel)]="searchTerm"
+                (ngModelChange)="onSearchInput($event)"
                     placeholder="Suche nach Liefer-ID, Kunden-ID..."
                     class="w-full px-3 py-2 rounded-lg border border-gray-300"/>
             </div>
@@ -49,8 +49,8 @@
                         hover:bg-gray-50 dark:hover:bg-gray-700
                         transition flex items-center gap-2 whitespace-nowrap">
 
-                    <span>Status: {{ getSelectedFilterLabel() }}</span>
-
+                    <!-- <span>Status: {{ getSelectedFilterLabel() }}</span> -->
+                    Kategorie: {{ selectedCategory || 'Alle' }}
                     <svg xmlns="http://www.w3.org/2000/svg"
                         class="h-4 w-4"
                         [class.rotate-180]="isFilterOpen"
@@ -65,6 +65,25 @@
                     </svg>
 
                 </button>
+
+                    @if (isFilterOpen) {
+                        <div class="absolute right-0 mt-2 w-48 bg-white border rounded-lg shadow z-50">
+
+                            <button
+                            class="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                            (click)="selectCategory('')">
+                            Alle
+                            </button>
+
+                            @for (category of categories; track category) {
+                            <button
+                                class="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                                (click)="selectCategory(category)">
+                                {{ category }}
+                            </button>
+                            }
+                        </div>
+                    }
             </div>
 
         </div>
@@ -323,7 +342,6 @@
 
         }
     </div> 
-    }
    
     <!-- Error -->
      @if (!isLoading && errorMessage) {

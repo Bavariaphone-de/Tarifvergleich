@@ -1,9 +1,11 @@
-import { Component, OnInit } from "@angular/core";
+import { Component, OnInit, OnDestroy } from "@angular/core";
 import { CommonModule, NgClass } from "@angular/common";
 import { ApiService } from "../../../shared/services/api.service";
 import { Router } from "@angular/router";
 import { HttpClient } from "@angular/common/http";
 import { FormsModule } from '@angular/forms';
+import { Subject, Subscription } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from "rxjs/operators";
 
 export interface CustomerInvoiceRequest {
   id?: number;
@@ -33,7 +35,7 @@ export interface CustomerInvoiceRequest {
   templateUrl: './customer-invoice-request.component.html',
   styleUrl: './customer-invoice-request.component.css',
 })
-export class CustomerInvoiceRequestComponent implements OnInit {
+export class CustomerInvoiceRequestComponent implements OnInit, OnDestroy {
 
   customerInvoiceRequests: CustomerInvoiceRequest[] = [];
 
@@ -52,6 +54,8 @@ export class CustomerInvoiceRequestComponent implements OnInit {
   isFilterOpen = false;
 
   searchTerm = '';
+  private searchTerm$ = new Subject<string>();
+  private searchSub!: Subscription;
 
   constructor(
     // private api: ApiService,
@@ -60,7 +64,33 @@ export class CustomerInvoiceRequestComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.searchSub = this.searchTerm$
+      .pipe(
+        debounceTime(350),
+        distinctUntilChanged()
+      )
+      .subscribe(() => {
+        this.fetchCustomerInvoiceRequests();
+      });
+
     this.fetchCustomerInvoiceRequests();
+  }
+
+  ngOnDestroy(): void {
+    this.searchSub?.unsubscribe();
+  }
+
+  onSearchInput(value: string): void {
+    this.searchTerm = value ?? '';
+    this.searchTerm$.next(this.searchTerm);
+  }
+
+  clearSearch(): void {
+    if (!this.searchTerm) {
+      return;
+    }
+    this.searchTerm = '';
+    this.searchTerm$.next('');
   }
 
   fetchCustomerInvoiceRequests(): void {
@@ -68,19 +98,21 @@ export class CustomerInvoiceRequestComponent implements OnInit {
     this.isLoading = true;
     this.errorMessage = '';
 
-    this.http.get('http://localhost:8080/admin/customer-invoice-request')
+
+    this.closeSidebar();
+    const payload = {
+        search: this.searchTerm?.trim() || ''
+      };
+      this.http.post('http://localhost:8080/admin/customer-invoice-request', payload)
+
       .subscribe({
         next: (res: any) => {
 
           this.isLoading = false;
 
-          if (Array.isArray(res)) {
-            this.customerInvoiceRequests = res;
-          } else if (res?.data) {
-            this.customerInvoiceRequests = res.data;
-          } else {
-            this.customerInvoiceRequests = [];
-          }
+          const data = Array.isArray(res) ? res : Array.isArray(res?.data)
+              ? res.data : [];
+          this.customerInvoiceRequests = data;
         },
 
         error: (err : any) => {
@@ -94,10 +126,12 @@ export class CustomerInvoiceRequestComponent implements OnInit {
       });
   }
 
+  trackById(index: number, item: CustomerInvoiceRequest): number {
+    return item.id ?? index;
+  }
+
   formatDate(date?: string): string {
-
     if (!date) return '—';
-
     return new Intl.DateTimeFormat('de-DE', {
       day: '2-digit',
       month: '2-digit',

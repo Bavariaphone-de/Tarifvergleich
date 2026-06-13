@@ -29,7 +29,6 @@
   }
 
   <!-- Table -->
-  @if (!isLoading && !errorMessage && customerInvoiceRequests.length > 0) {
   <div class="relative flex overflow-hidden rounded-2xl bg-white dark:bg-gray-900 shadow">
     <div class="flex-1 min-w-0 p-6">
 
@@ -37,6 +36,7 @@
         <div class="flex items-center gap-2 mb-6">
             <div class="flex-1">
                 <input type="text" [(ngModel)]="searchTerm"
+                (ngModelChange)="onSearchInput($event)"
                     placeholder="Suche nach Liefer-ID, Kunden-ID..."
                     class="w-full px-3 py-2 rounded-lg border border-gray-300"/>
             </div>
@@ -84,7 +84,7 @@
         </tr>
       </thead>
       <tbody class="divide-y dark:divide-gray-700">
-        @for (request of customerInvoiceRequests; track request.id) {
+        @for (request of customerInvoiceRequests; track trackById($index, request)) {
         <tr class="hover:bg-gray-50 dark:hover:bg-gray-800 transition cursor-pointer">
             <td class="px-4 py-4"> {{ request.id }} </td>
             <td class="px-4 py-4">
@@ -276,7 +276,6 @@
 
         }
     </div> 
-    }
    
     <!-- Error -->
      @if (!isLoading && errorMessage) {

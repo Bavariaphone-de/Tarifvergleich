@@ -23,10 +23,24 @@ public class AdminCustomerInvoiceRequestService {
 	private final CustomerRepository customerRepository;
 	private final CustomerOrderRepository customerOrderRepository;
 
-	public List<CustomerInvoiceRequestResponseForAdminDto> getAllMeterReadings() {
+	public List<CustomerInvoiceRequestResponseForAdminDto> getAllInvoiceRequests() {
 
 		return customerInvoiceRequestRepository.findAll().stream().map(entity -> convertToDto(entity)).toList();
 	}
+	
+	public List<CustomerInvoiceRequestResponseForAdminDto> getAllInvoiceRequests(String search) {
+
+	    if (search == null || search.trim().isEmpty()) {
+	        return getAllInvoiceRequests();
+	    }
+
+	    return customerInvoiceRequestRepository
+	            .searchInvoiceRequests(search.trim())
+	            .stream()
+	            .map(this::convertToDto)
+	            .toList();
+	}
+	
 	private CustomerInvoiceRequestResponseForAdminDto convertToDto(CustomerInvoiceRequest entity) {
 
 		CustomerOrder order = customerOrderRepository.findByOrderId(Long.valueOf(entity.getOrderId())).orElse(null);

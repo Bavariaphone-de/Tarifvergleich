@@ -26,6 +26,21 @@ public class AdminReportMeterReadingService {
 
 		return reportMeterReadingRepository.findAll().stream().map(entity -> convertToDto(entity)).toList();
 	}
+	
+	public List<ReportMeterReadingResponseForAdminDto> getAllMeterReadings(String search) {
+
+	    List<ReportMeterReading> readings;
+
+	    if (search != null && !search.trim().isEmpty()) {
+	        readings = reportMeterReadingRepository.searchMeterReadings(search.trim());
+	    } else {
+	        readings = reportMeterReadingRepository.findAll();
+	    }
+
+	    return readings.stream()
+	            .map(this::convertToDto)
+	            .toList();
+	}
 
 	private ReportMeterReadingResponseForAdminDto convertToDto(ReportMeterReading entity) {
 

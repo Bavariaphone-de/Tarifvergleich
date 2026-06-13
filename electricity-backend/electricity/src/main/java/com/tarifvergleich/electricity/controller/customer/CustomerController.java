@@ -102,7 +102,7 @@ public class CustomerController {
 
 	@PostMapping("/fetch-placed-deliveries")
 	public ResponseEntity<?> fetchCustomerWithPlacedDelivery(@RequestBody CustomerDto customerDto) {
-		return ResponseEntity.ok(customerDetailService.fetchAllCustomerDeliveries(customerDto.getId()));
+		return ResponseEntity.ok(customerDetailService.fetchAllCustomerDeliveries(customerDto.getId(), 1));
 	}
 
 	@PostMapping("/fetch-cutomer-service")
