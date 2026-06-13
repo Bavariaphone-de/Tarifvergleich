@@ -4,8 +4,11 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.tarifvergleich.electricity.exception.InternalServerException;
 import com.tarifvergleich.electricity.model.CustomerAddress;
 import com.tarifvergleich.electricity.model.CustomerBillingAddress;
 import com.tarifvergleich.electricity.model.CustomerConnect;
@@ -46,6 +49,9 @@ public record AdminCreateOrderEgonDto(EgonAddressDto delivery, EgonAddressDto bi
 			payment = new EgonPaymentSepaDto("sepa", customerPayment.getIban());
 		else
 			payment = new EgonPaymentDebitDto("debit");
+
+		if (customerConnection.getMeterNumber() == null || customerConnection.getMeterNumber().isEmpty())
+			throw new InternalServerException("Meter number missing", HttpStatus.OK);
 
 		EgonProductDto product = new EgonProductDto(provider.getRateId(),
 				helper.toGermalDateStamp(Helper.getCurrentTimeBerlin()), delivery.getTotalConsumption(),
