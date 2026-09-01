@@ -160,10 +160,16 @@ export class Customer {
     if (this.activeTab == 3) {
       this.fetchServiceCount();
       this.fetchAllRequests();
+      this.showDetails = false;
+      this.confirmationList = false;
+      console.log('active changes', this.showDetails);
+      this.cdr.detectChanges();
     }
     if (this.activeTab == 4) {
       this.checkAttorneyStatus();
     }
+    this.redirectToMeter = false;
+    this.supplierMessageCategory = 0;
     this.cdr.detectChanges();
   }
 
@@ -337,21 +343,19 @@ export class Customer {
 
   fetchInvoiceCategories() {
     const payload = { adminId: this.customerData?.adminId || 1 };
-    this.http
-      .post<any>(`${API_BASE}/customer/fetch-invoice-categories`, payload)
-      .subscribe({
-        next: (res) => {
-          if (res?.res) {
-            this.invoiceCategories = res.data.map((item: any) => {
-              return {
-                label: item.categoryName,
-                value: item.invoiceCategoryId,
-              };
-            });
-          }
-        },
-        error: (err) => console.error(err),
-      });
+    this.http.post<any>(`${API_BASE}/customer/fetch-invoice-categories`, payload).subscribe({
+      next: (res) => {
+        if (res?.res) {
+          this.invoiceCategories = res.data.map((item: any) => {
+            return {
+              label: item.categoryName,
+              value: item.invoiceCategoryId,
+            };
+          });
+        }
+      },
+      error: (err) => console.error(err),
+    });
   }
 
   /*── Fetch customer details ──*/
@@ -667,8 +671,15 @@ export class Customer {
   }
 
   saveSelectedMeterName() {
-    this.isEditingSelectedMeterName = false;
+    const meterDesignation = (this.selectedMeter?.meterDesignation || '').trim();
 
+    // Check empty value
+    if (!meterDesignation) {
+      this.scheduleErrorMessage = 'Zählerbezeichnung darf nicht leer sein.';
+      return;
+    }
+
+    this.isEditingSelectedMeterName = false;
     const payload = {
       connectionId: this.selectedMeter?.id,
       meterDesignation: this.selectedMeter?.meterDesignation,
@@ -690,9 +701,18 @@ export class Customer {
   }
 
   cancelSelectedMeterEdit() {
-    this.selectedMeter.meterName = this.originalSelectedMeterName;
+    // this.selectedMeter.meterName = this.originalSelectedMeterName;
 
-    this.isEditingSelectedMeterName = false;
+    // this.isEditingSelectedMeterName = false;
+
+    this.selectedMeter.meterDesignation = this.originalSelectedMeterName;
+
+    this.selectedMeter.isEditingSelectedMeterName = false;
+
+    // Remove temporary original value
+    // delete this.selectedMeter.originalMeterName;
+
+    this.cdr.detectChanges();
   }
 
   // =============================
@@ -719,6 +739,13 @@ export class Customer {
   }
 
   saveListMeterName(item: any) {
+    const meterDesignation = (item.meterDesignation || '').trim();
+
+    // Check empty value
+    if (!meterDesignation) {
+      this.scheduleErrorMessage = 'Zählerbezeichnung darf nicht leer sein.';
+      return;
+    }
     const payload = {
       connectionId: item.id,
       meterDesignation: item.meterDesignation,
@@ -730,7 +757,7 @@ export class Customer {
           item.isEditingMeterName = false;
 
           this.syncMeterDesignation(item.deliveryId, item.meterDesignation);
-
+          delete item.originalMeterDesignation;
           this.cdr.detectChanges();
         }
       },
@@ -742,8 +769,17 @@ export class Customer {
   }
 
   cancelListMeterEdit(item: any) {
-    item.meterName = item.originalMeterName;
+    // item.meterName = item.originalMeterName;
+    // item.isEditingMeterName = false;
+
+    item.meterDesignation = item.originalMeterName;
+
     item.isEditingMeterName = false;
+
+    // Remove temporary original value
+    delete item.originalMeterName;
+
+    this.cdr.detectChanges();
   }
 
   // Report meter reading
@@ -1051,6 +1087,18 @@ export class Customer {
     return enabled;
   }
 
+  // get filteredDays() {
+  //   return this.availableDays
+  //     .map((item) => {
+  //       const found = this.daysOfWeek.find((d) => d.value === item.day);
+
+  //       return {
+  //         ...found,
+  //         date: item.date,
+  //       };
+  //     })
+  //     .filter(Boolean);
+  // }
   get filteredDays() {
     return this.availableDays
       .map((item) => {
@@ -1061,9 +1109,34 @@ export class Customer {
           date: item.date,
         };
       })
-      .filter(Boolean);
+      .filter((day: any) => {
+        if (!day) return false;
+
+        // If today, only show it if at least one time slot is available
+        const todayStr = this.getBerlinTodayString();
+
+        if (day.date === todayStr) {
+          return this.timeSlots.some((slot) => this.isTimeSlotEnabled(slot.value));
+        }
+
+        // Future days → show normally
+        return true;
+      });
   }
 
+  private getBerlinTodayString(): string {
+    const berlinNow = new Date(
+      new Date().toLocaleString('en-US', {
+        timeZone: 'Europe/Berlin',
+      }),
+    );
+
+    const year = berlinNow.getFullYear();
+    const month = String(berlinNow.getMonth() + 1).padStart(2, '0');
+    const day = String(berlinNow.getDate()).padStart(2, '0');
+
+    return `${year}-${month}-${day}`;
+  }
   isDayEnabled(dayValue: string): boolean {
     return this.availableDays.some((d) => d.day === dayValue);
   }
@@ -1137,39 +1210,73 @@ export class Customer {
     return { start, end };
   }
 
-  isTimeSlotEnabled(slotValue: string): boolean {
-    if (!this.selectedDay?.date) return true;
+  // isTimeSlotEnabled(slotValue: string): boolean {
+  //   if (!this.selectedDay?.date) return true;
 
-    const germanNow = new Date(
+  //   const germanNow = new Date(
+  //     new Date().toLocaleString('en-US', {
+  //       timeZone: 'Europe/Berlin',
+  //     }),
+  //   );
+
+  //   const todayStr = germanNow.toISOString().split('T')[0];
+
+  //   const selectedDate = this.selectedDay.date;
+
+  //   // future dates → all enabled
+  //   if (selectedDate !== todayStr) {
+  //     return true;
+  //   }
+
+  //   const currentHour = germanNow.getHours() + germanNow.getMinutes() / 60;
+
+  //   const slot = this.getSlotTime(slotValue);
+
+  //   if (!slot) return false;
+
+  //   // already started
+  //   if (currentHour >= slot.start) {
+  //     return false;
+  //   }
+
+  //   // minimum 2h before
+  //   return slot.start - currentHour >= 2;
+  // }
+  isTimeSlotEnabled(slotValue: string): boolean {
+    if (!this.selectedDay?.date) {
+      return true;
+    }
+
+    const berlinNow = new Date(
       new Date().toLocaleString('en-US', {
         timeZone: 'Europe/Berlin',
       }),
     );
 
-    const todayStr = germanNow.toISOString().split('T')[0];
-
+    const todayStr = this.getBerlinTodayString();
     const selectedDate = this.selectedDay.date;
 
-    // future dates → all enabled
+    // Future dates → all slots available
     if (selectedDate !== todayStr) {
       return true;
     }
 
-    const currentHour = germanNow.getHours() + germanNow.getMinutes() / 60;
+    const currentHour = berlinNow.getHours() + berlinNow.getMinutes() / 60;
 
     const slot = this.getSlotTime(slotValue);
 
-    if (!slot) return false;
+    if (!slot) {
+      return false;
+    }
 
-    // already started
+    // Slot has already started
     if (currentHour >= slot.start) {
       return false;
     }
 
-    // minimum 2h before
+    // Must be at least 2 hours before slot starts
     return slot.start - currentHour >= 2;
   }
-
   getDateFromDay(dayValue: string): string {
     const now = new Date();
 
@@ -1452,6 +1559,7 @@ export class Customer {
         }
       }, 200);
     } else {
+      this.redirectToMeter = false;
       console.warn('No matching card found');
     }
 
