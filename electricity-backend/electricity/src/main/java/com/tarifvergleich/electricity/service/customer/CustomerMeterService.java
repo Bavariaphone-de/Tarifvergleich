@@ -4,14 +4,13 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
-import com.tarifvergleich.electricity.dto.ReportMeterReadingCategoryDto;
-import com.tarifvergleich.electricity.model.ReportMeterReadingCategory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.tarifvergleich.electricity.dto.CustomerInvoiceRequestDto;
+import com.tarifvergleich.electricity.dto.ReportMeterReadingCategoryDto;
 import com.tarifvergleich.electricity.dto.ReportMeterReadingDto;
 import com.tarifvergleich.electricity.exception.InternalServerException;
 import com.tarifvergleich.electricity.model.Customer;
@@ -21,7 +20,6 @@ import com.tarifvergleich.electricity.model.ReportMeterReadingCategory;
 import com.tarifvergleich.electricity.repository.CustomerConnectionRepository;
 import com.tarifvergleich.electricity.repository.CustomerInvoiceRequestRepository;
 import com.tarifvergleich.electricity.repository.CustomerRepository;
-import com.tarifvergleich.electricity.repository.ReportMeterReadingCategoryRepo;
 import com.tarifvergleich.electricity.repository.ReportMeterReadingRepository;
 import com.tarifvergleich.electricity.util.FileServiceCustomer;
 

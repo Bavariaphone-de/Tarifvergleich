@@ -67,6 +67,6 @@ public class CustomerBankAccountService {
 			account = CustomerBankAccount.builder().customer(customer).build();
 		}
 
-		return Map.of();
+		return Map.of("res", true);
 	}
 }

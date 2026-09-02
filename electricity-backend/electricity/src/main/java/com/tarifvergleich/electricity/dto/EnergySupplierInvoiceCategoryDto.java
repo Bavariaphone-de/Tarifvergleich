@@ -33,7 +33,7 @@ public class EnergySupplierInvoiceCategoryDto {
     public static InvoiceSupplierCategoryAdminResponseDto mapForAdmin(invoiceSupplierMessageCategory category) {
         return InvoiceSupplierCategoryAdminResponseDto.builder()
                 .invoiceCategoryId(category.getId())
-                .categoryName(category.getCategoryName())
+                .categoryName(category.getCategoryName().toUpperCase())
                 .createdOn(category.getCreatedOn())
                 .updatedOn(category.getUpdatedOn())
                 .build();

@@ -38,6 +38,7 @@ public interface CustomerServiceRequestRepository extends JpaRepository<Customer
 	Page<CustomerServiceRequest> findAllByIsClosedAndCustomerCustomerId(Boolean isClosed, Integer customerId, Pageable pageable);
 	
 	List<CustomerServiceRequest> findAllByAdminAdminIdOrderByCreatedOnDesc(Integer adminId);
+	
 	Page<CustomerServiceRequest> findAllByAdminAdminId(Integer adminId, Pageable pageable);
 	Page<CustomerServiceRequest> findAllByIsOpenAndAdminAdminId(Boolean isOpen, Integer adminId, Pageable pageable);
 	Page<CustomerServiceRequest> findAllByInProgressAndAdminAdminId(Boolean inProgress, Integer adminId, Pageable pageable);

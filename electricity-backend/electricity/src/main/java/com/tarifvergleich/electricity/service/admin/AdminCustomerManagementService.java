@@ -362,7 +362,7 @@ public class AdminCustomerManagementService {
 
 			Page<CustomerServiceRequest> customerServiceRequestsPage = customerServiceRequestRepo
 					.findAllByAdminAdminId(serviceRequestDto.getAdminId(), pageable);
-
+						
 			List<CustomerServiceRequest> customerServiceRequests = customerServiceRequestsPage.getContent();
 
 			Map<String, List<CustomerServiceRequestResDtoForListing>> customerServiceDtoRes = customerServiceRequests
