@@ -90,6 +90,7 @@ public class AdminCustomerManagementController {
 
 	@PostMapping("/fetch-service-requests")
 	public ResponseEntity<?> fetchServiceRequests(@RequestBody CustomerServiceRequestDto serviceRequestDto) {
+		System.err.println("I reached here");
 		return ResponseEntity.ok(adminCustomerManagementService.fetchCustomerServiceRequests(serviceRequestDto));
 	}
 
@@ -198,14 +199,12 @@ public class AdminCustomerManagementController {
 	public ResponseEntity<?> fetchAllCustomerDoc(@RequestBody CustomerDto customerDto) {
 		return ResponseEntity.ok(adminCustomerManagementService.fetchAllPdfOfCustomer(customerDto));
 	}
-	
+
 	@PostMapping("/send-customer-email")
-		public ResponseEntity<?> sendCustomerEmail(
-		    @RequestParam("data") String jsonData,
-		    @RequestPart(value = "uploadDocuments",required = false)
-		    List<MultipartFile> uploadDocuments
-		) throws Exception {
-		    CustomerSendEmailRequestDto request = objectMapper.readValue(jsonData, CustomerSendEmailRequestDto.class);
-		    return ResponseEntity.ok(adminCustomerManagementService.sendCustomerEmail(request,uploadDocuments));
-		}
+	public ResponseEntity<?> sendCustomerEmail(@RequestParam("data") String jsonData,
+			@RequestPart(value = "uploadDocuments", required = false) List<MultipartFile> uploadDocuments)
+			throws Exception {
+		CustomerSendEmailRequestDto request = objectMapper.readValue(jsonData, CustomerSendEmailRequestDto.class);
+		return ResponseEntity.ok(adminCustomerManagementService.sendCustomerEmail(request, uploadDocuments));
+	}
 }

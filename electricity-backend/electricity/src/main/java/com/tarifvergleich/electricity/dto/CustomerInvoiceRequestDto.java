@@ -4,11 +4,9 @@ import java.math.BigInteger;
 import java.time.LocalDateTime;
 
 import com.tarifvergleich.electricity.dto.CustomerDeliveryResponseDto.CustomerDeliveryProfileDetail;
-import com.tarifvergleich.electricity.dto.ReportMeterReadingDto.ReportMeterReadingResponseForAdminDto;
 import com.tarifvergleich.electricity.model.Customer;
 import com.tarifvergleich.electricity.model.CustomerInvoiceRequest;
 import com.tarifvergleich.electricity.model.CustomerOrder;
-import com.tarifvergleich.electricity.model.ReportMeterReading;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

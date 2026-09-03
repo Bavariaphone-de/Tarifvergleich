@@ -3,9 +3,6 @@ package com.tarifvergleich.electricity.controller.customer;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.tarifvergleich.electricity.dto.ReportMeterReadingDto;
-import com.tarifvergleich.electricity.model.ReportMeterReading;
-import com.tarifvergleich.electricity.service.customer.CustomerMeterService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,9 +14,11 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.tarifvergleich.electricity.dto.EnergySupplierMessageCategoryDto;
 import com.tarifvergleich.electricity.dto.ListOfHolidaysDto;
+import com.tarifvergleich.electricity.dto.ReportMeterReadingDto;
 import com.tarifvergleich.electricity.service.customer.CustomerDetailService;
 import com.tarifvergleich.electricity.service.customer.CustomerEnergySupplierService;
 import com.tarifvergleich.electricity.service.customer.CustomerGeneralService;
+import com.tarifvergleich.electricity.service.customer.CustomerMeterService;
 
 import lombok.RequiredArgsConstructor;
 
