@@ -103,7 +103,7 @@ export class CustomerInvoiceRequestComponent implements OnInit, OnDestroy {
     const payload = {
         search: this.searchTerm?.trim() || ''
       };
-      this.http.post('http://localhost:8080/admin/customer-invoice-request', payload)
+      this.http.post('http://192.168.0.155:8080/admin/customer-invoice-request', payload)
 
       .subscribe({
         next: (res: any) => {

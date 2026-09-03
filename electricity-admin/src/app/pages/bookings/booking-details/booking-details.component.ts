@@ -1089,4 +1089,8 @@ export class BookingDetailComponent implements OnInit {
         return "bg-gray-100 text-gray-700";
     }
   }
+
+  getBookingStatusDot() {}
+  getRateTypeClasses() {}
+  getRateTypeLabel() {}
 }

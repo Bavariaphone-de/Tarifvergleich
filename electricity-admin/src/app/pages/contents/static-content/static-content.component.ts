@@ -116,7 +116,7 @@ export class StaticContentComponent implements OnInit {
   openPreviewModal(doc?: any) {
     if (doc) {
       this.savedBannerUrl = doc.logoPath
-        ? `http://localhost:8080/assets/super-admin/${doc.logoPath}`
+        ? `http://192.168.0.155:8080/assets/super-admin/${doc.logoPath}`
         : null;
       this.savedImageTitle = doc.title;
       this.savedPopupContent = doc.description;
