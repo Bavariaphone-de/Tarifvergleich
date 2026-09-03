@@ -1055,7 +1055,18 @@ export class Customer {
       },
     });
   }
+  resetCallbackForm(): void {
+    this.selectedDay = null;
+    this.selectedTimeSlot = '';
 
+    this.phoneNumber = '';
+    this.scheduleDescription = '';
+
+    this.scheduleSuccessMessage = '';
+    this.scheduleErrorMessage = '';
+
+    this.fieldErrors = {};
+  }
   get enabledDays(): Set<string> {
     const now = new Date();
 
@@ -1299,6 +1310,9 @@ export class Customer {
 
   selectDay(day: any): void {
     this.selectedDay = day;
+    if (this.selectedTimeSlot && !this.isTimeSlotEnabled(this.selectedTimeSlot)) {
+      this.selectedTimeSlot = '';
+    }
     this.cdr.detectChanges();
   }
 
@@ -1535,6 +1549,7 @@ export class Customer {
       this.selectedIndex = index;
 
       console.log('Selected Card:', this.cards[index]);
+      this.resetCallbackForm();
 
       this.redirectToMeter = true;
       this.cdr.detectChanges();

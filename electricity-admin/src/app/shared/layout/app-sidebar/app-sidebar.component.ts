@@ -276,15 +276,23 @@ export class AppSidebarComponent implements OnInit, OnDestroy {
               </svg>`,
       subItems: [
         {
-          name: 'Report Meter Reading',
-          path: '/open-provider-action/report-meter-reading'
+          name: "Report Meter Reading",
+          path: "/open-provider-action/report-meter-reading",
         },
-                {
-          name: 'Invoice Request',
-          path: '/open-provider-action/customer-invoice-request'
-        }
+        {
+          name: "Invoice Request",
+          path: "/open-provider-action/customer-invoice-request",
+        },
+        {
+          name: "Energy Supplier Messages",
+          path: "/open-provider-action/energy-supplier",
+        },
+        {
+          name: "Change Discount Amount",
+          path: "/open-provider-action/change-amount",
+        },
       ],
-    }
+    },
   ];
 
   openSubmenu: string | null = null;
