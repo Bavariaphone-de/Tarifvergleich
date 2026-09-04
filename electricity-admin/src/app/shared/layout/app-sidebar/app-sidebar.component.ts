@@ -288,7 +288,7 @@ export class AppSidebarComponent implements OnInit, OnDestroy {
           path: "/open-provider-action/energy-supplier",
         },
         {
-          name: "Change Discount Amount",
+          name: "Change Advance Payment Request",
           path: "/open-provider-action/change-amount",
         },
       ],

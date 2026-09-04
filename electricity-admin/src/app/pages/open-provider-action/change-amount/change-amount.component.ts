@@ -1,78 +1,71 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient } from "@angular/common/http";
 import { Component, OnInit, OnDestroy } from "@angular/core";
 import { CommonModule, NgClass } from "@angular/common";
 import { ApiService } from "../../../shared/services/api.service";
 import { Router } from "@angular/router";
 
-import { FormsModule } from '@angular/forms';
-import { Subject, Subscription } from 'rxjs';
+import { FormsModule } from "@angular/forms";
+import { Subject, Subscription } from "rxjs";
 import { debounceTime, distinctUntilChanged } from "rxjs/operators";
-export interface CustomerInvoiceRequest {
+
+export interface CustomerChangePayment {
   id?: number;
-  salutation? : string;
+  salutation?: string;
   customerName?: string;
   customerEmail?: string;
-  message?: string;
-  deliveryId?: number;
-  orderId?: number;
-  connectionId?: number;
-  invoiceCategory?: string;
+  newAdvanceAmount?: string;
+  reason?: string;
+  deliveryId?: { deliveryId?: number; uniqueDeliveryId?: string };
   status?: number;
-  createdAt?: string;
-  bookingId?: number;
-  bookingStatus?: string;
+  createdAt?: number;
   bookingCreatedOn?: number;
+  isExpired?: boolean;
+  signedFileUrl?: string;
+  adminPlacedOrder?: boolean;
+  bookingOrderId?: number;
 }
 
 @Component({
-  selector: 'app-change-amount',
-   imports: [
-    CommonModule,
-    NgClass,
-    FormsModule
-  ],
-  templateUrl: './change-amount.component.html',
-  styleUrl: './change-amount.component.css',
+  selector: "app-change-amount",
+  imports: [CommonModule, NgClass, FormsModule],
+  templateUrl: "./change-amount.component.html",
+  styleUrl: "./change-amount.component.css",
 })
 export class ChangeAmountComponent {
-
-  customerInvoiceRequests: CustomerInvoiceRequest[] = [];
+  customerChangePayment: CustomerChangePayment[] = [];
 
   isLoading = false;
-  errorMessage = '';
+  errorMessage = "";
 
   selectedRequest: any = null;
   isSidebarOpen = false;
 
   filterStatus = 0;
   filterOptions = [
-    { value: 0, label: 'Alle' },
-    { value: 1, label: 'Aktiv' },
-    { value: 2, label: 'Inaktiv' }
+    { value: 0, label: "Alle" },
+    { value: 1, label: "Aktiv" },
+    { value: 2, label: "Inaktiv" },
   ];
   isFilterOpen = false;
 
-  searchTerm = '';
+  searchTerm = "";
   private searchTerm$ = new Subject<string>();
   private searchSub!: Subscription;
 
   constructor(
     // private api: ApiService,
     private http: HttpClient,
-    private router: Router
+    private router: Router,
   ) {}
 
   ngOnInit(): void {
     this.searchSub = this.searchTerm$
-      .pipe(
-        debounceTime(350),
-        distinctUntilChanged()
-      )
+      .pipe(debounceTime(350), distinctUntilChanged())
       .subscribe(() => {
-        this.fetchCustomerInvoiceRequests();
+        this.fetchCustomerChangePayment();
       });
 
-    this.fetchCustomerInvoiceRequests();
+    this.fetchCustomerChangePayment();
   }
 
   ngOnDestroy(): void {
@@ -80,7 +73,7 @@ export class ChangeAmountComponent {
   }
 
   onSearchInput(value: string): void {
-    this.searchTerm = value ?? '';
+    this.searchTerm = value ?? "";
     this.searchTerm$.next(this.searchTerm);
   }
 
@@ -88,103 +81,141 @@ export class ChangeAmountComponent {
     if (!this.searchTerm) {
       return;
     }
-    this.searchTerm = '';
-    this.searchTerm$.next('');
+    this.searchTerm = "";
+    this.searchTerm$.next("");
   }
 
-  fetchCustomerInvoiceRequests(): void {
-
+  fetchCustomerChangePayment(): void {
     this.isLoading = true;
-    this.errorMessage = '';
-
-
+    this.errorMessage = "";
     this.closeSidebar();
-    const payload = {
-        search: this.searchTerm?.trim() || ''
-      };
-      this.http.post('http://192.168.0.155:8080/admin/customer-invoice-request', payload)
 
+    const payload = {
+      search: this.searchTerm?.trim() || "",
+      adminId: 1,
+      page: 1,
+    };
+
+    this.http
+      .post(
+        "http://192.168.0.155:8080/admin/fetch-all-customer-discount-request",
+        payload,
+      )
       .subscribe({
         next: (res: any) => {
-
           this.isLoading = false;
 
-          const data = Array.isArray(res) ? res : Array.isArray(res?.data)
-              ? res.data : [];
-          this.customerInvoiceRequests = data;
+          const items = Array.isArray(res?.data) ? res.data : [];
+
+          this.customerChangePayment = items.map((item: any) => {
+            const detail = item.customerDetails;
+            const order = detail?.order;
+
+            return {
+              id: item.customerChangeDiscountId,
+              salutation: detail?.title,
+              customerName:
+                `${detail?.firstName ?? ""} ${detail?.lastName ?? ""}`.trim(),
+              customerEmail: detail?.email,
+              newAdvanceAmount: item.newAdvanceAmount,
+              reason: item.reason,
+              status: item.status,
+              createdAt: item.createdOn,
+              deliveryId: {
+                deliveryId: detail?.deliveryId,
+                uniqueDeliveryId: detail?.uniqueDeliveryId,
+              },
+              bookingCreatedOn: order?.adminOrderPlacedOn,
+              isExpired: order?.isExpired,
+              signedFileUrl: order?.doc?.signedFileUrl,
+              adminPlacedOrder: order?.adminPlacedOrder,
+              bookingOrderId: order?.orderId,
+            };
+          });
         },
 
-        error: (err : any) => {
-
+        error: (err: any) => {
           this.isLoading = false;
-          this.errorMessage =
-            'Fehler beim Laden der Messwertmeldungen';
-
+          this.errorMessage = "Fehler beim Laden der Anfragen";
           console.error(err);
-        }
+        },
       });
   }
 
-  trackById(index: number, item: CustomerInvoiceRequest): number {
+  trackById(index: number, item: CustomerChangePayment): number {
     return item.id ?? index;
   }
 
-  formatDate(date?: string): string {
-    if (!date) return '—';
-    return new Intl.DateTimeFormat('de-DE', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    }).format(new Date(date));
+  formatDate(timestamp?: number | string): string {
+    if (!timestamp) return "—";
+
+    let date: Date;
+    if (typeof timestamp === "number") {
+      date =
+        timestamp.toString().length === 10
+          ? new Date(timestamp * 1000)
+          : new Date(timestamp);
+    } else {
+      date = new Date(timestamp);
+    }
+
+    if (isNaN(date.getTime())) return "—";
+
+    return new Intl.DateTimeFormat("de-DE", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    }).format(date);
   }
 
   getActiveCount(): number {
-    return this.customerInvoiceRequests.filter(
-      item => item.status === 1
-    ).length;
+    return this.customerChangePayment.filter((item) => item.status === 1)
+      .length;
   }
 
   getSelectedFilterLabel(): string {
     return (
-      this.filterOptions.find(f => f.value === this.filterStatus)?.label ||
-      'Alle'
+      this.filterOptions.find((f) => f.value === this.filterStatus)?.label ||
+      "Alle"
     );
   }
 
-  openDetail(request: CustomerInvoiceRequest): void {
+  openDetail(request: CustomerChangePayment): void {
     console.log(request);
   }
 
-  openSidebar(request: CustomerInvoiceRequest): void {
-    if (
-      this.isSidebarOpen &&
-      this.selectedRequest?.id === request.id
-    ) {
+  selectedIndex: number | null = null;
+
+  openSidebar(request: CustomerChangePayment, index: number): void {
+    if (this.isSidebarOpen && this.selectedRequest?.id === request.id) {
       this.closeSidebar();
       return;
     }
     this.selectedRequest = request;
+    this.selectedIndex = index;
     this.isSidebarOpen = true;
   }
 
   closeSidebar(): void {
     this.selectedRequest = null;
+    this.selectedIndex = null;
     this.isSidebarOpen = false;
   }
 
   customerInitial(name?: string): string {
-    return name?.charAt(0)?.toUpperCase() || 'G';
+    return name?.charAt(0)?.toUpperCase() || "G";
   }
 
   openBookingDetails(deliveryId: number): void {
     if (!deliveryId) {
       return;
     }
-    window.open(`/bookings/${deliveryId}`, '_blank');
+    // window.open(`/bookings/${deliveryId}`, "_blank");
+    window.location.href = `/bookings/${deliveryId}`;
   }
-  
+
   getBookingStatus(request: any): string {
     if (request.isExpired === true) {
       return "Expired";
@@ -200,5 +231,4 @@ export class ChangeAmountComponent {
     }
     return "Pending";
   }
-
 }

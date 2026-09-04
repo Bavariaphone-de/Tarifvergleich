@@ -169,6 +169,11 @@ export class Customer {
       this.checkAttorneyStatus();
     }
     this.redirectToMeter = false;
+    this.submittedDiscountRequest = false;
+    this.submittedEnergyMessage = false;
+    this.submittedCallback = false;
+    this.submittedInvoice = false;
+    this.submittedReportMeterReading = false;
     this.supplierMessageCategory = 0;
     this.cdr.detectChanges();
   }
