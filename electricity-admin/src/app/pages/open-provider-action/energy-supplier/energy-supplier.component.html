@@ -6,7 +6,7 @@
             <div class="bg-white dark:bg-gray-900 rounded-2xl shadow p-5 border border-gray-100 dark:border-gray-800">
                 <p class="text-sm text-gray-500">Gesamt Messwerte</p>
                 <h3 class="text-3xl font-bold mt-1">
-                    {{ customerInvoiceRequests.length }}
+                    {{ customerSupplierMessage.length }}
                 </h3>
             </div>
 
@@ -32,8 +32,8 @@
     <div class="relative flex overflow-hidden rounded-2xl bg-white dark:bg-gray-900 shadow">
         <div class="flex-1 min-w-0 p-6">
 
-            <h2 class="text-xl font-semibold text-gray-800 dark:text-white mb-4">Rechnungsanfragen</h2>
-            <div class="flex items-center gap-2 mb-6">
+            <h2 class="text-xl font-semibold text-gray-800 dark:text-white mb-4">Nachricht an den Energieversorger</h2>
+            <!-- <div class="flex items-center gap-2 mb-6">
                 <div class="flex-1">
                     <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="onSearchInput($event)"
                         placeholder="Suche nach Liefer-ID, Kunden-ID..."
@@ -58,16 +58,16 @@
                     </button>
                 </div>
 
-            </div>
+            </div> -->
             <table class="w-full text-sm text-left border-collapse">
                 <thead class="text-xs uppercase bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300">
                     <tr>
-                        <th class="px-4 py-3 rounded-tl-lg">ID</th>
+                        <th class="px-4 py-3 rounded-tl-lg">AUSWEIS</th>
                         <th class="px-4 py-3 rounded-tl-lg">Name</th>
                         <!-- <th class="px-4 py-3">Delivery ID</th>
             <th class="px-4 py-3">Order ID</th>
             <th class="px-4 py-3">Connection ID</th> -->
-                        <th class="px-4 py-3">Rechnungskategorie</th>
+                        <th class="px-4 py-3">Kategorie Energieversorger</th>
                         <th class="px-4 py-3">Nachricht</th>
                         <th class="px-4 py-3">Status</th>
                         <th class="px-4 py-3">Erstellt am</th>
@@ -75,7 +75,7 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y dark:divide-gray-700">
-                    @for (request of customerInvoiceRequests; track trackById($index, request); let i = $index) {
+                    @for (request of customerSupplierMessage; track trackById($index, request); let i = $index) {
                     <tr class="hover:bg-gray-50 dark:hover:bg-gray-800 transition cursor-pointer">
                         <td class="px-4 py-4"> {{ i + 1 }} </td>
                         <td class="px-4 py-4">
@@ -105,9 +105,9 @@
                         <td class="px-4 py-4"> {{ request.message || '—' }} </td>
 
                         <td class="px-4 py-4">
-                            <span class="px-2 py-1 rounded-full text-xs"
-                                [ngClass]="request.status === 1 ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'">
-                                {{ request.status === 1 ? 'Im Gange' : 'Weitergeleitet' }}
+                            <span class="px-2 py-1 rounded-full text-xs" [ngClass]="request.status === 1 ? 'bg-orange-100 
+                    text-orange-700' : 'bg-green-100 text-green-700' ">
+                                {{ request.statusLabel }}
                             </span>
                         </td>
                         <td class="px-4 py-4"> {{ formatDate(request.createdAt) }} </td>
@@ -127,7 +127,7 @@
           </td> -->
 
                         <td class="px-4 py-4 text-right">
-                            <button (click)="openSidebar(request)" class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-lg
+                            <button (click)="openSidebar(request, i)" class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-lg
                     bg-brand-50 text-brand-600 hover:bg-brand-100
                     dark:bg-brand-900/20 dark:text-brand-400
                     dark:hover:bg-brand-900/40
@@ -196,7 +196,7 @@
 
                         <div class="flex justify-between">
                             <span>ID</span>
-                            <span>{{ selectedRequest.id }}</span>
+                            <span>{{ selectedIndex !== null ? selectedIndex + 1 : '—' }}</span>
                         </div>
 
                         <div class="flex justify-between">
@@ -231,20 +231,17 @@
                         <div class="flex justify-between">
                             <span>Erstellt am</span>
                             <span>
-                                {{ formatDate2(selectedRequest.bookingCreatedOn) }}
+                                {{ formatDate(selectedRequest.bookingCreatedOn) }}
                             </span>
                         </div>
-
                         <div class="flex justify-between items-center mb-3">
                             <h3 class="font-semibold">Status</h3>
                             <span class="px-2 py-1 rounded-full text-xs"
                                 [ngClass]="selectedRequest.status === 1 ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'">
-                                {{ selectedRequest.status === 1 ? 'Im Gange' : 'Weitergeleitet' }}
+                                {{ selectedRequest.statusLabel }}
                             </span>
                         </div>
                     </div>
-
-
                     @if (selectedRequest.status === 1) {
                     <button class="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg
                    bg-brand-500 hover:bg-brand-600 text-white text-xs font-semibold transition">
@@ -273,7 +270,7 @@
     @if (!isLoading && errorMessage) {
     <div class="text-center py-12">
         <p class="text-red-500 text-sm mb-3">{{ errorMessage }}</p>
-        <button (click)="fetchCustomerInvoiceRequests()"
+        <button (click)="fetchCustomerSupplierMessage()"
             class="px-4 py-2 text-sm bg-brand-500 text-white rounded-lg hover:bg-brand-600 transition cursor-pointer">
             Erneut versuchen
         </button>
@@ -281,7 +278,7 @@
     }
 
     <!-- Empty -->
-    @if (!isLoading && !errorMessage && customerInvoiceRequests.length === 0) {
+    @if (!isLoading && !errorMessage && customerSupplierMessage.length === 0) {
     <div class="text-center py-12 text-gray-400 text-sm">Keine Messwerte gefunden.</div>
     }
 
