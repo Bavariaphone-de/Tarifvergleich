@@ -57,7 +57,7 @@ export class ReportMeterReadingComponent implements OnInit {
   private searchTerm$ = new Subject<string>();
   private searchSub!: Subscription;
   
-  readonly IMAGE_BASE_URL = 'http://localhost:8080/assets/customers/';
+  readonly IMAGE_BASE_URL = 'http://192.168.0.155:8080/assets/customers/';
   isImageModalOpen = false;
 
   constructor(
@@ -101,7 +101,7 @@ export class ReportMeterReadingComponent implements OnInit {
       search: this.searchTerm?.trim() || ''
     };
 
-    this.http.post('http://localhost:8080/admin/report-meter-reading',payload)
+    this.http.post('http://192.168.0.155:8080/admin/report-meter-reading',payload)
       .subscribe({
         next: (res: any) => {
 
