@@ -898,11 +898,11 @@ export class Customer {
     const status = item?.reportMeterReadings?.[0]?.status;
 
     if (status === 1) {
-      return 'In Progress';
+      return 'Im Gange';
     }
 
     if (status === 2) {
-      return 'Forwarded';
+      return 'Weitergeleitet';
     }
 
     return '';
@@ -960,11 +960,11 @@ export class Customer {
     const status = item?.invoiceRequests?.[0]?.status || '';
 
     if (status === 1) {
-      return 'In Progress';
+      return 'Im Gange';
     }
 
     if (status === 2) {
-      return 'Forwarded';
+      return 'Weitergeleitet';
     }
 
     return '';
@@ -1615,11 +1615,11 @@ export class Customer {
     const status = Number(item?.supplierMessage?.[0]?.status);
 
     if (status === 0) {
-      return 'In Progress';
+      return 'Im Gange';
     }
 
     if (status === 1) {
-      return 'Forwarded';
+      return 'Weitergeleitet';
     }
 
     return '';
@@ -1844,11 +1844,11 @@ export class Customer {
     const status = item?.discountRequests?.[0]?.status;
 
     if (status === 0) {
-      return 'In Progress';
+      return 'Im Gange';
     }
 
     if (status === 1) {
-      return 'Forwarded';
+      return 'Weitergeleitet';
     }
 
     return '';
@@ -2710,6 +2710,7 @@ export class Customer {
       this.fetchServiceCount();
       this.fetchAllRequests();
     }
+    this.redirectToMeter = false;
     this.resetForm();
     this.cdr.detectChanges();
   }

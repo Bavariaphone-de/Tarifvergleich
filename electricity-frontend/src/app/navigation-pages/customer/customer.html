@@ -1101,7 +1101,7 @@
                 </button>
 
                 <div *ngIf="item.reportMeterReadings && item.reportMeterReadings.length > 0" class="status-badge">
-                  Zählerstand melden {{ getMeterReadingStatus(item) }}
+                  Zählerstand melden ({{ getMeterReadingStatus(item) }})
                 </div>
 
                 <button class="meter-blue-btn">Zähleraustausch melden</button>
@@ -1119,7 +1119,7 @@
                 </button> -->
 
                 <span *ngIf="item?.discountRequests?.length > 0; else showDiscountBtn" class="status-badge">
-                  Abschlag ändern {{ getDiscountStatus(item) }}
+                  Abschlag ändern ({{ getDiscountStatus(item) }})
                 </span>
 
                 <ng-template #showDiscountBtn>
@@ -1129,7 +1129,7 @@
                 </ng-template>
 
                 <span *ngIf="hasInvoice(item); else showButton" class="status-badge">
-                  Rechnungen anfordern {{ getInvoiceStatus(item) }}
+                  Rechnungen anfordern ({{ getInvoiceStatus(item) }})
                 </span>
 
                 <ng-template #showButton>
@@ -1145,7 +1145,7 @@
 
                 <div *ngIf="item.supplierMessage && item.supplierMessage.length > 0" class="status-badge">
                   Nachricht an Energielieferanten senden
-                  {{ getSupplierMessageStatus(item) }}
+                  ({{ getSupplierMessageStatus(item) }})
                 </div>
 
               </div>

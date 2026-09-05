@@ -115,7 +115,7 @@ export class AppSidebarComponent implements OnInit, OnDestroy {
       <path d="M12 17h.01" />
     </svg>`,
       subItems: [
-        { name: "Customer Queries", path: "/customer-query/customer-queries" },
+        { name: "Service Requests", path: "/customer-query/customer-queries" },
         { name: "Contact Queries", path: "/contact-query/list" },
       ],
     },
