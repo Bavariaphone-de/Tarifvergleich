@@ -241,6 +241,15 @@ export class Customer {
     this.cdr.detectChanges();
   }
 
+  startMoveReport(item?: any) {
+    this.currentStep = 10;
+    this.loadAvailableDays();
+    if (item) {
+      this.selectedMeter = item;
+    }
+    this.cdr.detectChanges();
+  }
+
   messageEnergySupplier(item?: any) {
     this.nextStep(6);
 
@@ -839,8 +848,20 @@ export class Customer {
   meterReadingCategory: number | null = null;
   meterReadingDate: string = '';
   meterReadingValue: string = '';
+  meterReadingConfirmed: boolean = false;
   submittedReportMeterReading: boolean = false;
+  photoUploadConfirmed: boolean = false;
 
+  triggerPhotoUpload(fileInput: HTMLInputElement) {
+    this.fieldErrors = {};
+
+    if (!this.photoUploadConfirmed) {
+      this.fieldErrors['photoUploadConfirmed'] = 'Bitte bestätigen Sie die Übermittlung, bevor Sie Fotos hochladen';
+      return;
+    }
+
+    fileInput.click();
+  }
   validateMeterReadingForm(): boolean {
     this.fieldErrors = {};
     let isValid = true;
@@ -868,6 +889,12 @@ export class Customer {
       isValid = false;
     } else if (Number(meterValue) <= 0) {
       this.fieldErrors['meterReadingValue'] = 'Der Zählerstand muss größer als 0 sein';
+      isValid = false;
+    }
+
+      // Confirmation checkbox
+    if (!this.meterReadingConfirmed) {
+      this.fieldErrors['meterReadingConfirmed'] = 'Bitte bestätigen Sie die Übermittlung, bevor Sie fortfahren';
       isValid = false;
     }
 
@@ -983,6 +1010,7 @@ export class Customer {
 
         if (res) {
           this.submittedReportMeterReading = true;
+          this.resetMeterReadingForm();
         }
 
         this.cdr.detectChanges();
@@ -993,7 +1021,17 @@ export class Customer {
       },
     });
   }
-
+  
+  resetMeterReadingForm() {
+    this.meterReadingCategory = null;
+    this.meterReadingDate = '';
+    this.meterReadingValue = '';
+    this.meterReadingConfirmed = false;
+    this.photoUploadConfirmed = false;
+    this.selectedFiles = [];
+    this.replaceIndex = null;
+    this.fieldErrors = {};
+  }
   /*--- Request Invoice ---*/
   invoiceCategory: number | null = null;
   invoiceMessage: string = '';
@@ -2334,7 +2372,9 @@ export class Customer {
 
   cancellationData: any = {
     categoryId: '',
-    // ...other cancellation fields
+    terminationType: '',
+    effectiveDate: '',
+    additionalInfo: '',
   };
   fetchCancellationCategories(): void {
     this.http.post<any>(`${API_BASE}/customer/fetch-contract-cancellation-category`, {}).subscribe({
@@ -2365,6 +2405,185 @@ export class Customer {
     const value = (event.target as HTMLSelectElement).value;
     this.cancellationData.terminationType = value;
     this.cdr.detectChanges();
+  }
+
+  cancellationReason: string = '';
+
+  isSubmittingCancellation: boolean = false;
+
+  submitCancellation(): void {
+    this.fieldErrors = {};
+    this.scheduleSuccessMessage = '';
+    this.scheduleErrorMessage = '';
+
+    // Required-field validation — additionalInfo is the only optional field
+    if (!this.cancellationData.categoryId) {
+      this.fieldErrors['categoryId'] = 'Bitte wählen Sie einen Kündigungsgrund aus.';
+    }
+    if (!this.cancellationReason?.trim()) {
+      this.fieldErrors['reason'] = 'Bitte beschreiben Sie den genauen Grund.';
+    }
+    if (!this.cancellationData.effectiveDate) {
+      this.fieldErrors['effectiveDate'] = 'Bitte wählen Sie ein Kündigungsdatum aus.';
+    }
+    if (!this.cancellationData.terminationType) {
+      this.fieldErrors['terminationType'] = 'Bitte wählen Sie die Art der Kündigung aus.';
+    }
+    if (!String(this.phoneNumber ?? '').trim()) {
+      this.fieldErrors['phoneNumber'] = 'Bitte geben Sie Ihre Telefonnummer an.';
+    }
+    if (!this.selectedDay) {
+      this.fieldErrors['selectedDay'] = 'Bitte wählen Sie einen Wochentag.';
+    }
+    if (!this.selectedTimeSlot) {
+      this.fieldErrors['selectedTimeSlot'] = 'Bitte wählen Sie eine Uhrzeit.';
+    }
+    if (!this.scheduleDescription?.trim()) {
+      this.fieldErrors['scheduleDescription'] = 'Bitte geben Sie weitere Informationen an.';
+    }
+
+    if (Object.keys(this.fieldErrors).length > 0) {
+      this.cdr.detectChanges();
+      return; // stop — do not call the API
+    }
+
+    const payload = {
+      deliveryId: this.selectedMeter?.deliveryId ?? this.selectedMeter?.id,
+      reason: this.cancellationReason.trim(),
+      desiredDate: this.cancellationData.effectiveDate,
+      terminationType:
+        this.cancellationData.terminationType === 'ordinary'
+          ? 'Ordinary Termination'
+          : 'Extraordinary Termination',
+      additionalInfo: this.cancellationData.additionalInfo?.trim() || '', // optional
+      selectedCategoryId: this.cancellationData.categoryId,
+      mobileNumber: this.phoneNumber,
+      weekDay: this.selectedDay?.date,
+      timeSlot: this.selectedTimeSlot,
+      description: this.scheduleDescription.trim(),
+    };
+
+    this.isSubmittingCancellation = true;
+
+    this.http.post<any>(`${API_BASE}/customer/request-contract-cancellation`, payload).subscribe({
+      next: (res) => {
+        this.isSubmittingCancellation = false;
+        if (res?.res) {
+          this.scheduleSuccessMessage =
+            res.message || 'Ihre Anfrage wurde erfolgreich übermittelt.';
+          this.submittedCallback = true;
+          this.resetCancellationForm(); // <-- add this
+          this.scheduleSuccessMessage =
+            res.message || 'Ihre Anfrage wurde erfolgreich übermittelt.'; // re-set after reset clears it
+        } else {
+          this.scheduleErrorMessage =
+            res?.message || 'Es ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.';
+        }
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.isSubmittingCancellation = false;
+        console.error('Error submitting cancellation request', err);
+        this.scheduleErrorMessage = 'Es ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.';
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  resetCancellationForm(): void {
+    this.cancellationData = {
+      categoryId: '',
+      terminationType: '',
+      effectiveDate: '',
+      additionalInfo: '',
+    };
+    this.cancellationReason = '';
+    this.phoneNumber = '';
+    this.selectedDay = null;
+    this.selectedTimeSlot = '';
+    this.scheduleDescription = '';
+    this.fieldErrors = {};
+    this.scheduleSuccessMessage = '';
+    this.scheduleErrorMessage = '';
+  }
+
+  getMeterCancellationStatus(item: any): string {
+    const status = item?.requestcancellation;
+
+    if (status === 1) {
+      return 'Im Gange';
+    }
+
+    if (status === 2) {
+      return 'Weitergeleitet';
+    }
+
+    return '';
+  }
+
+  moveData = {
+    newAddress: { street: '', houseNumber: '', zip: '', city: '' },
+    effectiveDate: '',
+    newMeterNumber: '',
+    additionalInfo: ''
+  };
+
+  moveFieldErrors: { [key: string]: string } = {};
+
+  showMoveCityDropdown = false;
+  showMoveStreetDropdown = false;
+  moveFilteredCityOptions: any[] = [];
+  moveFilteredStreetOptions: any[] = [];
+  isMoveStreetLoading = false;
+
+  onMoveCityInput(event: any) {
+    const value = event.target.value;
+    this.moveData.newAddress.city = value;
+    // filter/search city options into this.moveFilteredCityOptions
+  }
+
+  selectMoveCity(c: any) {
+    this.moveData.newAddress.city = c.city;
+    this.showMoveCityDropdown = false;
+    // clear street since city changed
+    this.moveData.newAddress.street = '';
+  }
+
+  onMoveStreetInput(event: any) {
+    const value = event.target.value;
+    this.moveData.newAddress.street = value;
+    // filter/search street options (scoped to selected city) into this.moveFilteredStreetOptions
+  }
+
+  selectMoveStreet(s: any) {
+    this.moveData.newAddress.street = s.street;
+    this.showMoveStreetDropdown = false;
+  }
+
+  movePhoneNumber: string = '';
+  selectedMoveDay: any = null;
+  selectedMoveTimeSlot: string = '';
+  moveScheduleDescription: string = '';
+  moveScheduleSuccessMessage: string = '';
+  moveScheduleErrorMessage: string = '';
+  isSubmittingMoveRequest = false;
+  submittedMoveRequest = false;
+
+  selectMoveDay(day: any) {
+    this.selectedMoveDay = day;
+  }
+
+  selectMoveTimeSlot(value: string) {
+    this.selectedMoveTimeSlot = value;
+  }
+
+  submitMoveRequest() {
+    // validate moveData.newAddress.street/zip/city, moveData.effectiveDate,
+    // movePhoneNumber, selectedMoveDay, selectedMoveTimeSlot — populate fieldErrors as in submitCancellation()
+    // then POST to your service-requests endpoint, e.g.:
+    //   type: 'move', payload: { ...moveData, phone, day, timeSlot, note }
+    // so it lands in admin under "Service Requests"
+    // on success: this.submittedMoveRequest = true;
   }
 
   /*── Meter Section end ──*/
@@ -3313,6 +3532,7 @@ export class Customer {
 
               reportMeterReadings: item.reportMeterReadings,
               supplierMessage: item.order.supplierMessage,
+              requestcancellation: item.requestcancellation,
 
               signedFileUrl: item.order?.doc?.signedFileUrl
                 ? `${API_BASE}/assets/customers/${item.order.doc.signedFileUrl}`
